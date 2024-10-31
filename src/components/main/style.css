@@ -39,7 +39,7 @@ body {
   
   .btn-green {
     background-color: #028f64;
-    color: #e9f3eb;
+    color: #eef5f0;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
@@ -76,6 +76,9 @@ body {
     margin-bottom: 20px;
   }
 
+  .m-auto{
+    margin:auto;
+  }
   .d-flex{
     display: flex;
     justify-content: space-between;
@@ -83,7 +86,7 @@ body {
 
   .btn-red-outline{
     background-color: #8f0202c4;
-    color: #e9f3eb;
+    color: #eef5f0;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;

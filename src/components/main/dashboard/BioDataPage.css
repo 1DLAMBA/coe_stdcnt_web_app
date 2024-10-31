@@ -1,7 +1,7 @@
 /* BioDataPage.css */
 .bio-data-container {
     padding: 24px;
-    background-color: #f4f4f4;
+    /* background-color: #f4f4f4; */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -51,6 +51,13 @@
   
   .bio-data-card .ant-badge-status-success {
     background-color: #028f64;
+  }
+  @media (min-width: 768px) {
+    .profile-section{
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+    }
   }
   
   @media (max-width: 768px) {

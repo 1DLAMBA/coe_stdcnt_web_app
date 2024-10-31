@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Col, Row, Select, DatePicker, Typography } from 'antd';
+import React, { Children, useState } from 'react';
+import { Form, Input,Breadcrumb, Button, Col, Card, Row, Select, DatePicker, Typography } from 'antd';
+
 import './BioData.css';
 import moment from 'moment';
+import { IeOutlined, HomeFilled, EditOutlined } from '@ant-design/icons';
+import { Link, useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -68,7 +71,34 @@ const bioData = {
     hasBookedHostelAccommodation: false,
     registrationNumber: "96829502BD"
   };
-
+  const items = [
+    {
+      path: '/Dashboard',
+      title: <HomeFilled />,
+    },
+    
+    {
+      path: '/Bio-data',
+      title: 'Bio-data',
+      Children: [{
+        
+      }]
+    },
+    {
+      path: '/Edit',
+      title: 'Edit',
+    },
+  ];
+  
+  function itemRender(currentRoute, params, items, paths) {
+    const isLast = currentRoute?.path === items[items.length - 1]?.path;
+  
+    return isLast ? (
+      <span>{currentRoute.title}</span>
+    ) : (
+      <Link to={`/${paths.join("/")}`}>{currentRoute.title}</Link>
+    );
+  }
 
 const Edit_Bio = () => {
   const [form] = Form.useForm();
@@ -82,7 +112,13 @@ const Edit_Bio = () => {
   };
 
   return (
-    <div className="edit-bio-data-container">
+    <>
+    
+    <div className="bio-data-container">
+    <Breadcrumb style={{marginRight:'auto'}} itemRender={itemRender} items={items} />
+
+      <Card bordered  className="bio-data-card">
+
       <Title level={2} className="form-title">Edit Bio Data</Title>
       <Form
         form={form}
@@ -279,7 +315,9 @@ const Edit_Bio = () => {
           </Button>
         </Row>
       </Form>
+      </Card >
     </div>
+    </>
   );
 };
 

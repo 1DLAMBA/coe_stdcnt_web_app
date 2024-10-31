@@ -4,13 +4,14 @@
 @media (min-width:500px) {
     .head img{
         width:5%;
-        color: #e9f3eb;
+        color: #eef5f0;
     }
 
     .head{
-        /* padding-top: 0%; */
+        padding-top: 3px;
         padding-left: 2%;
         padding-right: 2%;
+        margin-top: 0;
         display: flex;
         justify-content: space-between;
     
@@ -43,14 +44,7 @@
     backdrop-filter: blur(3px);
   }
 
-  .head{
-    padding-top: 2%;
-    padding-left: 2%;
-    padding-right: 2%;
-    display: flex;
-    justify-content: space-between;
-
-  }
+ 
   
   /* Cover photo styling */
   .cover-photo  {
@@ -62,7 +56,7 @@
   
   /* User information card styling */
   .user-card {
-    background-color: #e9f3eb;
+    background-color: #eef5f0;
     border-radius: 10px;
     padding: 20px;
     margin-top: -5%;
@@ -75,13 +69,20 @@
     /* width: 100%; */
   }
   
+  .info-hold{
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .info-hold:first-child{
+    margin-right: 10px;
+  }
   /* Profile picture styling */
   .profile-pic {
     width: 100px;
     height: 100px;
     border-radius: 50%;
     margin-top: -50px;
-    border: 3px solid #e9f3eb;
+    border: 3px solid #eef5f0;
     object-fit: cover;
   }
   
@@ -107,7 +108,7 @@
   
   .dashboard-button {
     background-color: #028f64;
-    color: #e9f3eb;
+    color: #eef5f0;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
@@ -120,7 +121,7 @@
     background-color: #02674a;
   }
   .content {
-    background-color: #e9f3eb;
+    background-color: #eef5f0;
     width: 100%;
 display: flex;
 flex-direction: column;
@@ -128,7 +129,7 @@ margin-top: 0%;
     height: 80vh;
   }
   .outlet{
-    background-color: #e9f3eb;
+    background-color: #eef5f0;
 
     height: max-content;
   }

@@ -1,14 +1,22 @@
 /* EditBioData.css */
 
-.edit-bio-data-container {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
+.bio-data-container {
+    padding: 24px;
+    /* background-color: #f4f4f4; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  .bio-data-card {
+    width: 100%;
+    max-width: 1200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+    padding: 24px;
+  }
 .form-title {
   text-align: center;
   color: #028f64;
