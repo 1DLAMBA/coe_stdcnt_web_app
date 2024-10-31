@@ -1,7 +1,36 @@
 /* Container styling */
 /* App.css */
 /* @import '~bootstrap/dist/css/bootstrap.min.css'; */
+@media (min-width:500px) {
+    .head img{
+        width:5%;
+        color: #e9f3eb;
+    }
 
+    .head{
+        /* padding-top: 0%; */
+        padding-left: 2%;
+        padding-right: 2%;
+        display: flex;
+        justify-content: space-between;
+    
+      }
+}
+@media (max-width:500px) {
+    .head img{
+        width: 15%;
+        
+    }
+
+    .head{
+        padding-top: 2%;
+        padding-left: 2%;
+        padding-right: 2%;
+        display: flex;
+        justify-content: space-between;
+    
+      }
+}
 .dashboard-container {
     width: 100%;
     /* max-width: 600px; */
@@ -16,6 +45,8 @@
 
   .head{
     padding-top: 2%;
+    padding-left: 2%;
+    padding-right: 2%;
     display: flex;
     justify-content: space-between;
 
@@ -31,7 +62,7 @@
   
   /* User information card styling */
   .user-card {
-    background-color: white;
+    background-color: #e9f3eb;
     border-radius: 10px;
     padding: 20px;
     margin-top: -5%;
@@ -50,7 +81,7 @@
     height: 100px;
     border-radius: 50%;
     margin-top: -50px;
-    border: 3px solid white;
+    border: 3px solid #e9f3eb;
     object-fit: cover;
   }
   
@@ -76,7 +107,7 @@
   
   .dashboard-button {
     background-color: #028f64;
-    color: white;
+    color: #e9f3eb;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
@@ -89,11 +120,15 @@
     background-color: #02674a;
   }
   .content {
-    background-color: white;
+    background-color: #e9f3eb;
     width: 100%;
 display: flex;
 flex-direction: column;
 margin-top: 0%;
     height: 80vh;
   }
-  
+  .outlet{
+    background-color: #e9f3eb;
+
+    height: max-content;
+  }

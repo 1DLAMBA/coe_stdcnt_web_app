@@ -35,6 +35,7 @@ const ApplicationCheck = () => {
         payment_date: paidOn.toISOString().split('T')[0]
 
       };
+      navigate('/dashboard');
       // alert("Thanks for doing business with us! Come back soon!!");
       // axios.post(`${API_ENDPOINTS.PHONE_NO}`, formData);
       // navigate('/login')
@@ -48,7 +49,9 @@ const ApplicationCheck = () => {
   const handleEmail = (e) => {
     setEmail(e.target.value);
   };
-
+  const back =()=>{
+    setView('form')
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     // Check application number and update the view accordingly
@@ -106,7 +109,10 @@ const ApplicationCheck = () => {
                       placeholder="Enter your email"
                       required
                     />
+                    <div className="d-flex">
+                <button className='btn-red-outline' onClick={back}> Back </button>
                   <PaystackButton className='btn btn-green' {...componentProps} />
+                    </div>
 
                 </div>
               )}

@@ -1,5 +1,4 @@
 {
-  "homepage": "https://1Dlamba.github.io/coe_stdcnt_web_app",
   "name": "coe_stdcnt_web_app",
   "version": "0.1.0",
   "private": true,
@@ -10,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.21.6",
     "bootstrap": "^5.3.3",
+    "moment": "^2.30.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-paystack": "^6.0.0",

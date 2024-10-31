@@ -39,7 +39,7 @@ body {
   
   .btn-green {
     background-color: #028f64;
-    color: white;
+    color: #e9f3eb;
     border: none;
     border-radius: 5px;
     padding: 10px 20px;
@@ -74,4 +74,20 @@ body {
   
   .form-group {
     margin-bottom: 20px;
+  }
+
+  .d-flex{
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .btn-red-outline{
+    background-color: #8f0202c4;
+    color: #e9f3eb;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1em;
   }

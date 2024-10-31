@@ -1,0 +1,33 @@
+/* EditBioData.css */
+
+.edit-bio-data-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.form-title {
+  text-align: center;
+  color: #028f64;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  color: #028f64;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.submit-btn {
+  background-color: #028f64;
+  border-color: #028f64;
+  width: 200px;
+}
+
+.submit-btn:hover {
+  background-color: #026b50;
+  border-color: #026b50;
+}
