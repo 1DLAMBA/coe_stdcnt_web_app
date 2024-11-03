@@ -122,7 +122,7 @@ const Dashboard = () => {
           <img src={logo} alt="User" />
 
           <Popover content={content} trigger="click">
-            <BarsOutlined style={{ fontSize: '2rem', color: '#eef5f0', fontWeight: '600px', marginRight:'10%' }} />
+            <BarsOutlined style={{ fontSize: '2rem', color: '#eef5f0', fontWeight: '600px', marginRight:'7%' }} />
           </Popover>
 
         </div>
@@ -148,7 +148,7 @@ const Dashboard = () => {
 
             </div>
 
-            <div>
+            <div style={{marginTop:'1%'}}>
               <p className="user-info"><PhoneOutlined /> 08069262613</p>
 
               <p className="user-info"><MailOutlined /> danielalamba15@gmail.com</p>

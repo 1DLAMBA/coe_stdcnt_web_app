@@ -108,25 +108,31 @@ const BioData = () => {
 
       <div className="bio-data-container">
         <Breadcrumb style={{ marginRight: 'auto' }} itemRender={itemRender} items={items} />
+        <Card bordered={false} style={{padding:0}} className="bio-data-card">
+        <div className="page-title">
+            <h2>Bio Data</h2>
+        </div>
+          <Col className="profile-section">
+          <div className="div">
 
-        <Card bordered={false} className="bio-data-card">
-          <Col  className="profile-section">
+              <Title level={4} className="name">
+                {bioData.fullName}
+              </Title>
+              <Text className="matric-number">{bioData.matricNumber}</Text>
+          </div>
+            <div>
             <Button color="danger" onClick={routeEdit} variant="outlined">
               Edit
             </Button>
-            <div>
 
-            <Title level={4} className="name">
-              {bioData.fullName}
-            </Title>
-            <Text className="matric-number">{bioData.matricNumber}</Text>
             </div>
           </Col>
-          <Row gutter={[16, 16]} justify="center">
+            <hr/>
+          
             {/* Profile Section */}
 
             {/* Basic Information Section */}
-            <Col xs={24} sm={24} md={16} lg={20}>
+            
               <Descriptions title="Personal Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
                 <Descriptions.Item label="Email">{bioData.email}</Descriptions.Item>
                 <Descriptions.Item label="Phone Number">{bioData.phoneNumber}</Descriptions.Item>
@@ -137,8 +143,8 @@ const BioData = () => {
                 <Descriptions.Item label="Religion">{bioData.religion}</Descriptions.Item>
                 <Descriptions.Item label="Nationality">{bioData.nationality}</Descriptions.Item>
               </Descriptions>
-            </Col>
-          </Row>
+           
+         
 
           <Divider />
 
