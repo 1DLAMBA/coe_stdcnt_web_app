@@ -3,6 +3,8 @@ import './style.css';
 import logo from '../../assets/logo2.png';
 import { useNavigate } from 'react-router-dom';
 import { PaystackButton } from "react-paystack";
+import axios from 'axios';
+import { message } from "antd";
 
 
 
@@ -30,40 +32,68 @@ const ApplicationCheck = () => {
       const paidOn = new Date();
       const formData = {
         phone_no: phone,
-        // reg_number: regNumber,
+        application_number: applicationNumber,
         reference: reference.reference,
+        email: email,
         payment_date: paidOn.toISOString().split('T')[0]
 
       };
+      localStorage.setItem('UserData', formData)
+      const response = axios.post("http://localhost:5000/api/biodata", 
+        formData,
+      );
       navigate('/dashboard');
-      // alert("Thanks for doing business with us! Come back soon!!");
-      // axios.post(`${API_ENDPOINTS.PHONE_NO}`, formData);
-      // navigate('/login')
-      // Optionally navigate or perform additional actions after payment
+
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
+
   const handleInputChange = (e) => {
     setApplicationNumber(e.target.value);
   };
+
   const handleEmail = (e) => {
     setEmail(e.target.value);
   };
-  const back =()=>{
+
+  const back = () => {
     setView('form')
   }
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Check application number and update the view accordingly
-    if (applicationNumber === '1010101010') {
-      setView('acceptance'); // Show acceptance fee prompt
-    } else if (applicationNumber === '0000000000') {
-      navigate('/dashboard')
 
-    } else {
-      setView('notFound'); // Show application number not found message
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const hide = message.loading("Checking student details...", 0); // Display a loading indicator
+
+    try {
+      // Make the API call
+      const response = await axios.post("https://student-portal-backend-mu.vercel.app/api/student_check", {
+        application_number: applicationNumber,
+      });
+
+      // Handle successful response
+      if (response.status === 200 && response.data.message === "Student email FOUND") {
+        hide(); // Hide the loading indicator
+        localStorage.setItem("id", response.data.id._id);
+        console.log("Student ID:", response.data.id._id);
+        message.success("Student found! Redirecting to dashboard...");
+        navigate("/dashboard"); // Navigate to the dashboard
+      }
+    } catch (error) {
+      hide(); // Hide the loading indicator
+
+      if (error.response && error.response.status === 404) {
+        // Handle 404 (not found)
+        message.warning("Student not found. Proceeding to fee payment.");
+        localStorage.setItem('application_number', applicationNumber)
+        setView("acceptance"); // Show acceptance fee prompt
+      } else {
+        // Handle other errors (e.g., network issues, 500 errors)
+        console.error("Error checking student details:", error);
+        message.error("An unexpected error occurred. Please try again later.");
+      }
     }
   };
+
 
   return (
     <div className="container">
@@ -97,22 +127,22 @@ const ApplicationCheck = () => {
               {view === 'acceptance' && (
                 <div className="acceptance-view">
                   <h4 className="text-green">Acceptance Fee Payment</h4>
-                  <p>Please proceed to pay your acceptance fee.</p>
+                  <p>Please proceed to pay your acceptance fee to continue to application and registration </p>
                   {/* Add a button or link to payment page here if needed */}
 
                   <input
-                      type="text"
-                      className="form-control"
-                      id="Email"
-                      value={email}
-                      onChange={handleEmail}
-                      placeholder="Enter your email"
-                      required
-                    />
-                    <div className="d-flex">
-                <button className='btn-red-outline' onClick={back}> Back </button>
-                  <PaystackButton className='btn btn-green' {...componentProps} />
-                    </div>
+                    type="text"
+                    className="form-control"
+                    id="Email"
+                    value={email}
+                    onChange={handleEmail}
+                    placeholder="Enter your email"
+                    required
+                  />
+                  <div className="d-flex">
+                    <button className='btn-red-outline' onClick={back}> Back </button>
+                    <PaystackButton className='btn btn-green' {...componentProps} />
+                  </div>
 
                 </div>
               )}

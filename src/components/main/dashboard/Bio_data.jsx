@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Card, Row, Col, Avatar, Typography, Divider, Descriptions, Badge, Button, ConfigProvider, Flex } from 'antd';
 import { UserOutlined, HomeFilled } from '@ant-design/icons';
 import { Breadcrumb } from 'antd';
@@ -12,7 +13,10 @@ const BioData = () => {
   // const { xxl } = useResponsive();
   const [viewBio, setViewBio] = useState(true)
   const [editBio, setEditBio] = useState(false)
+  const [user, setUser] = useState('');
   const navigate = useNavigate();
+  const userId=localStorage.getItem('id')
+
 
   function routeEdit() {
     navigate('/Dashboard/Edit')
@@ -28,6 +32,25 @@ const BioData = () => {
       title: 'Bio-data',
     },
   ];
+
+  useEffect(() => {
+    // console.log('check')
+    const fetchUser = async () => {
+      // console.log('check')
+      try {
+        const response = await axios.get(`http://localhost:5000/api/biodata/${userId}`);
+        setUser(response.data); // Assuming the API returns user data in `response.data`
+        console.log('Data',response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (userId) {
+      fetchUser(); // Call the async function to fetch data
+    }
+  }, [userId]); // Only re-run if `userId` changes
+
 
   function itemRender(currentRoute, params, items, paths) {
     const isLast = currentRoute?.path === items[items.length - 1]?.path;
@@ -116,13 +139,13 @@ const BioData = () => {
           <div className="div">
 
               <Title level={4} className="name">
-                {bioData.fullName}
+                {user.fullName}
               </Title>
-              <Text className="matric-number">{bioData.matricNumber}</Text>
+              <Text className="matric-number">{user.matricNumber}</Text>
           </div>
             <div>
             <Button color="danger" onClick={routeEdit} variant="outlined">
-              Edit
+              Update
             </Button>
 
             </div>
@@ -132,6 +155,7 @@ const BioData = () => {
             {/* Profile Section */}
 
             {/* Basic Information Section */}
+            {user.name? (<>
             
               <Descriptions title="Personal Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
                 <Descriptions.Item label="Email">{bioData.email}</Descriptions.Item>
@@ -199,6 +223,11 @@ const BioData = () => {
             <Descriptions.Item label="Relationship">{bioData.nextOfKinRelationship}</Descriptions.Item>
             <Descriptions.Item label="Sponsor Address">{bioData.sponsorAddress}</Descriptions.Item>
           </Descriptions>
+            </>):(<>
+            
+            <h2>You do not have Bio Data registered, please update Bio Data record</h2>
+            </>)}
+            
         </Card>
       </div>
 
