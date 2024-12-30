@@ -9,69 +9,7 @@ import axios from 'axios';
 
 const { Title } = Typography;
 const { Option } = Select;
-// const bioData = {
-//     studentUniqueId: "d9ee9e172fc84a5dade49a8b1dfda58d",
-//     fullName: "ALAMBA DANIEL JUNIOR",
-//     email: "danielalamba15@gmail.com",
-//     phoneNumber: "08069592613",
-//     surName: "ALAMBA",
-//     firstName: "DANIEL",
-//     otherNames: "JUNIOR",
-//     photoId: "https://eduportalprodstg.blob.core.windows.net/eduportal-prod-ibbu-container/UNDERGRADUATE_PASSPORTS/d9ee9e172fc84a5dade49a8b1dfda58d.jpg",
-//     currentSemester: "SECOND SEMESTER",
-//     currentSession: "2023/2024",
-//     hasRegisteredForCurrentSession: false,
-//     hasHostelAccommodation: false,
-//     matricNumber: "U19/FNS/CSC/1007",
-//     level: "400",
-//     faculty: "NATURAL SCIENCES",
-//     facultyUniqueId: "b4e0d17c611c4229a1f6a2ed1bf21895",
-//     department: "COMPUTER SCIENCE",
-//     departmentUniqueId: "e07b4f9c479547d9b02e348d1c31e034",
-//     programme: "COMPUTER SCIENCE",
-//     programmeUniqueId: "8488fccc25e248aa8cc68a7d44a10f1b",
-//     gender: "MALE",
-//     dateOfBirth: "2001-10-03",
-//     placeOfBirth: "NIGER",
-//     maritalStatus: "SINGLE",
-//     religion: "CHRISTIAN",
-//     nationality: "NIGERIAN",
-//     state: "NIGER",
-//     lga: "BIDA",
-//     presentContactAddress: "MANDELA ROAD",
-//     permanentHomeAddress: "MANDELA ROAD, MINNA, NIGER STATE",
-//     nextOfKin: "SOLOMON ALAMBA",
-//     nextOfKinAddress: "MANDELA ROAD, MINNA",
-//     nextOfKinPhoneNumber: "08089558655",
-//     nextOfKinRelationship: "SIBLING",
-//     sponsorType: "SPONSORED",
-//     sponsorAddress: "MANDELA ROAD, MINNA, NIGER",
-//     programType: "FIRST DEGREE",
-//     modeOfEntry: "UTME",
-//     studyMode: "FULL TIME",
-//     entryYear: "2019",
-//     programDuration: "4",
-//     awardInView: "B.SC",
-//     highestQualification: "SSCE: WAEC/NECO/NABTEB",
-//     healthStatus: "HEALTHY",
-//     bloodGroup: "O+",
-//     disability: "NONE",
-//     medication: "",
-//     extraActivities: "",
-//     hasUpdatedBioData: true,
-//     isActive: true,
-//     isSpillOver: false,
-//     hasPaidSchoolFee: true,
-//     hasPaidGstFee: true,
-//     hasPaidFacultyFee: true,
-//     hasPaidEntrepreneurshipFee: true,
-//     hasPaidSugFee: true,
-//     hasChangedDefaultPassword: true,
-//     hasPaidNanissFee: true,
-//     hasPaidHostelAccommodationFee: false,
-//     hasBookedHostelAccommodation: false,
-//     registrationNumber: "96829502BD"
-//   };
+
   const items = [
     {
       path: '/Dashboard',
@@ -106,15 +44,43 @@ const Edit_Bio = () => {
   const [loading, setLoading] = useState(false);
   const [bioData, setBioData] = useState('');
   const userId=localStorage.getItem('id')
+  let initialValues;
 
 
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     setLoading(true);
     console.log('Updated Values:', values);
-    // Add API call here to save changes
-    setLoading(false);
-  };
+
+    try {
+        // Create an instance of FormData
+        const formData = new FormData();
+        
+        // Append the userId
+        formData.append('application_id', userId);
+
+        // Append all the other form values
+        Object.keys(values).forEach((key) => {
+            formData.append(key, values[key]);
+        });
+
+        // Send the form data via Axios
+        const response = await axios.post(`http://127.0.0.1:8000/api/bio-data`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        console.log('Response:', response.data);
+        // location.href = '/Bio-Data'
+        // Handle success (e.g., display a success message or update the UI)
+    } catch (error) {
+        console.error('Error saving bio-data:', error);
+        // Handle error (e.g., display an error message)
+    } finally {
+        setLoading(false);
+    }
+};
 
   const get_user=async ()=>{
     await axios.get()
@@ -123,11 +89,43 @@ const Edit_Bio = () => {
   useEffect(() => {
     // console.log('check')
     const fetchUser = async () => {
-      // console.log('check')
+      console.log('check', userId)
       try {
-        const response = await axios.get(`http://localhost:5000/api/biodata/${userId}`);
-        setBioData(response.data); // Assuming the API returns user data in `response.data`
-        console.log('Data',response.data);
+        const response = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
+        const bio= await response.json()
+        setBioData(bio.data.data[0]); // Assuming the API returns user data in `response.data`
+        console.log('Data',bioData);
+      initialValues ={
+          full_name: bioData?.full_name,
+          email: bioData?.email,
+          phone_number: bioData?.phone_number,
+          gender: bioData?.gender,
+          dateOfBirth: bioData?.dateOfBirth ? moment(bioData?.dateOfBirth) : null,
+          placeOfBirth: bioData?.placeOfBirth,
+          maritalStatus: bioData?.maritalStatus,
+          religion: bioData?.religion,
+          nationality: bioData?.nationality,
+          faculty: bioData?.faculty,
+          department: bioData?.department,
+          programme: bioData?.programme,
+          level: bioData?.level,
+          currentSemester: bioData?.currentSemester,
+          currentSession: bioData?.currentSession,
+          matricNumber: bioData?.matricNumber,
+          modeOfEntry: bioData?.modeOfEntry,
+          studyMode: bioData?.studyMode,
+          entryYear: bioData?.entryYear,
+          programDuration: bioData?.programDuration,
+          awardInView: bioData?.awardInView,
+          presentContactAddress: bioData?.presentContactAddress,
+          permanentHomeAddress: bioData?.permanentHomeAddress,
+          nextOfKin: bioData?.nextOfKin,
+          nextOfKinPhoneNumber: bioData?.nextOfKinPhoneNumber,
+          nextOfKinRelationship: bioData?.nextOfKinRelationship,
+          sponsorAddress: bioData?.sponsorAddress,
+        }
+
+        console.log('initial values', initialValues)
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -154,50 +152,23 @@ const Edit_Bio = () => {
         form={form}
         layout="vertical"
         onFinish={onFinish}
-        initialValues={{
-          fullName: bioData.fullName,
-          email: bioData.email,
-          phoneNumber: bioData.phoneNumber,
-          gender: bioData.gender,
-          dateOfBirth: bioData.dateOfBirth ? moment(bioData.dateOfBirth) : null,
-          placeOfBirth: bioData.placeOfBirth,
-          maritalStatus: bioData.maritalStatus,
-          religion: bioData.religion,
-          nationality: bioData.nationality,
-          faculty: bioData.faculty,
-          department: bioData.department,
-          programme: bioData.programme,
-          level: bioData.level,
-          currentSemester: bioData.currentSemester,
-          currentSession: bioData.currentSession,
-          matricNumber: bioData.matricNumber,
-          modeOfEntry: bioData.modeOfEntry,
-          studyMode: bioData.studyMode,
-          entryYear: bioData.entryYear,
-          programDuration: bioData.programDuration,
-          awardInView: bioData.awardInView,
-          presentContactAddress: bioData.presentContactAddress,
-          permanentHomeAddress: bioData.permanentHomeAddress,
-          nextOfKin: bioData.nextOfKin,
-          nextOfKinPhoneNumber: bioData.nextOfKinPhoneNumber,
-          nextOfKinRelationship: bioData.nextOfKinRelationship,
-          sponsorAddress: bioData.sponsorAddress,
-        }}
+        initialValues={initialValues}
+        values={initialValues}
       >
         {/* Personal Information */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
-            <Form.Item label="Full Name" name="fullName">
+            <Form.Item label="Full Name" name="full_name" > 
               <Input />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
             <Form.Item label="Email" name="email">
-              <Input type="email" />
+              <Input  />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item label="Phone Number" name="phoneNumber">
+            <Form.Item label="Phone Number" name="phone_number">
               <Input />
             </Form.Item>
           </Col>
@@ -210,7 +181,7 @@ const Edit_Bio = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item label="Date of Birth" name="dateOfBirth">
+            <Form.Item label="Date of Birth" name="date_of_Birth">
               <DatePicker style={{ width: '100%' }} />
             </Form.Item>
           </Col>

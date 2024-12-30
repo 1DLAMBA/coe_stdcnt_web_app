@@ -31,15 +31,16 @@ const ApplicationCheck = () => {
     onSuccess: (reference) => {
       const paidOn = new Date();
       const formData = {
-        phone_no: phone,
+        phone_number: phone,
         application_number: applicationNumber,
         reference: reference.reference,
         email: email,
-        payment_date: paidOn.toISOString().split('T')[0]
+        payment_date: paidOn.toISOString().split('T')[0],
 
       };
       localStorage.setItem('UserData', formData)
-      const response = axios.post("http://localhost:5000/api/biodata", 
+      localStorage.setItem('app_number', applicationNumber)
+      const response = axios.post("http://127.0.0.1:8000/api/applications", 
         formData,
       );
       navigate('/dashboard');
@@ -66,15 +67,15 @@ const ApplicationCheck = () => {
 
     try {
       // Make the API call
-      const response = await axios.post("https://student-portal-backend-mu.vercel.app/api/student_check", {
+      const response = await axios.post("http://127.0.0.1:8000/api/student_check", {
         application_number: applicationNumber,
       });
 
       // Handle successful response
       if (response.status === 200 && response.data.message === "Student email FOUND") {
         hide(); // Hide the loading indicator
-        localStorage.setItem("id", response.data.id._id);
-        console.log("Student ID:", response.data.id._id);
+        localStorage.setItem("id", response.data.id.id);
+        console.log("Student ID:", response);
         message.success("Student found! Redirecting to dashboard...");
         navigate("/dashboard"); // Navigate to the dashboard
       }

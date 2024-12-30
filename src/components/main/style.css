@@ -1,3 +1,28 @@
+@media only screen and (max-width: 600px) {
+  .card {
+    margin: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 89vw;
+    padding: 2%;
+    display: flex;
+    flex-direction: column;
+  }
+
+}
+
+@media only screen and (min-width: 600px) {
+  .card {
+    margin: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 40vw;
+    padding: 2%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 body {
     font-family: Arial, sans-serif;
     background-image: url('../../assets/backgrround.jpg');
@@ -15,15 +40,7 @@ body {
     width: 100%;
   }
   
-  .card {
-    margin: auto;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    padding: 2%;
-    display: flex;
-    flex-direction: column;
-  }
+  
 
   .card img{
     margin: auto;
@@ -33,6 +50,7 @@ body {
     background-color: #c6efce;
   }
   
+
   .text-green {
     color: #3e8e41;
   }
@@ -76,6 +94,7 @@ body {
     margin-bottom: 20px;
   }
 
+ 
   .m-auto{
     margin:auto;
   }

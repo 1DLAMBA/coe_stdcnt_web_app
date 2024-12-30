@@ -38,8 +38,8 @@ const BioData = () => {
     const fetchUser = async () => {
       // console.log('check')
       try {
-        const response = await axios.get(`http://localhost:5000/api/biodata/${userId}`);
-        setUser(response.data); // Assuming the API returns user data in `response.data`
+        const response = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
+        setUser(response.data.data[0]); // Assuming the API returns user data in `response.data`
         console.log('Data',response.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -155,17 +155,17 @@ const BioData = () => {
             {/* Profile Section */}
 
             {/* Basic Information Section */}
-            {user.name? (<>
+            {user.full_name? (<>
             
               <Descriptions title="Personal Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
-                <Descriptions.Item label="Email">{bioData.email}</Descriptions.Item>
-                <Descriptions.Item label="Phone Number">{bioData.phoneNumber}</Descriptions.Item>
-                <Descriptions.Item label="Gender">{bioData.gender}</Descriptions.Item>
-                <Descriptions.Item label="Date of Birth">{bioData.dateOfBirth}</Descriptions.Item>
-                <Descriptions.Item label="Place of Birth">{bioData.placeOfBirth}</Descriptions.Item>
-                <Descriptions.Item label="Marital Status">{bioData.maritalStatus}</Descriptions.Item>
-                <Descriptions.Item label="Religion">{bioData.religion}</Descriptions.Item>
-                <Descriptions.Item label="Nationality">{bioData.nationality}</Descriptions.Item>
+                <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
+                <Descriptions.Item label="Phone Number">{user.phone_number}</Descriptions.Item>
+                <Descriptions.Item label="Gender">{user.gender}</Descriptions.Item>
+                <Descriptions.Item label="Date of Birth">{user.date_of_birth}</Descriptions.Item>
+                <Descriptions.Item label="Place of Birth">{user.placeOfBirth}</Descriptions.Item>
+                <Descriptions.Item label="Marital Status">{user.maritalStatus}</Descriptions.Item>
+                <Descriptions.Item label="Religion">{user.religion}</Descriptions.Item>
+                <Descriptions.Item label="Nationality">{user.nationality}</Descriptions.Item>
               </Descriptions>
            
          
@@ -174,18 +174,18 @@ const BioData = () => {
 
           {/* Academic Information */}
           <Descriptions title="Academic Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
-            <Descriptions.Item label="Faculty">{bioData.faculty}</Descriptions.Item>
-            <Descriptions.Item label="Department">{bioData.department}</Descriptions.Item>
-            <Descriptions.Item label="Programme">{bioData.programme}</Descriptions.Item>
-            <Descriptions.Item label="Level">{bioData.level}</Descriptions.Item>
-            <Descriptions.Item label="Current Semester">{bioData.currentSemester}</Descriptions.Item>
-            <Descriptions.Item label="Session">{bioData.currentSession}</Descriptions.Item>
-            <Descriptions.Item label="Matric Number">{bioData.matricNumber}</Descriptions.Item>
-            <Descriptions.Item label="Mode of Entry">{bioData.modeOfEntry}</Descriptions.Item>
-            <Descriptions.Item label="Study Mode">{bioData.studyMode}</Descriptions.Item>
-            <Descriptions.Item label="Entry Year">{bioData.entryYear}</Descriptions.Item>
-            <Descriptions.Item label="Program Duration">{bioData.programDuration} years</Descriptions.Item>
-            <Descriptions.Item label="Award in View">{bioData.awardInView}</Descriptions.Item>
+            <Descriptions.Item label="Faculty">{user.faculty}</Descriptions.Item>
+            <Descriptions.Item label="Department">{user.department}</Descriptions.Item>
+            <Descriptions.Item label="Programme">{user.programme}</Descriptions.Item>
+            <Descriptions.Item label="Level">{user.level}</Descriptions.Item>
+            <Descriptions.Item label="Current Semester">{user.currentSemester}</Descriptions.Item>
+            <Descriptions.Item label="Session">{user.currentSession}</Descriptions.Item>
+            <Descriptions.Item label="Matric Number">{user.matricNumber}</Descriptions.Item>
+            <Descriptions.Item label="Mode of Entry">{user.modeOfEntry}</Descriptions.Item>
+            <Descriptions.Item label="Study Mode">{user.studyMode}</Descriptions.Item>
+            <Descriptions.Item label="Entry Year">{user.entryYear}</Descriptions.Item>
+            <Descriptions.Item label="Program Duration">{user.programDuration} years</Descriptions.Item>
+            <Descriptions.Item label="Award in View">{user.awardInView}</Descriptions.Item>
           </Descriptions>
 
           <Divider />
@@ -193,13 +193,13 @@ const BioData = () => {
           {/* Payment Information */}
           {/* <Descriptions title="Payment Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
             <Descriptions.Item label="School Fees">
-              <Badge status={bioData.hasPaidSchoolFee ? "success" : "error"} text={bioData.hasPaidSchoolFee ? "Paid" : "Not Paid"} />
+              <Badge status={user.hasPaidSchoolFee ? "success" : "error"} text={user.hasPaidSchoolFee ? "Paid" : "Not Paid"} />
             </Descriptions.Item>
             <Descriptions.Item label="Faculty Fee">
-              <Badge status={bioData.hasPaidFacultyFee ? "success" : "error"} text={bioData.hasPaidFacultyFee ? "Paid" : "Not Paid"} />
+              <Badge status={user.hasPaidFacultyFee ? "success" : "error"} text={user.hasPaidFacultyFee ? "Paid" : "Not Paid"} />
             </Descriptions.Item>
             <Descriptions.Item label="GST Fee">
-              <Badge status={bioData.hasPaidGstFee ? "success" : "error"} text={bioData.hasPaidGstFee ? "Paid" : "Not Paid"} />
+              <Badge status={user.hasPaidGstFee ? "success" : "error"} text={bioData.hasPaidGstFee ? "Paid" : "Not Paid"} />
             </Descriptions.Item>
             <Descriptions.Item label="Entrepreneurship Fee">
               <Badge status={bioData.hasPaidEntrepreneurshipFee ? "success" : "error"} text={bioData.hasPaidEntrepreneurshipFee ? "Paid" : "Not Paid"} />
@@ -208,7 +208,7 @@ const BioData = () => {
               <Badge status={bioData.hasPaidSugFee ? "success" : "error"} text={bioData.hasPaidSugFee ? "Paid" : "Not Paid"} />
             </Descriptions.Item>
             <Descriptions.Item label="Naniss Fee">
-              <Badge status={bioData.hasPaidNanissFee ? "success" : "error"} text={bioData.hasPaidNanissFee ? "Paid" : "Not Paid"} />
+              <Badge status={bioData.hasPaidNanissFee ? "success" : "error"} text={user.hasPaidNanissFee ? "Paid" : "Not Paid"} />
             </Descriptions.Item>
           </Descriptions> */}
 
@@ -216,12 +216,12 @@ const BioData = () => {
 
           {/* Contact Information */}
           <Descriptions title="Contact Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
-            <Descriptions.Item label="Present Address">{bioData.presentContactAddress}</Descriptions.Item>
-            <Descriptions.Item label="Permanent Address">{bioData.permanentHomeAddress}</Descriptions.Item>
-            <Descriptions.Item label="Next of Kin">{bioData.nextOfKin}</Descriptions.Item>
-            <Descriptions.Item label="Next of Kin Phone">{bioData.nextOfKinPhoneNumber}</Descriptions.Item>
-            <Descriptions.Item label="Relationship">{bioData.nextOfKinRelationship}</Descriptions.Item>
-            <Descriptions.Item label="Sponsor Address">{bioData.sponsorAddress}</Descriptions.Item>
+            <Descriptions.Item label="Present Address">{user.presentContactAddress}</Descriptions.Item>
+            <Descriptions.Item label="Permanent Address">{user.permanentHomeAddress}</Descriptions.Item>
+            <Descriptions.Item label="Next of Kin">{user.nextOfKin}</Descriptions.Item>
+            <Descriptions.Item label="Next of Kin Phone">{user.nextOfKinPhoneNumber}</Descriptions.Item>
+            <Descriptions.Item label="Relationship">{user.nextOfKinRelationship}</Descriptions.Item>
+            <Descriptions.Item label="Sponsor Address">{user.sponsorAddress}</Descriptions.Item>
           </Descriptions>
             </>):(<>
             

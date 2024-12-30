@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Button, Typography, Space } from 'antd';
 import { BookOutlined, UserOutlined } from '@ant-design/icons';
 import { Routes, useNavigate } from 'react-router-dom';
+import '../style.css';
 
 
 const { Title, Text } = Typography;
@@ -17,13 +18,14 @@ const Panel = () => {
   return (
     <>
    
-    <div className="d-flex m-auto" style={{width:'100%',  justifyContent:'space-around', paddingTop: '2%', flexWrap:'wrap'}}>
+    <div className="d-flex m-auto" style={{width:'85%',  justifyContent:'space-around', paddingTop: '2%', flexWrap:'wrap'}}>
 
 
     <Card
       bordered={false}
+      className='card'
       style={{
-        maxWidth: 600,
+        
         borderRadius: 8,
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         backgroundColor: '#fff',
@@ -47,8 +49,10 @@ const Panel = () => {
     
     <Card
       bordered={false}
+      className='card'
+
       style={{
-        maxWidth: 600,
+        
         borderRadius: 8,
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         backgroundColor: '#fff',
@@ -62,8 +66,8 @@ const Panel = () => {
             Course Registration
           </Title>
         </Space>
-        {/* <Text type="secondary">View your biodata details here</Text> */}
-        <Button disabled variant='outlined' type="primary" onClick={routeCourse} style={{ backgroundColor: '#fff', borderColor: '#028f64' }}>
+        <Text type="secondary">View and update your registered courses here</Text>
+        <Button type="primary" onClick={routeCourse} style={{ backgroundColor: '#028f64', borderColor: '#028f64' }}>
           View
         </Button>
       </Space>

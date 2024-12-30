@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, createContext, useContext } from 'react';
 import './Dashboard.css';
 import coverPhoto from '../../assets/backgrround.jpg';
 import { BarsOutlined, PhoneOutlined, MailOutlined, UserOutlined, BookFilled } from '@ant-design/icons';
@@ -9,76 +9,14 @@ import { Routes, useNavigate } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
 import { Button, Popover, Space, ConfigProvider, Avatar, Flex } from 'antd';
 import axios from 'axios';
-// import 'bootstrap/dist/css/bootstrap.min.css';
+import BioData from './dashboard/Bio_data';
 
-// const bioData = {
-//   studentUniqueId: "d9ee9e172fc84a5dade49a8b1dfda58d",
-//   fullName: "ALAMBA DANIEL JUNIOR",
-//   email: "danielalamba15@gmail.com",
-//   phoneNumber: "08069592613",
-//   surName: "ALAMBA",
-//   firstName: "DANIEL",
-//   otherNames: "JUNIOR",
-//   photoId: "https://eduportalprodstg.blob.core.windows.net/eduportal-prod-ibbu-container/UNDERGRADUATE_PASSPORTS/d9ee9e172fc84a5dade49a8b1dfda58d.jpg",
-//   currentSemester: "SECOND SEMESTER",
-//   currentSession: "2023/2024",
-//   hasRegisteredForCurrentSession: false,
-//   hasHostelAccommodation: false,
-//   matricNumber: "U19/FNS/CSC/1007",
-//   level: "400",
-//   faculty: "NATURAL SCIENCES",
-//   facultyUniqueId: "b4e0d17c611c4229a1f6a2ed1bf21895",
-//   department: "COMPUTER SCIENCE",
-//   departmentUniqueId: "e07b4f9c479547d9b02e348d1c31e034",
-//   programme: "COMPUTER SCIENCE",
-//   programmeUniqueId: "8488fccc25e248aa8cc68a7d44a10f1b",
-//   gender: "MALE",
-//   dateOfBirth: "2001-10-03",
-//   placeOfBirth: "NIGER",
-//   maritalStatus: "SINGLE",
-//   religion: "CHRISTIAN",
-//   nationality: "NIGERIAN",
-//   state: "NIGER",
-//   lga: "BIDA",
-//   presentContactAddress: "MANDELA ROAD",
-//   permanentHomeAddress: "MANDELA ROAD, MINNA, NIGER STATE",
-//   nextOfKin: "SOLOMON ALAMBA",
-//   nextOfKinAddress: "MANDELA ROAD, MINNA",
-//   nextOfKinPhoneNumber: "08089558655",
-//   nextOfKinRelationship: "SIBLING",
-//   sponsorType: "SPONSORED",
-//   sponsorAddress: "MANDELA ROAD, MINNA, NIGER",
-//   programType: "FIRST DEGREE",
-//   modeOfEntry: "UTME",
-//   studyMode: "FULL TIME",
-//   entryYear: "2019",
-//   programDuration: "4",
-//   awardInView: "B.SC",
-//   highestQualification: "SSCE: WAEC/NECO/NABTEB",
-//   healthStatus: "HEALTHY",
-//   bloodGroup: "O+",
-//   disability: "NONE",
-//   medication: "",
-//   extraActivities: "",
-//   hasUpdatedBioData: true,
-//   isActive: true,
-//   isSpillOver: false,
-//   hasPaidSchoolFee: true,
-//   hasPaidGstFee: true,
-//   hasPaidFacultyFee: true,
-//   hasPaidEntrepreneurshipFee: true,
-//   hasPaidSugFee: true,
-//   hasChangedDefaultPassword: true,
-//   hasPaidNanissFee: true,
-//   hasPaidHostelAccommodationFee: false,
-//   hasBookedHostelAccommodation: false,
-//   registrationNumber: "96829502BD"
-// };
 
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState('');
+  const [application, setApplication] = useState('');
   const userId=localStorage.getItem('id')
 
   function routeBio() {
@@ -93,9 +31,17 @@ const Dashboard = () => {
     const fetchUser = async () => {
       // console.log('check')
       try {
-        const response = await axios.get(`http://localhost:5000/api/biodata/${userId}`);
-        setUser(response.data); // Assuming the API returns user data in `response.data`
-        console.log('Data',response.data);
+        const response = await axios.get(`http://127.0.0.1:8000/api/applications/${userId}`);
+        setApplication(response.data); // Assuming the API returns user data in `response.data`
+        const responseBio = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
+        if(responseBio){
+          setUser(responseBio.data.data[0])
+
+          console.log(responseBio.data.data);
+        }
+
+
+        console.log('Data',response.data.data);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -164,8 +110,8 @@ const Dashboard = () => {
             icon={<UserOutlined />}
             className="profile-pic"
           />
-          <h2 className="user-name">{user.name}</h2>
-          {user.name? (<>
+          <h2 className="user-name">{user.full_name}</h2>
+          {user.full_name? (<>
             <div className='info-hold'>
             <div style={{marginRight:'20px'}}>
               <h4 className="">{user.app_Num}</h4>
@@ -174,13 +120,15 @@ const Dashboard = () => {
             </div>
 
             <div style={{marginTop:'1%'}}>
-              <p className="user-info"><PhoneOutlined /> {user.phone_no}</p>
+              <p className="user-info"><PhoneOutlined /> {user.phone_number}</p>
 
               <p className="user-info"><MailOutlined /> {user.email}</p>
             </div>
           </div></>):(<>
-            <div className='info-hold'>
-            <h3>Please Update BIO DATA</h3>
+            <div >
+            <h3>Your application number is {application.application_number}</h3>
+            <br></br>
+            <p>Please Update BIO DATA</p>
             
           </div>
           </>)}
