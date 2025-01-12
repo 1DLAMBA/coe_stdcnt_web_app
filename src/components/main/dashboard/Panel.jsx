@@ -1,22 +1,45 @@
-import React from 'react';
-import { Card, Button, Typography, Space } from 'antd';
-import { BookOutlined, UserOutlined } from '@ant-design/icons';
-import { Routes, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Card, Button, Typography, Space, Breadcrumb, Select } from 'antd';
+import { BookOutlined, UserOutlined, HomeFilled } from '@ant-design/icons';
+import { Routes, useNavigate, Link, useParams } from 'react-router-dom';
 import '../style.css';
 
 
 const { Title, Text } = Typography;
 
+const { Option } = Select;
+
+  const items = [
+    {
+      path: '/Dashboard',
+      title: <HomeFilled style={{color:'green'}} />,
+    },
+    
+  ];
+  
+  function itemRender(currentRoute, params, items, paths) {
+    const isLast = currentRoute?.path === items[items.length - 1]?.path;
+  
+    return isLast ? (
+      <span>{currentRoute.title}</span>
+    ) : (
+      <Link to={`/${paths.join("/")}`}>{currentRoute.title}</Link>
+    );
+  }
+
 const Panel = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [regButton, setRegButton] = useState(null)
   function routeBio() {
-    navigate('/dashboard/Bio-data');
+    navigate(`/dashboard/${id}/Bio-data`);
   }
   function routeCourse() {
     navigate('/dashboard/Course_reg');
   }
   return (
     <>
+    <Breadcrumb style={{marginLeft:'8.7%', marginTop: '1%', backgroundColor:'white', width:'82.5%', color:'white', borderRadius:'15px', padding:'0.5%'}} itemRender={itemRender} items={items} />
    
     <div className="d-flex m-auto" style={{width:'85%',  justifyContent:'space-around', paddingTop: '2%', flexWrap:'wrap'}}>
 

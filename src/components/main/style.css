@@ -39,7 +39,15 @@ body {
     background-color: #d2f5d35b;
     width: 100%;
   }
-  
+
+  .header{
+    display: flex;
+    margin:auto;
+    /* justify-content: space-evenly; */
+    background-color: white;
+    width: 100%;
+    padding: 1% 0%;
+  }
   
 
   .card img{
@@ -113,3 +121,53 @@ body {
     transition: background-color 0.3s ease;
     font-size: 1em;
   }
+  .form-container {
+    /* max-width: 800px; */
+    width: 80%;
+    margin: 20px auto;
+    background: #f9f9f9;
+    /* padding: 20px; */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.form-header {
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #026d50;
+    padding: 2%;
+    color: white;
+}
+.form-logo {
+    width: 100px;
+}
+.form-title {
+    color: #028f64;
+}
+.submit-button {
+    background-color: #028f64;
+    border: none;
+}
+.submit-button:hover {
+    background-color: #026d50;
+}
+
+/* SECOND REGISTRATION STYLING################################# */
+
+.choice{
+
+  display: flex;
+  justify-content: space-between;
+}
+.choice-sub{
+  display: flex;
+}
+
+.choice label{
+  margin: 5%;
+}
+.choice select{
+  padding: 2%;
+  border-radius: 7px;
+  margin: 1%;
+  border: 0.5px solid grey;
+}

@@ -1,13 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Input, Table, Typography, Space } from 'antd';
-import { ArrowLeftOutlined, SearchOutlined, BookOutlined,  } from '@ant-design/icons';
+import { useNavigate, Link } from 'react-router-dom';
+import { Button, Input, Table, Typography, Space, Breadcrumb, Select
+
+ } from 'antd';
+import { ArrowLeftOutlined, SearchOutlined, BookOutlined,HomeFilled  } from '@ant-design/icons';
 import { PaystackButton } from "react-paystack";
 
 import { Card} from 'antd';
 import axios from 'axios';
 
 const { Title, Text } = Typography;
+
+const { Option } = Select;
+
+  const items = [
+    {
+      path: '/Dashboard',
+      title: <HomeFilled />,
+    },
+    
+    {
+      path: '/course_reg',
+      title: 'Course Registration',
+      
+    },
+   
+  ];
+  
+  function itemRender(currentRoute, params, items, paths) {
+    const isLast = currentRoute?.path === items[items.length - 1]?.path;
+  
+    return isLast ? (
+      <span>{currentRoute.title}</span>
+    ) : (
+      <Link to={`/${paths.join("/")}`}>{currentRoute.title}</Link>
+    );
+  }
 
 const Course_reg = () => {
   const [courses, setCourses] = useState([""]); // Start with one empty course field
@@ -107,9 +135,14 @@ const Course_reg = () => {
         console.log("USER COURSES", courses)
         setUserCourses(courses.data);
         const bio = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
-        console.log("USER BIO", bio.data.data[0])
-        setEmail(bio.data.data[0].application.email)
-        setApplicationNumber(bio.data.data[0].application.application_number)
+        if (bio.data.data[0] ==undefined){
+          navigate('/dashboard/bio-data')
+        } else{
+          console.log("USER BIO", bio.data.data[0])
+          setEmail(bio.data.data[0].application.email)
+          setApplicationNumber(bio.data.data[0].application.application_number)
+
+        }
         if(bio.data.data[0].application.has_paid){
           setView(false)
         }
@@ -173,18 +206,19 @@ const Course_reg = () => {
   return (
 
     <>
-      <div style={{ padding: '20px', backgroundColor: '#f0f9ff', minHeight: '100vh', width:'80%', margin:'auto' }}>
-        <div style={{ backgroundColor: '#028f64', padding: '10px', color: 'white', display: 'flex', alignItems: 'center' }}>
-          <ArrowLeftOutlined style={{ fontSize: '18px', marginRight: '8px' }} />
-          <Text style={{ fontSize: '16px', fontWeight: 'bold', color: 'white' }}>Back to Dashboard</Text>
+       <Breadcrumb style={{marginLeft:'8.7%', marginTop: '1%', backgroundColor:'white', width:'82.5%', color:'white', borderRadius:'15px', padding:'0.5%'}} itemRender={itemRender} items={items} />
+
+      <div style={{ padding: '0 ', backgroundColor: '#fff', minHeight: '100vh', width:'83%', margin:'1% auto' }}>
+        <div style={{ textAlign: 'center',backgroundColor: '#028f64', padding: '10px', color: 'white', display: 'flex', alignItems: 'center'}}>
+        <Title level={2} style={{ color: '#fff' }}>Course Registration</Title>
+
         </div>
 
         <div style={{ textAlign: 'center', margin: '20px 0' }}>
-          <Title level={2} style={{ color: '#028f64' }}>Course Registration</Title>
         </div>
 {view===true && (
   <>
-  <div className=''>
+  <div className='' style={{margin:'2%'}}>
   <Card
       bordered={false}
       style={{
@@ -285,7 +319,7 @@ const Course_reg = () => {
           rowKey="code"
           pagination={false}
           bordered
-          style={{ backgroundColor: 'white' }}
+          style={{ backgroundColor: 'white' , margin:'2%'}}
         />
       </div>
     </>

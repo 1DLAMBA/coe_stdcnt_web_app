@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { PaystackButton } from "react-paystack";
 import axios from 'axios';
 import { message } from "antd";
+import API_ENDPOINTS from '../../Endpoints/environment';
 
 
 
@@ -22,13 +23,11 @@ const ApplicationCheck = () => {
     email,
     amount,
     metadata: {
-      // name,
       phone,
-      // regNumber
     },
     publicKey,
     text: "Pay Now",
-    onSuccess: (reference) => {
+    onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         phone_number: phone,
@@ -36,18 +35,36 @@ const ApplicationCheck = () => {
         reference: reference.reference,
         email: email,
         payment_date: paidOn.toISOString().split('T')[0],
-
       };
-      localStorage.setItem('UserData', formData)
-      localStorage.setItem('app_number', applicationNumber)
-      const response = axios.post("http://127.0.0.1:8000/api/applications", 
-        formData,
-      );
-      navigate('/dashboard');
-
+  
+      // Store temporary data in localStorage
+      localStorage.setItem('UserData', JSON.stringify(formData)); // Ensure the data is stored as JSON
+      localStorage.setItem('app_number', applicationNumber);
+  
+      try {
+        // Send the form data to the API
+        const response = await axios.post("http://127.0.0.1:8000/api/applications", formData);
+  
+        console.log('Server response:', response);
+        if (response && response.data.data.id) {
+  
+          // Store the ID from the response
+          localStorage.setItem("id", response.data.data.id);
+  
+          // Navigate to the dashboard
+          navigate('/dashboard');
+        } else {
+          console.error("No ID returned in the response.");
+          alert("Payment successful, but we couldn't process your data. Please contact support.");
+        }
+      } catch (error) {
+        console.error("Error sending user data:", error);
+        alert("An error occurred while processing your payment. Please try again.");
+      }
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
+  
 
   const handleInputChange = (e) => {
     setApplicationNumber(e.target.value);
@@ -66,21 +83,19 @@ const ApplicationCheck = () => {
     const hide = message.loading("Checking student details...", 0); // Display a loading indicator
 
     try {
-      // Make the API call
-      const response = await axios.post("http://127.0.0.1:8000/api/student_check", {
+      const response = await axios.post(`${API_ENDPOINTS.STUDENT_CHECK}`, {
         application_number: applicationNumber,
       });
 
-      // Handle successful response
-      if (response.status === 200 && response.data.message === "Student email FOUND") {
-        hide(); // Hide the loading indicator
+      if (response.status === 200) {
+        hide(); 
         localStorage.setItem("id", response.data.id.id);
         console.log("Student ID:", response);
         message.success("Student found! Redirecting to dashboard...");
-        navigate("/dashboard"); // Navigate to the dashboard
+        navigate(`/dashboard/${response.data.application_number}`); // Navigate to the dashboard
       }
     } catch (error) {
-      hide(); // Hide the loading indicator
+      hide(); 
 
       if (error.response && error.response.status === 404) {
         // Handle 404 (not found)

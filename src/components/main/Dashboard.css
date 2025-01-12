@@ -9,10 +9,10 @@
     }
 
     .head{
-        padding-top: 3px;
+        padding-top: 1%;
         /* padding-bottom: 10px; */
-        padding-left: 5%;
-        padding-right: 2%;
+        padding-left: 3%;
+        padding-right: 1%;
         margin-top: 0;
         display: flex;
         justify-content: space-between;
@@ -97,10 +97,16 @@
   
   /* User information card styling */
   
+
+  .school-name{
+    color: azure;
+    font-family: 'Gabarito', sans-serif;
+  }
   
   .info-hold{
     display: flex;
     flex-wrap: wrap;
+    width: 100%;
   }
   .info-hold:first-child{
     margin-right: 10px;
@@ -110,7 +116,7 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    margin-top: -50px;
+    /* margin-top: -50px; */
     border: 3px solid #eef5f0;
     object-fit: cover;
   }
