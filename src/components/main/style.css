@@ -23,6 +23,7 @@
   }
 }
 
+
 body {
     font-family: Arial, sans-serif;
     background-image: url('../../assets/backgrround.jpg');
@@ -170,4 +171,63 @@ body {
   border-radius: 7px;
   margin: 1%;
   border: 0.5px solid grey;
+}
+
+
+
+
+
+/* PENDING VIW
+ */
+ .pending-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh;
+  background: linear-gradient(to bottom right, #f0f2f5, #ffffff);
+  padding: 2px;
+}
+
+.pending-card {
+  max-width: 600px;
+  width: 100%;
+  height:60vh !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 2px;
+}
+
+.icon-style {
+  font-size: 48px;
+  color: #52c41a;
+}
+
+.title-text {
+  color: #c49c1a;
+}
+
+.subtitle-text {
+  font-size: 16px;
+  color: #595959;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.additional-info {
+  margin-top: 2px;
+  font-size: 14px;
+  color: #595959;
+}
+
+.additional-info ul {
+  padding-left: 20px;
+}
+
+.additional-info li {
+  margin-bottom: 10px;
 }

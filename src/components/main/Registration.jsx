@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider } from 'antd';
-import { LoadingOutlined, SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider } from 'antd';
+import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled } from '@ant-design/icons';
 import './style.css';
 import logo from '../../assets/logo2.png';
 import axios from 'axios';
@@ -91,6 +91,7 @@ const Registration = () => {
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
   const [examTypes, setExamTypes] = useState([]);
+  const [examNumber, setExamNumber] = useState([]);
   const [grades, setGrades] = useState({});
   const [subjects, setSubjects] = useState([]);
   const [selectedExamType, setSelectedExamType] = useState("");
@@ -100,8 +101,19 @@ const Registration = () => {
   const { token } = theme.useToken();
   const navigate = useNavigate();
   const amount = 200000;
-  const [email, setEmail] = useState('danielalamba15@gmail.com');
+  const [email, setEmail] = useState(firstStep.phone_number);
   const [current, setCurrent] = useState(0);
+  const [uploadedOl1, setUploadedAL1] = useState('')
+  const [passport, setPassport] = useState('')
+  const [nin, setNIN] = useState('')
+  const [imageUrl, setImageUrl] = useState(null);
+  const [availableCourses, setAvailableCourses] = useState([]);
+  const [states, setStates] = useState([]);
+  const [lgas, setLGAs] = useState([]);
+  const [selectedState, setSelectedState] = useState(null);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingLGAs, setLoadingLGAs] = useState(false);
+
   const next = () => {
     setCurrent(current + 1);
   };
@@ -115,11 +127,78 @@ const Registration = () => {
     title: item.title,
   }));
 
+ 
 
+  // Fetch LGAs from the API based on selected state
+  const getLGAFromApi = async (state) => {
+    setLoadingLGAs(true);
+    try {
+      const response = await fetch(
+        `https://nga-states-lga.onrender.com/?state=${state}`
+      );
+      const json = await response.json();
+      setLGAs(json);
+    } catch (error) {
+      console.error("Error fetching LGAs:", error);
+    } finally {
+      setLoadingLGAs(false);
+    }
+  };
+
+
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    if (!isJpgOrPng) {
+      message.error("You can only upload JPG/PNG files!");
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Image must be smaller than 2MB!");
+    }
+    return isJpgOrPng && isLt2M;
+  };
+
+
+  const handleUploadChange = (info, setUploadedState, type) => {
+    const { status } = info.file;
+    if (status === 'done') {
+      message.success(`${info.file.name} file uploaded successfully.`);
+      const reader = new FileReader();
+
+      const fileName = info.file.response.data; // Assuming the response contains the file name as "fileName"
+      if (type === 'passport') {
+        setPassport(fileName)
+        console.log(info)
+        setImageUrl(`${API_ENDPOINTS.IMAGE}/${info.file.response.data}`)
+      } else if (type === 'olevel') {
+
+        setUploadedAL1(fileName);
+      } else if (type === 'nin') {
+
+        setNIN(fileName);
+      }
+    } else if (status === 'error') {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  };
+
+  const props = (setUploadedState, type) => ({
+    name: 'file',
+    multiple: false,
+    action: `${API_ENDPOINTS.UPLOAD}`,
+    onChange(info) {
+      console.log('asa')
+      handleUploadChange(info, setUploadedState, type);
+    },
+    onDrop(e) {
+      console.log('Dropped files', e.dataTransfer.files);
+    },
+  });
 
   const onFinish = async (values) => {
     if (step === 'step1') {
       setFirstStep(values)
+      setEmail(values.email)
       console.log('First Form Values:', firstStep);
       setStep('step2')
       next()
@@ -171,38 +250,50 @@ const Registration = () => {
     try {
       // console.log(values)
       const adjustedDOB = firstStep.date_of_birth.format('YYYY-MM-DD');
-      const personalFormData = { ...firstStep, application_number: reference.reference, date_of_birth: adjustedDOB };
-      const personalResponse = await axios.post(API_ENDPOINTS.PERSONAL_DETAILS, personalFormData);
+      const year = new Date().getFullYear();
+
+      const personalFormData = {
+        ...firstStep,
+        application_number: `${year + thirdStep.exam_number}`,
+        date_of_birth: adjustedDOB,
+        application_reference: reference.reference,
+        passport: passport, olevel1: uploadedOl1,
+        nin: nin,
+      };
+      const personalResponse = await axios.post(API_ENDPOINTS.PERSONAL_DETAILS,
+        personalFormData);
+
       console.log(personalResponse);
 
-      const adjustedPSF1 = secondStep.p_school_from_1.format('YYYY-MM-DD');
-      const adjustedPST1 = secondStep.p_school_to_1.format('YYYY-MM-DD');
-      const adjustedPSF2 = secondStep.p_school_from_2.format('YYYY-MM-DD');
-      const adjustedPST2 = secondStep.p_school_to_2.format('YYYY-MM-DD');
 
-      const adjustedSSF1 = secondStep.s_school_from_1.format('YYYY-MM-DD');
-      const adjustedSST1 = secondStep.s_school_to_1.format('YYYY-MM-DD');
-      const adjustedSSF2 = secondStep.s_school_from_2.format('YYYY-MM-DD');
-      const adjustedSST2 = secondStep.s_school_to_2.format('YYYY-MM-DD');
-      
-      const schoolFormData = { 
+      const adjustedPSF1 = secondStep.p_school_from_1?.format('YYYY-MM-DD');
+      const adjustedPST1 = secondStep.p_school_to_1?.format('YYYY-MM-DD');
+      const adjustedPSF2 = secondStep.p_school_from_2?.format('YYYY-MM-DD');
+      const adjustedPST2 = secondStep.p_school_to_2?.format('YYYY-MM-DD');
+
+      const adjustedSSF1 = secondStep.s_school_from_1?.format('YYYY-MM-DD');
+      const adjustedSST1 = secondStep.s_school_to_1?.format('YYYY-MM-DD');
+      const adjustedSSF2 = secondStep.s_school_from_2?.format('YYYY-MM-DD');
+      const adjustedSST2 = secondStep.s_school_to_2?.format('YYYY-MM-DD');
+
+      const schoolFormData = {
         ...secondStep,
-         application_number: reference.reference,
+        application_number: personalResponse.data.id,
         p_school_from_1: adjustedPSF1,
-        p_school_to_1:adjustedPST1,
-        p_school_from_2:adjustedPSF2,
-        p_school_to_2:adjustedPST2,
+        p_school_to_1: adjustedPST1,
+        p_school_from_2: adjustedPSF2,
+        p_school_to_2: adjustedPST2,
         s_school_from_1: adjustedSSF1,
-        s_school_to_1:adjustedSST1,
-        s_school_from_2:adjustedSSF2,
-        s_school_to_2:adjustedSST2,
-      
+        s_school_to_1: adjustedSST1,
+        s_school_from_2: adjustedSSF2,
+        s_school_to_2: adjustedSST2,
+
       }
       const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, schoolFormData);
       console.log(schoolResponse);
 
 
-      const educationFormData = { ...thirdStep, application_number: reference.reference }
+      const educationFormData = await { ...thirdStep, application_number: personalResponse.data.id }
       const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, educationFormData)
       console.log(finalResponse);
       if (finalResponse) {
@@ -211,7 +302,7 @@ const Registration = () => {
         // localStorage.setItem("id", response.data.data.id);
 
         // Navigate to the dashboard
-        navigate('/dashboard');
+        navigate(`${personalResponse.data.id}/success`)
       } else {
         console.error("No ID returned in the response.");
         alert("Payment successful, but we couldn't process your data. Please contact support.");
@@ -239,7 +330,7 @@ const Registration = () => {
       prev()
       window.scrollTo(0, 0)
 
-    }else if (step === 'step3') {
+    } else if (step === 'step3') {
 
       setStep('step2')
       prev()
@@ -264,33 +355,54 @@ const Registration = () => {
     setSelectedCourse(value);
   };
 
+  const handleStateChange = (value) => {
+    setSelectedState(value);
+    setLGAs([]); // Clear LGAs when a new state is selected
+    getLGAFromApi(value);
+  };
+
   useEffect(() => {
     // Mock API data
+    const getStatesFromApi = async () => {
+      setLoadingStates(true);
+      try {
+        const response = await fetch("https://nga-states-lga.onrender.com/fetch");
+        const json = await response.json();
+        setStates(json);
+      } catch (error) {
+        console.error("Error fetching states:", error);
+      } finally {
+        setLoadingStates(false);
+      }
+    };
+    getStatesFromApi();
+    async function fetchData() {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/course-data`);
+        setSubjects(response.data || []);
+        console.log('COURSES fetched', response);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+    fetchData();
     setExamTypes([
       { id: 1, exam_type: "WAEC", exam_code: "W" },
       { id: 3, exam_type: "NECO", exam_code: "N" },
       { id: 6, exam_type: "NABTEB", exam_code: "T" },
-      { id: 7, exam_type: "GRADE II TEACHERS CERT.", exam_code: "G" },
+      { id: 7, exam_type: "GRADE_II_TEACHERS_CERT.", exam_code: "G" },
       { id: 8, exam_type: "NBAIS", exam_code: "NB" },
     ]);
 
     setGrades({
-      W: ["A1", "B2", "B3", "C4", "C5", "C6", "A.R"],
-      N: ["A1", "B2", "B3", "C4", "C5", "C6", "A.R"],
-      T: ["A1", "B2", "B3", "C4", "C5", "C6", "A.R"],
-      G: ["A", "B", "C", "D", "A.R"],
-      NB: ["A", "B2", "B3", "C5", "C6", "A.R"],
+      WAEC: ["A1", "B2", "B3", "C4", "C5", "C6", "A.R"],
+      NECO: ["A1", "B2", "B3", "C4", "C5", "C6", "A.R"],
+      NABTEB: ["A1", "A2", "A3", "C4", "C5", "C6", "A.R"],
+      GRADE_II_TEACHERS_CERT: ["A", "B", "C", "D", "A.R"],
+      NBAIS: ["A", "B2", "B3", "C5", "C6", "A.R"],
     });
 
-    setSubjects([
-      "Mathematics",
-      "English Language",
-      "Biology",
-      "Chemistry",
-      "Physics",
-      "Geography",
-      "Economics",
-    ]);
+
   }, []);
 
   const handleExamTypeChange = (value) => {
@@ -386,7 +498,58 @@ const Registration = () => {
                     style={{ marginBottom: '2%' }}
                   />
                 </ConfigProvider>
-                <Row gutter={[16, 16]}>
+                <Row gutter={[16, 16]} style={{ justifyContent: 'space-between' }}>
+                  <div style={{ width: '50%', margin: 'auto', display: 'flex', flexWrap:'wrap' }}>
+
+                    <div
+                      style={{
+                        border: "1px dashed #d9d9d9",
+                        padding: 20,
+                        borderRadius: 10,
+                        background: "#f5f5f5",
+                        marginBottom: 20,
+                      }}
+                    >
+                      {imageUrl ? (
+                        <div style={{ width: '100px', height: 'auto' }}>
+
+                          <img
+                            src={imageUrl}
+                            alt="passport"
+                            style={{ width: "100%", height: 'auto', borderRadius: 10 }}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ width: '100px', height: '100px', display: 'flex' }}>
+
+                          <UserOutlined style={{ fontSize: 48, color: "#999", margin: 'auto' }} />
+                        </div>
+                      )}
+                    </div>
+                    <Upload
+                      name="passport"
+                      listType="picture"
+                      showUploadList={false}
+                      beforeUpload={beforeUpload}
+                      {...props(setUploadedAL1, 'passport')}
+                      accept="image/*"
+                    ><ConfigProvider
+                      theme={{
+                        token: {
+                          // Seed Token
+                          colorPrimary: '#028f64',
+                          borderRadius: 2,
+
+                          // Alias Token
+                          margin: '20px',
+                          colorBgContainer: '#f6ffed',
+                        },
+                      }}
+                    >
+                        <Button icon={<UploadOutlined />}>Upload Passport</Button>
+                      </ConfigProvider>
+                    </Upload>
+                  </div>
                   <Col xs={24} md={12}>
                     <Form.Item
                       label="Surname"
@@ -395,8 +558,7 @@ const Registration = () => {
                     >
                       <Input placeholder="Enter your surname" />
                     </Form.Item>
-                  </Col>
-                  <Col xs={24} md={12}>
+
                     <Form.Item
                       label="Other Names"
                       name="other_names"
@@ -444,24 +606,44 @@ const Registration = () => {
                 </Row>
 
                 <Row gutter={[16, 16]}>
-                  <Col xs={12} md={8}>
-                    <Form.Item
+                <Form.Item
+                      label="State Of Origin"
+                      name="state_of_origin"
+                      rules={[{ required: true, message: 'Please enter your State Of Origin' }]}
+                    >
+                  <Select
+                    style={{ width: 300, marginBottom: 16 }}
+                    placeholder="Select State"
+                    onChange={handleStateChange}
+                    loading={loadingStates}
+                  >
+                    {states?.map((state) => (
+                      <Option key={state} value={state}>
+                        {state}
+                      </Option>
+                    ))}
+                  </Select>
+                  </Form.Item>
+
+                  {/* LGA Select */}
+                  <Form.Item
                       label="Local Government"
                       name="local_government"
-                      rules={[{ required: true, message: 'Please enter your local government' }]}
+                      rules={[{ required: true, message: 'Please enter your Local Government area' }]}
                     >
-                      <Input placeholder="Enter your local government" />
-                    </Form.Item>
-                  </Col>
-                  <Col xs={12} md={8}>
-                    <Form.Item
-                      label="State of Origin"
-                      name="state_of_origin"
-                      rules={[{ required: true, message: 'Please enter your state of origin' }]}
-                    >
-                      <Input placeholder="Enter your state of origin" />
-                    </Form.Item>
-                  </Col>
+                  <Select
+                    style={{ width: 300 }}
+                    placeholder={selectedState ? "Select LGA" : "Please select a state first"}
+                    disabled={!selectedState}
+                    loading={loadingLGAs}
+                  >
+                    {lgas?.map((lga) => (
+                      <Option key={lga} value={lga}>
+                        {lga}
+                      </Option>
+                    ))}
+                  </Select>
+                  </Form.Item>
                   <Col xs={12} md={8}>
                     <Form.Item
                       label="Ethnic Group"
@@ -474,7 +656,8 @@ const Registration = () => {
                 </Row>
 
                 <Row gutter={[16, 16]}>
-                  <Col xs={24} md={12}>
+                  <Col xs={12} md={8}>
+
                     <Form.Item
                       label="Religion"
                       name="religion"
@@ -483,13 +666,24 @@ const Registration = () => {
                       <Input placeholder="Enter your religion" />
                     </Form.Item>
                   </Col>
-                  <Col xs={24} md={12}>
+                  <Col xs={12} md={8}>
+
                     <Form.Item
                       label="Phone Number"
                       name="phone_number"
                       rules={[{ required: true, message: 'Please enter your phone number' }]}
                     >
                       <Input placeholder="Enter your phone number" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={12} md={8}>
+
+                    <Form.Item
+                      label="Email"
+                      name="email"
+                      rules={[{ required: true, message: 'Please enter your email' }]}
+                    >
+                      <Input placeholder="Enter your Email" />
                     </Form.Item>
                   </Col>
                 </Row>
@@ -577,7 +771,15 @@ const Registration = () => {
                       name="desired_study_cent"
                       rules={[{ required: true, message: "Please enter your Centre Location" }]}
                     >
-                      <Input placeholder="Enter your Centre Location" />
+                      <Select placeholder="Select Location">
+                        {["suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", "Kagara", "Salka", "Kontogora", "Gawu", "Doko", "Katcha"].map(
+                          (month) => (
+                            <Option key={month} value={month}>
+                              {month}
+                            </Option>
+                          )
+                        )}
+                      </Select>
                     </Form.Item>
                   </Col>
 
@@ -963,7 +1165,7 @@ const Registration = () => {
                         >
                           <Select placeholder="Select Type" onChange={handleExamTypeChange}>
                             {examTypes.map((exam) => (
-                              <Option key={exam.id} value={exam.exam_code}>
+                              <Option key={exam.id} value={exam.exam_type}>
                                 {exam.exam_type}
                               </Option>
                             ))}
@@ -986,7 +1188,7 @@ const Registration = () => {
                           rules={[{ required: true, message: "Please select the month!" }]}
                         >
                           <Select placeholder="Select Month">
-                            {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(
+                            {["JUN/JUL", "May/Jun", "Oct/Nov", "Nov/Dec"].map(
                               (month) => (
                                 <Option key={month} value={month}>
                                   {month}
@@ -1005,8 +1207,46 @@ const Registration = () => {
                           <Input placeholder="Enter Examination Year" />
                         </Form.Item>
                       </Col>
-                    </Row>
 
+                    </Row>
+                    <Upload {...props(setUploadedAL1, 'olevel')} style={{ marginBlock: '2%' }}>
+                      <ConfigProvider
+                        theme={{
+                          token: {
+                            // Seed Token
+                            colorPrimary: '#028f64',
+                            borderRadius: 2,
+
+                            // Alias Token
+                            margin: '20px',
+                            colorBgContainer: '#f6ffed',
+                          },
+                        }}
+                      >
+                        <Button ghost type="primary" className=" btn-block outline " style={{ marginBottom: '5%' }} icon={<CloudUploadOutlined />}>Click to Upload O Level </Button>
+                      </ConfigProvider>
+                    </Upload>
+
+                    <Upload {...props(setUploadedAL1, 'nin')} style={{ marginBlock: '2%' }}>
+                      <ConfigProvider
+                        theme={{
+                          token: {
+                            // Seed Token
+                            colorPrimary: '#028f64',
+                            borderRadius: 2,
+
+                            // Alias Token
+                            margin: '20px',
+                            colorBgContainer: '#f6ffed',
+                          },
+                        }}
+                      >
+                        <Button ghost type="primary" className=" btn-block outline " style={{ marginBottom: '5%' }} icon={<FileFilled />}>Click to Upload NIN Slip </Button>
+                      </ConfigProvider>
+                    </Upload>
+
+
+                    <div style={{ margin: '1%' }}></div>
                     {[...Array(9)].map((_, index) => (
                       <Row gutter={24} key={index}>
                         <Col span={12}>
@@ -1017,8 +1257,8 @@ const Registration = () => {
                           >
                             <Select placeholder="Select Subject">
                               {subjects.map((subject) => (
-                                <Option key={subject} value={subject}>
-                                  {subject}
+                                <Option key={subject.id} value={subject.course}>
+                                  {subject.course}
                                 </Option>
                               ))}
                             </Select>
@@ -1049,7 +1289,7 @@ const Registration = () => {
             )}
 
             {step === 'step4' && (
-                         <div style={{ padding: '1% 2%' }}>
+              <div style={{ padding: '1% 2%' }}>
 
                 <ConfigProvider
                   theme={{
@@ -1092,48 +1332,34 @@ const Registration = () => {
                     style={{ marginBottom: '2%' }}
                   />
                 </ConfigProvider> <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
-      <Card
-        style={{
-          width: 400,
-          borderRadius: 10,
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-          textAlign: "center",
-        }}
-        title={<Title level={4}>Complete Your Application</Title>}
-      >
-        <Text style={{ fontSize: "16px" }}>
-          To submit your application, you need to pay the application fee.
-        </Text>
-        <Divider />
-        <div style={{ margin: "1rem 0" }}>
-        {/* <Form
-          layout="vertical"
-          onFinish={handleEmail}
-          className="application-form"
-        >
-          <Col xs={12} md={8}>
-                      <Form.Item
-                        label="Email"
-                        name="email"
-                        rules={[{ required: true, message: "Please enter Email" }]}
-                      >
-                        <Input placeholder="Enter School name" />
-                      </Form.Item>
-                    </Col>
-          </Form> */}
-          <Text strong style={{ fontSize: "18px", color: "#028f64" }}>
-            Fee Amount: ₦5,000
-          </Text>
-        </div>
-        
-        <PaystackButton className='btn btn-green' {...componentProps} />
+                  <Card
+                    style={{
+                      width: 400,
+                      borderRadius: 10,
+                      boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                      textAlign: "center",
+                    }}
+                    title={<Title level={4}>Complete Your Application</Title>}
+                  >
+                    <Text style={{ fontSize: "16px" }}>
+                      To submit your application, you need to pay the application fee.
+                    </Text>
+                    <Divider />
+                    <div style={{ margin: "0.5rem 0" }}>
+                      <Text type="warning"><WarningOutlined /> Please Ensure to review your submissions before proceeding to pay</Text><br />
+                      <Text strong style={{ fontSize: "18px", color: "#028f64" }}>
+                        Fee Amount: ₦5,000
+                      </Text>
+                    </div>
 
-        <Divider />
-        <Button type="link" style={{ color: "#028f64" }}>
-          Need help with payment?
-        </Button>
-      </Card>
-    </div>
+                    <PaystackButton className='btn btn-green' {...componentProps} />
+
+                    <Divider />
+                    <Button type="link" style={{ color: "#028f64" }}>
+                      Need help with payment?
+                    </Button>
+                  </Card>
+                </div>
               </div>
             )}
             <div style={{ display: 'flex', padding: '2%' }}>

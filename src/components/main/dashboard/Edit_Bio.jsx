@@ -1,32 +1,17 @@
 import React, { Children, useState , useEffect} from 'react';
-import { Form, Input,Breadcrumb, Button, Col, Card, Row, Select, DatePicker, Typography } from 'antd';
+import { Form, Input,Breadcrumb, Button, Col, Card, Row, Select, DatePicker, Typography, Space, Table, notification } from 'antd';
 import moment from "moment";
 import './BioData.css';
-import { IeOutlined, HomeFilled, EditOutlined } from '@ant-design/icons';
+import { IeOutlined, HomeFilled, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import API_ENDPOINTS from '../../../Endpoints/environment';
 
 const { Title } = Typography;
 const { Option } = Select;
 
-  const items = [
-    {
-      path: '/Dashboard',
-      title: <HomeFilled />,
-    },
-    
-    {
-      path: '/Bio-data',
-      title: 'Bio-data',
-      Children: [{
-        
-      }]
-    },
-    {
-      path: '/Edit',
-      title: 'Edit',
-    },
-  ];
+
+
   
   function itemRender(currentRoute, params, items, paths) {
     const isLast = currentRoute?.path === items[items.length - 1]?.path;
@@ -43,8 +28,147 @@ const Edit_Bio = () => {
   const [loading, setLoading] = useState(false);
   const [bioData, setBioData] = useState('');
   const userId=localStorage.getItem('id')
+  const [data, setData] = useState([]);
+
   const [initialValues, setInitialValues] = useState({}); // State for form initial values
   const { id } = useParams();
+
+  const items = [
+    {
+      path: '/Dashboard',
+      title: <HomeFilled />,
+    },
+    
+    {
+      path: `/${id}/Bio-data`,
+      title: 'Bio-data',
+      Children: [{
+        
+      }]
+    },
+    {
+      path: '/Edit',
+      title: 'Edit',
+    },
+  ];
+
+  const columns = [
+    {
+      title: "Subject",
+      dataIndex: "subject",
+      key: "subject",
+      render: (_, record, index) => (
+        <Input
+          placeholder={`Subject ${index + 1}`}
+          value={record.subject}
+          onChange={(e) => handleEdit(index, "subject", e.target.value)}
+        />
+      ),
+    },
+    {
+      title: "Grade",
+      dataIndex: "grade",
+      key: "grade",
+      render: (_, record, index) => (
+        <Input
+          placeholder="Grade"
+          value={record.grade}
+          onChange={(e) => handleEdit(index, "grade", e.target.value)}
+        />
+      ),
+    },
+    {
+      title: "Exam No",
+      dataIndex: "examNumber",
+      key: "examNumber",
+      render: (_, record, index) => (
+        <Input
+          placeholder="Exam No"
+          value={record.examNumber}
+          onChange={(e) => handleEdit(index, "examNumber", e.target.value)}
+        />
+      ),
+    },
+    {
+      title: "Dates",
+      dataIndex: "dates",
+      key: "dates",
+      render: (_, record, index) => (
+        <DatePicker
+          value={record.dates}
+          onChange={(date) => handleEdit(index, "dates", date)}
+          style={{ width: "100%" }}
+        />
+      ),
+    },
+    {
+      title: "Exam Centre",
+      dataIndex: "examCentre",
+      key: "examCentre",
+      render: (_, record, index) => (
+        <Input
+          placeholder="Exam Centre"
+          value={record.examCentre}
+          onChange={(e) => handleEdit(index, "examCentre", e.target.value)}
+        />
+      ),
+    },
+    {
+      title: "Action",
+      dataIndex: "action",
+      key: "action",
+      render: (_, __, index) => (
+        <Button type="link" danger onClick={() => handleDelete(index)}>
+          Delete
+        </Button>
+      ),
+    },
+  ];
+
+  const handleAddRow = () => {
+    setData([...data, { subject: "", grade: "", examNumber: "", dates: null, examCentre: "" }]);
+  };
+
+  const handleEdit = (index, key, value) => {
+    const newData = [...data];
+    newData[index][key] = value;
+    setData(newData);
+  };
+
+  const handleDelete = (index) => {
+    const newData = data.filter((_, i) => i !== index);
+    setData(newData);
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      // Replace the URL below with your API endpoint
+      const response = await fetch("https://api.example.com/qualification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (response.ok) {
+        notification.success({
+          message: "Data Submitted",
+          description: "Your qualification data has been successfully submitted.",
+        });
+        setData([]); // Reset table
+      } else {
+        throw new Error("Failed to submit");
+      }
+    } catch (error) {
+      notification.error({
+        message: "Submission Failed",
+        description: "There was an error submitting your data. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
 
@@ -55,39 +179,68 @@ const Edit_Bio = () => {
     console.log('Updated Values:', values);
 
     try {
-        // Create an instance of FormData
         const formData = new FormData();
         
-        // Append the userId
         formData.append('application_id', userId);
 
-        // Append all the other form values
-       // Append all the other form values
        Object.keys(values).forEach((key) => {
-        // Handle the DatePicker field specifically
         if (key === 'date_of_birth' && values[key]) {
-            // Format the date using moment.js
             formData.append(key, values[key].format('YYYY-MM-DD'));
         } else {
-            // Append other fields as is
             formData.append(key, values[key]);
         }
     });
+      
 
-        // Send the form data via Axios
-        const response = await axios.post(`http://127.0.0.1:8000/api/bio-data`, formData, {
+        const RegForm = {
+          application_number:id,
+          next_of_kin:values.next_of_kin,
+          sponsor_address:values.sponsor_address,
+          next_of_kin_relationship:values.next_of_kin_relationship,
+          next_of_kin_phone_number:values.next_of_kin_phone_number,
+          next_of_kin_address:values.next_of_kin_address,
+          nationality:values.nationality,
+          mode_of_entry:values.mode_of_entry,
+          session:values.session,
+          subject_combination:values.subject_combination,          
+        }
+
+        const PersonalForm = {
+          application_number:id,
+            surname: values.surname,
+            other_names: values.other_names,
+            email: values.email,
+            phone_number:values.phone_number,
+            gender: values.gender,
+            date_of_birth: values.date_of_birth,
+            local_government: values.local_government,
+            name_of_father: values.name_of_father,
+            father_place_of_birth: values.father_place_of_birth,
+            marital_status: values.marital_status,
+            religion: values.religion,
+        }
+
+        // console.log('BIO REG', payload.newForm)
+
+        const response = await axios.post(`${API_ENDPOINTS.BIO_REGISTRATION}`, RegForm, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
         });
 
         console.log('Response:', response.data);
+        const newDateOfBirth = PersonalForm.date_of_birth.format('YYYY-MM-DD');
+        const newPersonalForm = {
+          ...PersonalForm,
+          date_of_birth: newDateOfBirth
+        }
+        const perosnalResponse = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, newPersonalForm);
+
+        console.log('Response:', response.data);
         
-  window.location.href = '/dashboard/bio-data';
-        // Handle success (e.g., display a success message or update the UI)
+  // window.location.href = '/dashboard//bio-data';
     } catch (error) {
         console.error('Error saving bio-data:', error);
-        // Handle error (e.g., display an error message)
     } finally {
         setLoading(false);
     }
@@ -174,22 +327,33 @@ const Edit_Bio = () => {
       >
         {/* Personal Information */}
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Full Name" name="full_name" > 
+          <Col xs={24} md={12}>
+            <Form.Item label="Surname" name="surname" > 
               <Input />
             </Form.Item>
           </Col>
+          <Col xs={24} sm={12}>
+            <Form.Item label="Other Names" name="other_names">
+              <Input  />
+            </Form.Item>
+          </Col>
+          </Row>
+        <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
             <Form.Item label="Email" name="email">
               <Input  />
             </Form.Item>
           </Col>
+
           <Col xs={24} sm={12}>
             <Form.Item label="Phone Number" name="phone_number">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
+          
+          </Row>
+          <Row gutter={[16, 16]}>
+          <Col xs={24} md={8}>
             <Form.Item label="Gender" name="gender">
               <Select>
                 <Option value="M">Male</Option>
@@ -197,17 +361,12 @@ const Edit_Bio = () => {
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
+          <Col xs={24} md={8}>
             <Form.Item label="Date of Birth" name="date_of_birth">
               <DatePicker style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Place of Birth" name="place_of_birth">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
+          <Col xs={24} md={8}>
             <Form.Item label="Marital Status" name="marital_status">
               <Select>
                 <Option value="Single">Single</Option>
@@ -215,8 +374,23 @@ const Edit_Bio = () => {
               </Select>
             </Form.Item>
           </Col>
+          </Row>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <Form.Item label="Place of Birth" name="place_of_birth">
+              <Input />
+            </Form.Item>
+          </Col>
+          
           <Col xs={24} sm={12}>
             <Form.Item label="Religion" name="religion">
+              <Input />
+            </Form.Item>
+          </Col>
+          </Row>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <Form.Item label="Local Government" name="local_government">
               <Input />
             </Form.Item>
           </Col>
@@ -226,95 +400,39 @@ const Edit_Bio = () => {
             </Form.Item>
           </Col>
         </Row>
-
-        {/* Academic Information */}
-        <Title level={4} className="section-title">Academic Information</Title>
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Faculty" name="faculty">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Department" name="department">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Programme" name="programme">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Level" name="level">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Current Semester" name="current_semester">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Session" name="current_session">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Matric Number" name="matric_number">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Mode of Entry" name="mode_of_entry">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Study Mode" name="study_mode">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Entry Year" name="entry_year">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Program Duration" name="program_duration">
-              <Input />
-            </Form.Item>
-          </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Award in View" name="award_in_view">
-              <Input />
-            </Form.Item>
-          </Col>
-        </Row>
 
-        {/* Contact Information */}
-        <Title level={4} className="section-title">Contact Information</Title>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Present Address" name="present_contact_address">
+        <Col xs={24} sm={12}>
+            <Form.Item label="Name Of Father" name="name_of_father">
               <Input />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12}>
-            <Form.Item label="Permanent Address" name="permanent_home_address">
+            <Form.Item label="Father's Place of Birth" name="father_place_of_birth">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Next of Kin" name="next_of_kin">
+          </Row>
+          <Row gutter={[16, 16]}>
+          <Col xs={24} sm={8}>
+          <Form.Item label="Next of Kin" name="next_of_kin">
+              <Input />
+            </Form.Item>
+           
+          </Col>
+          <Col xs={24} sm={8}>
+            <Form.Item label="Next Of Kin Address" name="next_of_kin_address">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
+          
+          <Col xs={24} sm={8}>
             <Form.Item label="Next of Kin Phone Number" name="next_of_kin_phone_number">
               <Input />
             </Form.Item>
           </Col>
+          </Row>
+          <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
             <Form.Item label="Relationship with Next of Kin" name="next_of_kin_relationship">
               <Input />
@@ -327,6 +445,66 @@ const Edit_Bio = () => {
           </Col>
         </Row>
 
+        {/* Academic Information */}
+        <Title level={4} className="section-title">Academic Information</Title>
+        <Row gutter={[16, 16]}>
+         
+         
+          <Col xs={24} sm={12}>
+            <Form.Item label="Mode Of Entry" name="mode_of_entry">
+            <Select>
+                <Option value="pre_nce">Pre NCE</Option>
+                <Option value="direct_nce">Direct NCE</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Form.Item label="Session" name="current_session">
+              <Input />
+            </Form.Item>
+          </Col>
+         
+          <Col xs={24} md={24}>
+            <Form.Item label="Subject Combination" name="subject_combination">
+              <Input />
+            </Form.Item>
+          </Col>
+          
+        </Row>
+        <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
+      <h1 style={{ textAlign: "center", marginBottom: "20px", color: "#028f64" }}>
+        Qualification and Results Form
+      </h1>
+      {/* <Form form={form} layout="vertical">
+        <Table
+          dataSource={data}
+          columns={columns}
+          rowKey={(record, index) => index}
+          pagination={false}
+          bordered
+        />
+        <Space style={{ marginTop: "20px", justifyContent: "space-between", width: "100%" }}>
+          <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={handleAddRow}
+            style={{ width: "30%" }}
+          >
+            Add New Row
+          </Button>
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            loading={loading}
+            style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
+          >
+            Submit Data
+          </Button>
+        </Space>
+      </Form> */}
+    </div>
+
+       
         <Row justify="center">
           <Button type="primary" htmlType="submit" loading={loading} className="submit-btn">
             Save Changes

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import './Dashboard.css';
 import coverPhoto from '../../assets/backgrround.jpg';
-import { BarsOutlined, PhoneOutlined, MailOutlined, UserOutlined, BookFilled } from '@ant-design/icons';
+import { BarsOutlined, PhoneOutlined, MailOutlined,BookTwoTone, UserOutlined, BookFilled } from '@ant-design/icons';
 import logo from '../../assets/logo2.png';
 import profilePic from '../../assets/pro-pic.png';
 import { PaystackButton } from "react-paystack";
@@ -24,10 +24,10 @@ const Dashboard = () => {
 
 
   function routeBio() {
-    navigate('/dashboard/Bio-data');
+    navigate(`Bio-data`);
   }
   function routeCourse() {
-    navigate('/dashboard/Course_reg');
+    navigate(`Course_reg`);
   }
   function routeLogOUt() {
     navigate('/');
@@ -46,6 +46,11 @@ const Dashboard = () => {
 
         //   console.log(responseBio.data.data);
         // }
+
+        if(!response.data.matric_number){
+    navigate('/');
+
+        }
 
 
         console.log('Data',response.data.data);
@@ -164,7 +169,8 @@ const Dashboard = () => {
             <div style={{marginRight:'20px'}}>
           <h2 className="user-name">{application?.surname} {application?.other_names} </h2>
              
-              <p className="user-info">{<BookFilled/>} {application?.surname}</p>
+              <p className="user-info">{<BookFilled/>}{application?.matric_number}</p>
+              <p className="user-info">{<BookTwoTone/>}{application?.course}</p>
 
             </div>
 

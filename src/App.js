@@ -13,6 +13,8 @@ import Admin_Panel from './components/main/dashboard/admin/Admin_Panel';
 import View_applications from './components/main/dashboard/admin/admin-pages/View_Applications';
 import Add_Applications from './components/main/dashboard/admin/admin-pages/Add_Application';
 import Registration from './components/main/Registration';
+import Reg_Success from './components/Reg_Success';
+import Single_Application from './components/main/dashboard/admin/admin-pages/Single_Appliaction';
 
 
 function App() {
@@ -21,11 +23,15 @@ function App() {
       <Routes>
         <Route path="" element={<Main />} />
         <Route path="/admin" element={<Admin_Panel />} >
-          <Route path='/admin/view-applications' element={<View_applications />} />
+          <Route path='/admin' element={<View_applications />} />
           <Route path='/admin/add-applications' element={<Add_Applications />} />
+          <Route path='/admin/single-application/:id' element={<Single_Application />} />
 
         </Route>
         <Route path="/registration" element={<Registration />} />
+        <Route path='/registration/:id/success' element={<Reg_Success />} />
+
+       
 
         <Route path='/dashboard/:id' element={<Dashboard />}>
           <Route path='/dashboard/:id' element={<Panel />} />

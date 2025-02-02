@@ -1,5 +1,6 @@
 .application_table{
-    width: 85%;
+    width: 100%;
     justify-content: space-around;
-    margin: 2% auto;
+    margin: auto;
+    display: flex;
 }

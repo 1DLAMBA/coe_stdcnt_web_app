@@ -1,0 +1,61 @@
+.reg-success-container {
+    padding: 20px;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+  }
+  
+  .reg-success-card {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .passport-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    height: 150px;
+  }
+  
+  .passport-image {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+  }
+  
+  .passport-placeholder {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+  }
+  
+  .footer-section {
+    text-align: center;
+  }
+  
+  @media print {
+    body {
+      background-color: white !important;
+    }
+  
+    .reg-success-container {
+      padding: 0;
+      background-color: white;
+    }
+  
+    .reg-success-card {
+      box-shadow: none;
+      border: none;
+    }
+  
+    .footer-section {
+      display: none; /* Hide the print button in print mode */
+    }
+  }
+  

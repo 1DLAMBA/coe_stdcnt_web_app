@@ -35,7 +35,7 @@ const Panel = () => {
     navigate(`/dashboard/${id}/Bio-data`);
   }
   function routeCourse() {
-    navigate('/dashboard/Course_reg');
+    navigate(`/dashboard/${id}/Course_reg`);
   }
   return (
     <>
