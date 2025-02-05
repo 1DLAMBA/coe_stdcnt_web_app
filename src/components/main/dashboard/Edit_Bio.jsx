@@ -251,7 +251,7 @@ const Edit_Bio = () => {
     const fetchUser = async () => {
       try {
         console.log("Fetching user data for:", userId);
-        const response = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
+        const response = await axios.get(`${API_ENDPOINTS}/bio-data/${userId}`);
         setBioData(response.data.data[0]); // Assuming the API returns an array in `data`
       } catch (error) {
         console.error("Error fetching user data:", error);

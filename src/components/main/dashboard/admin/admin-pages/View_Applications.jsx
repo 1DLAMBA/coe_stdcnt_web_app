@@ -4,6 +4,7 @@ import axios from "axios";
 import '../admin-pages/styles/application.css';
 import { EyeFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import API_ENDPOINTS from "../../../../../Endpoints/environment";
 
 const { Option } = Select;
 
@@ -71,7 +72,7 @@ const ViewApplications = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/personal-details"); // Replace with your API endpoint
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`); // Replace with your API endpoint
         const filteredData = response.data.filter((student) => !student.matric_number);
         setData(filteredData);
         setFilteredData(filteredData); // Initial data for the table

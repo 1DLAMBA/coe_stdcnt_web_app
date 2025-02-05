@@ -14,7 +14,7 @@ import API_ENDPOINTS from '../../Endpoints/environment';
 const ApplicationCheck = () => {
   const [applicationNumber, setApplicationNumber] = useState('');
   const navigate = useNavigate();
-  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
   const amount = 200000;
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -43,7 +43,7 @@ const ApplicationCheck = () => {
   
       try {
         // Send the form data to the API
-        const response = await axios.put(`http://127.0.0.1:8000/api/personal-details/${applicationNumber.id}`, formData);
+        const response = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${applicationNumber.id}`, formData);
   
         console.log('Server response:', response);
         if (response && response.data.id) {
@@ -170,7 +170,8 @@ const ApplicationCheck = () => {
       message="Information"
       description="New Applicants should Input their Application Number, returning students should input thier Matriculation Number"
       type="warning"
-      style={{position:'absolute', top:'1%', width:'40%'}}
+      className='alert'
+      
     />
                 </form>
               )}

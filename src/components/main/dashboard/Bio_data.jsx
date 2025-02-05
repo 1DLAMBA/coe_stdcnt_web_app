@@ -46,7 +46,7 @@ const BioData = () => {
         const personalResponse = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
         setUser(personalResponse.data); // Assuming the API returns user data in `response.data`
 
-        const response = await axios.get(`http://127.0.0.1:8000/api/bio-registrations/${id}`);
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${id}`);
         setBio(response.data); // Assuming the API returns user data in `response.data`
 
         console.log('Data', response.data);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
+import API_ENDPOINTS from '../../../../../Endpoints/environment';
 // Optional CSS file for additional styling
 
 const AddApplications = () => {
@@ -9,7 +10,7 @@ const AddApplications = () => {
     const onFinish = async (values) => {
         setLoading(true);
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/applications', values);
+            const response = await axios.post(`${API_ENDPOINTS}/applications`, values);
             message.success('Application submitted successfully!');
             console.log(response.data);
         } catch (error) {

@@ -9,6 +9,9 @@
     flex-direction: column;
   }
 
+  .alert{
+    width: 90% !important;
+  }
 }
 
 @media only screen and (min-width: 600px) {
@@ -23,6 +26,13 @@
   }
 }
 
+.alert{
+  position:absolute;
+   top:1%;
+    width:40%;
+    
+    margin:auto
+}
 
 body {
     font-family: Arial, sans-serif;

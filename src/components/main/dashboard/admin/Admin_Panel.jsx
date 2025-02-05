@@ -12,6 +12,7 @@ import axios from 'axios';
 import BioData from './../../dashboard/Bio_data';
 
 import './../../Dashboard.css';
+import API_ENDPOINTS from '../../../../Endpoints/environment';
 
 
 const Admin_Panel = () => {
@@ -35,9 +36,9 @@ const Admin_Panel = () => {
       const fetchUser = async () => {
         // console.log('check')
         try {
-          const response = await axios.get(`http://127.0.0.1:8000/api/applications/${userId}`);
+          const response = await axios.get(`${API_ENDPOINTS}/applications/${userId}`);
           setApplication(response.data); // Assuming the API returns user data in `response.data`
-          const responseBio = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
+          const responseBio = await axios.get(`${API_ENDPOINTS}/bio-data/${userId}`);
           if(responseBio){
             setUser(responseBio.data.data[0])
   

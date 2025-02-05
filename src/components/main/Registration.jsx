@@ -86,7 +86,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Registration = () => {
-  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
   const [step, setStep] = useState('step1')
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -238,6 +238,12 @@ const Registration = () => {
     metadata: {
       phone: firstStep.phone_number,
     },
+    split:{
+      type: "flat",
+      subaccounts: [
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 100000 },
+      ]
+    },
     publicKey,
     text: "Pay Now",
     onSuccess: async (reference) => {
@@ -378,7 +384,7 @@ const Registration = () => {
     getStatesFromApi();
     async function fetchData() {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/course-data`);
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/course-data`);
         setSubjects(response.data || []);
         console.log('COURSES fetched', response);
       } catch (error) {

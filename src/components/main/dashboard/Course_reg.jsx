@@ -64,7 +64,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
 
   const [email, setEmail] = useState("danielalamba@gmail.com");
   const navigate = useNavigate();
-  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
   const [applicationNumber, setApplicationNumber] = useState('');
   const amount = 200000;
   const [availableCourses, setAvailableCourses] = useState([]);
@@ -141,7 +141,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
             course_type: item.course_type.trim(),
           };
 
-          return axios.post("http://127.0.0.1:8000/api/courses", payload);
+          return axios.post(`${API_ENDPOINTS.API_BASE_URL}/courses`, payload);
         });
 
         await Promise.all(promises);
@@ -169,7 +169,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
             course_type: item.course_type.trim(),
           };
 
-          return axios.post("http://127.0.0.1:8000/api/courses", payload);
+          return axios.post(`${API_ENDPOINTS.API_BASE_URL}/courses`, payload);
         });
 
         await Promise.all(promises);
@@ -191,7 +191,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
     const fetchUser = async () => {
       // console.log('check')
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/course-data`);
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/course-data`);
         setAvailableCourses(response.data || []); // Assuming the API returns user data in `response.data`
         console.log('COURSES fetched', response);
         const user = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
@@ -202,7 +202,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
         if (user.data.course_paid) {
           setView(false)
         }
-        const bio = await axios.get(`http://127.0.0.1:8000/api/bio-registrations/${user.data.id}`);
+        const bio = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${user.data.id}`);
         console.log("USER BUI", bio)
 
         if (!bio.data.application_number) {
@@ -216,7 +216,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
 
         }
 
-        const courses = await axios.get(`http://127.0.0.1:8000/api/courses/${user.data.id}`);
+        const courses = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${user.data.id}`);
         console.log("USER COURSES", courses)
         setUserCourses(courses.data);
         const toBeFiltered = courses.data;
