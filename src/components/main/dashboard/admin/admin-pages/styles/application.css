@@ -4,3 +4,10 @@
     margin: auto;
     display: flex;
 }
+
+.table-head{
+    background-color: rgb(95, 136, 95);
+    color: white;
+    padding: 1%;
+    border-radius: 10px 10px 0px 0px;
+}

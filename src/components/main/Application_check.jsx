@@ -4,8 +4,8 @@ import logo from '../../assets/logo2.png';
 import { useNavigate } from 'react-router-dom';
 import { PaystackButton } from "react-paystack";
 import axios from 'axios';
-import { message , Result, Button, ConfigProvider,Card,Alert, Typography} from "antd";
-import { WarningFilled } from "@ant-design/icons";
+import { message , Result, Button, ConfigProvider,Card,Alert, Modal,Input,Typography} from "antd";
+import { WarningFilled, UserOutlined } from "@ant-design/icons";
 import API_ENDPOINTS from '../../Endpoints/environment';
 
 
@@ -15,16 +15,29 @@ const ApplicationCheck = () => {
   const [applicationNumber, setApplicationNumber] = useState('');
   const navigate = useNavigate();
   const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
-  const amount = 200000;
+  const amount = 300000;
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [passkey, setPasskey] = useState("");
   const [view, setView] = useState('form'); // 'form', 'acceptance', 'dashboard', 'notFound'
   const componentProps = {
     email,
     amount,
     metadata: {
       phone,
+    },
+    split:{
+      type: "flat",
+      subaccounts: [
+        // Daniel Alamba
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 41000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 200000 },
+
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+      ]
     },
     publicKey,
     text: "Pay Now",
@@ -36,6 +49,8 @@ const ApplicationCheck = () => {
         application_date: paidOn.toISOString().split('T')[0],
         
       };
+
+
   
       // Store temporary data in localStorage
       localStorage.setItem('UserData', JSON.stringify(formData)); // Ensure the data is stored as JSON
@@ -64,7 +79,15 @@ const ApplicationCheck = () => {
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
-  
+  const correctPasskey = "coe@admin11";
+  const handleOk = () => {
+    if (passkey === correctPasskey) {
+      message.success("Access granted!");
+      navigate("/admin");
+    } else {
+      message.error("Incorrect passkey!");
+    }
+  };
 
   const handleInputChange = (e) => {
     setApplicationNumber(e.target.value);
@@ -141,6 +164,19 @@ const ApplicationCheck = () => {
 
   return (
     <div className="container">
+        <Modal
+        title="Admin Authentication"
+        open={isModalVisible}
+        onOk={handleOk}
+        onCancel={() => setIsModalVisible(false)}
+        okText="Login"
+      >
+        <Input.Password
+          placeholder="Enter Admin Passkey"
+          value={passkey}
+          onChange={(e) => setPasskey(e.target.value)}
+        />
+      </Modal>
       <div className="row justify-content-center align-items-center">
         <div className="col-md-6">
        
@@ -179,7 +215,7 @@ const ApplicationCheck = () => {
               {view === 'acceptance' && (
                 <div className="acceptance-view">
                   <h4 className="text-green">Acceptance Fee Payment</h4>
-                  <p>Congratulations!! you have been offered admission <br/>Please proceed to pay your acceptance fee to continue to application and registration </p>
+                  <p>Congratulations!! you have been offered admission to study <b>  {applicationNumber.course}</b> <br/>Please proceed to pay your acceptance fee of ₦4,100 to continue to application and registration </p>
                   {/* Add a button or link to payment page here if needed */}
                 <h3>{applicationNumber.other_names}</h3>
                 <h3>{applicationNumber.application_number}</h3>
@@ -253,6 +289,13 @@ const ApplicationCheck = () => {
               <Button className="btn outline btn-block" onClick={() => navigate('/registration')}>
                 Register
               </Button>
+              <Button
+        className="btn outline btn-block"
+        style={{ position: "absolute", bottom: "10px" }}
+        onClick={() => setIsModalVisible(true)}
+      >
+        <UserOutlined /> Admin Portal
+      </Button>
               </ConfigProvider>
             </div>
           </div>

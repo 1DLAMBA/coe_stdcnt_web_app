@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import {
-  Button, Input, Table, Typography, Space, Breadcrumb, Select, Form,
+  message,
+  Button, Input, Spin, Table, Typography, ConfigProvider, Popover, Dropdown, Space, Breadcrumb, Select, Form,
   Flex
 
 } from 'antd';
+import './BioData.css';
 import { ArrowLeftOutlined, SearchOutlined, BookOutlined, HomeFilled, SaveFilled, FolderAddFilled, PlusCircleFilled } from '@ant-design/icons';
 import { PaystackButton } from "react-paystack";
 import { studyCenters } from "./data";
-
 import { Card } from 'antd';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../Endpoints/environment';
@@ -17,40 +18,17 @@ const { Title, Text } = Typography;
 
 const { Option } = Select;
 
-const items = [
-  {
-    path: '/Dashboard',
-    title: <HomeFilled />,
-  },
-
-  {
-    path: '/course_reg',
-    title: 'Course Registration',
-
-  },
-
-];
-
-function itemRender(currentRoute, params, items, paths) {
-  const isLast = currentRoute?.path === items[items.length - 1]?.path;
-
-  return isLast ? (
-    <span>{currentRoute.title}</span>
-  ) : (
-    <Link to={`/${paths.join("/")}`}>{currentRoute.title}</Link>
-  );
-}
 
 const Course_reg = () => {
-  const { id } = useParams();
   const [courses, setCourses] = useState([""]); // Start with one empty course field
   const [courseInfo, setCourseInfo] = useState(''); // Start with one empty course field
   const [userCourses, setUserCourses] = useState([""]); // Start with one empty course field
   const [user2ndCourses, setUser2ndCourses] = useState([""]); // Start with one empty course field
   const [user1stCourses, setUser1stCourses] = useState([""]); // Start with one empty course field
   const [loading, setLoading] = useState(false);
+  const [couseLoading, setCourseLoading] = useState(true);
   const [selectedCenter, setSelectedCenter] = useState("");
-const [selectedLevel, setSelectedLevel] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("");
   const [view, setView] = useState(true);
   const [user, setUser] = useState('');
   const [modeOfCourse, setModeOfCourse] = useState("");
@@ -61,14 +39,56 @@ const [selectedLevel, setSelectedLevel] = useState("");
   const [courseSemesterData, setCourseSemesterData] = useState([
     { course: "", semester: "", course_type: "" }
   ]);
-
-  const [email, setEmail] = useState("danielalamba@gmail.com");
+  const [spinning, setSpinning] = useState(false);
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
   const [applicationNumber, setApplicationNumber] = useState('');
-  const amount = 200000;
+  const amount = 4000000;
+  const amount60 = 2400000;
+  const amount40 = 1600000;
   const [availableCourses, setAvailableCourses] = useState([]);
   const userId = localStorage.getItem('id')
+  const { id } = useParams();
+
+  const itemLink = [
+    {
+      key: '1',
+      label: '1st item',
+    },
+    {
+      key: '2',
+      label: '2nd item',
+    },
+    {
+      key: '3',
+      label: '3rd item',
+    },
+  ];
+
+  const items = [
+    {
+      path: `/Dashboard/${id}`,
+      title: <HomeFilled />,
+    },
+
+    {
+      path: '/course_reg',
+      title: 'Course Registration',
+
+    },
+
+  ];
+
+  function itemRender(currentRoute, params, items, paths) {
+    const isLast = currentRoute?.path === items[items.length - 1]?.path;
+
+    return isLast ? (
+      <span>{currentRoute.title}</span>
+    ) : (
+      <Link to={`/${paths.join("/")}`}>{currentRoute.title}</Link>
+    );
+  }
   const componentProps = {
     email,
     amount,
@@ -78,6 +98,100 @@ const [selectedLevel, setSelectedLevel] = useState("");
       // regNumber
     },
     publicKey,
+    split: {
+      type: "flat",
+      subaccounts: [
+        //Daniel Alamba
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 69000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 3800000 },
+
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+      ]
+    },
+    text: "Pay Complete Fees Now",
+    onSuccess: (reference) => {
+      const paidOn = new Date();
+      const formData = {
+        couse_fee_date: reference.reference,
+
+        course_fee_reference: paidOn.toISOString().split('T')[0],
+        course_paid: true,
+        has_paid: true
+
+      };
+      localStorage.setItem('UserData', formData)
+      localStorage.setItem('app_number', applicationNumber)
+      const response = axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`,
+        formData,
+      );
+      navigate(`/dashboard/${id}`);
+
+    },
+    onClose: () => alert("Wait! Don't leave :("),
+  };
+
+  const component60Props = {
+    email,
+    amount: 2400000,
+    metadata: {
+      // name,
+      // phone,
+      // regNumber
+    },
+    publicKey,
+    split: {
+      type: "flat",
+      subaccounts: [
+        // Daniel ALAMBA
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 69000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 2220000 },
+
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+      ]
+    },
+    text: "Pay 60% Now",
+    onSuccess: (reference) => {
+      const paidOn = new Date();
+      const formData = {
+        couse_fee_date: reference.reference,
+
+        course_fee_reference: paidOn.toISOString().split('T')[0],
+        has_paid: true
+
+      };
+      localStorage.setItem('UserData', formData)
+      localStorage.setItem('app_number', applicationNumber)
+      const response = axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`,
+        formData,
+      );
+      navigate(`/dashboard/${id}`);
+
+    },
+    onClose: () => alert("Wait! Don't leave :("),
+  };
+
+  const component40Props = {
+    email,
+    amount: 1600000,
+    metadata: {
+      // name,
+      // phone,
+      // regNumber
+    },
+    publicKey,
+    split: {
+      type: "flat",
+      subaccounts: [
+        //DANIEL ALAMBA
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 400000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 1480000 },
+
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+      ]
+    },
     text: "Pay Now",
     onSuccess: (reference) => {
       const paidOn = new Date();
@@ -93,7 +207,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
       const response = axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`,
         formData,
       );
-      navigate('/dashboard');
+      navigate(`/dashboard/${id}`);
 
     },
     onClose: () => alert("Wait! Don't leave :("),
@@ -101,6 +215,7 @@ const [selectedLevel, setSelectedLevel] = useState("");
 
   const handleAddCourse = () => {
     setCourseSemesterData([...courseSemesterData, { course: "", semester: "", course_type: "" }]);
+    fetchUser()
   };
 
   const handleDelete = (code) => {
@@ -108,10 +223,39 @@ const [selectedLevel, setSelectedLevel] = useState("");
   };
 
 
+
+  const content = (
+    <div>
+      <ConfigProvider
+        theme={{
+          token: {
+            // Seed Token
+            colorPrimary: 'green',
+            borderRadius: 2,
+            textAlign: 'start',
+            // Alias Token
+            colorBgContainer: '#f6ffed',
+            
+          },
+        }}
+      >
+        <PaystackButton style={{width:'100%', margin:'2%'}} className='btn btn-green' {...componentProps} />
+        <br/>
+        <br/>
+
+        <PaystackButton style={{width:'100%', margin:'2%'}} className='btn btn-green' {...component60Props} />
+
+      </ConfigProvider>
+    </div>
+  );
   const handleCourseChange = (index, value) => {
     const updatedData = [...courseSemesterData];
     updatedData[index].course = value;
     setCourseSemesterData(updatedData);
+  };
+  const handleSessionChange = (e) => {
+    setSession(e.target.value);
+    console.log("Selected session:", e.target.value);
   };
 
   const handleSemesterChange = (index, value) => {
@@ -145,14 +289,17 @@ const [selectedLevel, setSelectedLevel] = useState("");
         });
 
         await Promise.all(promises);
+        // navigate(`/dashboard/${id}`);
 
-        alert("Courses added successfully");
+        // alert("Courses added successfully PLEASE LOG OUT AND LOG IN AGAIN!!");
+        // fetchUser();
         setCourses([""]); // Reset the form
       } catch (error) {
         console.error("Error adding courses:", error.response?.data || error);
         alert(`Failed to add courses: ${error.response?.data?.message || error.message}`);
       } finally {
         setLoading(false);
+        navigate(`dashboard/${id}`)
       }
 
     } else {
@@ -174,8 +321,9 @@ const [selectedLevel, setSelectedLevel] = useState("");
 
         await Promise.all(promises);
 
-        alert("Courses added successfully");
-        setCourses([""]); // Reset the form
+        message.success("Courses added successfully!");
+        window.location.href = `/dashboard/${id}/`;
+
       } catch (error) {
         console.error("Error adding courses:", error.response?.data || error);
         alert(`Failed to add courses: ${error.response?.data?.message || error.message}`);
@@ -186,78 +334,90 @@ const [selectedLevel, setSelectedLevel] = useState("");
 
   };
 
-  useEffect(() => {
+  const fetchUser = async () => {
     // console.log('check')
-    const fetchUser = async () => {
-      // console.log('check')
-      try {
-        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/course-data`);
-        setAvailableCourses(response.data || []); // Assuming the API returns user data in `response.data`
-        console.log('COURSES fetched', response);
-        const user = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log('USER fetched', user);
-        handleCenterChange(user.data.desired_study_cent);
+    try {
+      const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/course-data`);
+      setAvailableCourses(response.data || []); // Assuming the API returns user data in `response.data`
+      console.log('COURSES fetched', response);
+      const user = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+      console.log('USER fetched', user);
+      handleCenterChange(user.data.desired_study_cent);
 
-        setUser(user.data)
-        if (user.data.course_paid) {
-          setView(false)
-        }
-        const bio = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${user.data.id}`);
-        console.log("USER BUI", bio)
+      setUser(user.data)
 
-        if (!bio.data.application_number) {
-          navigate(`/Dashboard/${id}/bio-data`)
-        } else {
-          console.log("USER BIO", bio.data)
-          setEmail(user.data.email)
+      const bio = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${user.data.id}`);
+      console.log("USER BUI", bio)
+
+      setCourseLoading(false)
+
+      setSpinning(false)
+
+      // finding the user courses
+      const center = await studyCenters.find((sc) => sc.name === user.data.desired_study_cent)
+      if (center && center.levels[Number(bio.data.level)]) {
+        console.log(center.levels[Number(bio.data.level)])
+
+        setCourses(center.levels[Number(bio.data.level)])
+      }
+      if (!bio.data.application_number) {
+        navigate(`/Dashboard/${id}/bio-data`)
+      } else {
+        console.log("USER BIO", bio.data)
+        setEmail(user.data.email)
         handleLevelChange(bio.data.level);
 
-          setApplicationNumber(user.data.application_number)
+        setApplicationNumber(user.data.application_number)
 
-        }
-
-        const courses = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${user.data.id}`);
-        console.log("USER COURSES", courses)
-        setUserCourses(courses.data);
-        const toBeFiltered = courses.data;
-        const filteredCourses = toBeFiltered.filter(
-          (course) => course.semester === "1st"
-        );
-        const filtered2ndCourses = toBeFiltered.filter(
-          (course) => course.semester === "2nd"
-        );
-
-      
-
-        setUser1stCourses(filteredCourses)
-        setUser2ndCourses(filtered2ndCourses)
-
-        if (courses) {
-          setView(false)
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
       }
-    };
+
+      const courses = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${user.data.id}`);
+      console.log("USER COURSES", courses)
+      setUserCourses(courses.data);
+      const toBeFiltered = courses.data;
+      const filteredCourses = toBeFiltered.filter(
+        (course) => course.semester === "1st"
+      );
+      const filtered2ndCourses = toBeFiltered.filter(
+        (course) => course.semester === "2nd"
+      );
 
 
-      fetchUser(); // Call the async function to fetch data
-    
+      if (user.data.course_paid) {
+        setView(false)
+      }
+      setUser1stCourses(filteredCourses)
+      setUser2ndCourses(filtered2ndCourses)
+
+      if (courses) {
+        setView(false)
+      }
+
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+  useEffect(() => {
+    setSpinning(true)
+    // console.log('check')
+
+
+    fetchUser(); // Call the async function to fetch data
   }, []); // Only re-run if `userId` changes
 
-// Handle level change
-const handleLevelChange = (stDlevel) => {
-  const level = stDlevel;
-  setSelectedLevel(level);
+  // Handle level change
+  const handleLevelChange = (stDlevel) => {
+    const level = stDlevel;
+    setSelectedLevel(level);
 
-  // Find the selected center and fetch the courses for the level
-  const centerData = studyCenters.find((center) => center.name === selectedCenter);
-  if (centerData && centerData.levels[level]) {
-    setAvailableCourses(centerData.levels[level]);
-  } else {
-    setCourses([]);
-  }
-};
+    // Find the selected center and fetch the courses for the level
+    const centerData = studyCenters.find((center) => center.name === selectedCenter);
+    if (centerData && centerData.levels[level]) {
+      setAvailableCourses(centerData.levels[level]);
+    } else {
+      setCourses([]);
+    }
+  };
 
 
   const handleCenterChange = (DESIREDCourse) => {
@@ -307,18 +467,18 @@ const handleLevelChange = (stDlevel) => {
 
     <>
       <Breadcrumb style={{ marginLeft: '8.7%', marginTop: '1%', backgroundColor: 'white', width: '82.5%', color: 'white', borderRadius: '15px', padding: '0.5%' }} itemRender={itemRender} items={items} />
-
-      <div style={{ padding: '0 ', backgroundColor: '#fff', minHeight: '100vh', width: '83%', margin: '1% auto' }}>
+      <Spin spinning={spinning}  fullscreen />
+      <div style={{ padding: '0 ', backgroundColor: '#fff', minHeight: '100vh', width: '83%', margin: '1% auto', display: 'flex', flexDirection: 'column' }}>
         <div style={{ textAlign: 'center', backgroundColor: '#028f64', padding: '10px', color: 'white', display: 'flex', alignItems: 'center' }}>
           <Title level={2} style={{ color: '#fff' }}>Course Registration</Title>
 
         </div>
 
-        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+        <div style={{ textAlign: 'center', margin: '20px' }}>
         </div>
-        {view === true && (
+        {!user.course_paid ? (
           <>
-            <div className='' style={{ margin: '2%' }}>
+            <div className='' style={{ margin: '2% auto' }}>
               <Card
                 bordered={false}
                 style={{
@@ -330,67 +490,87 @@ const handleLevelChange = (stDlevel) => {
                 }}
               >
                 <Space direction="vertical" size="small">
-                  <Space>
-                    <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
-                    <Title level={4} style={{ margin: 0, color: '#000' }}>
-                      Registration Fees payment
-                    </Title>
-                  </Space>
-                  {/* <Text type="secondary">View your biodata details here</Text> */}
+                  {user.has_paid && !user.course_paid ? (<>
+                    <Space>
 
-                  <PaystackButton className='btn btn-green' {...componentProps} />
+
+                      <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
+                      <Title level={4} style={{ margin: 0, color: '#000' }}>
+                        Continue Registration Fees payment
+                      </Title>
+                    </Space>
+                    {/* <Text type="secondary">View your biodata details here</Text> */}
+
+                    <PaystackButton className='btn btn-green' {...component40Props} />
+                  </>) : !user.has_paid && !user.course_paid ? (<>
+                    <Space>
+
+
+                      <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
+                      <Title level={4} style={{ margin: 0, color: '#000' }}>
+                        Registration Fees payment
+                      </Title>
+                    </Space>
+                    <Popover content={content} trigger="click">
+
+
+                      <Button style={{ textAlign: 'start' }} block className='btn btn-green' variant="outlined">
+                        Select Payment option
+                      </Button>
+                    </Popover>
+                  </>) : (<></>)}
                 </Space>
               </Card>
 
             </div>
           </>
-        )}
-        {view === false && (
+        ) : (
+
           <>
             <div style={{ maxWidth: "500px", margin: "auto", padding: "20px" }}>
-              {!userCourses[0]?.mode_of_course ? (
+              {userCourses[0]?.mode_of_course ? (
                 <>
- <div
-      style={{
-        maxWidth: "600px",
-        margin: "20px auto",
-        padding: "20px",
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        fontFamily: "'Arial', sans-serif",
-        backgroundColor: "#f9f9f9",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: "20px", color: "#333" }}>
-        Course Details
-      </h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "15px",
-          lineHeight: "1.5",
-        }}
-      >
-        <div>
-          <strong>Mode of Course:</strong>
-          <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.mode_of_course}</p>
-        </div>
-        <div>
-          <strong>Subject of Study:</strong>
-          <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0].subject_of_study}</p>
-        </div>
-        <div>
-          <strong>Session:</strong>
-          <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0].session}</p>
-        </div>
-        <div>
-          <strong>Level of Course:</strong>
-          <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0].level_of_course}</p>
-        </div>
-      </div>
-    </div>
+                  <div
+                    style={{
+                      maxWidth: "600px",
+                      margin: "20px auto",
+                      padding: "20px",
+                      border: "1px solid #ddd",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      fontFamily: "'Arial', sans-serif",
+                      backgroundColor: "#f9f9f9",
+                    }}
+                  >
+                    <h2 style={{ textAlign: "center", marginBottom: "20px", color: "#333" }}>
+                      Course Details
+                    </h2>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "15px",
+                        lineHeight: "1.5",
+                      }}
+                    >
+                      <div>
+                        <strong>Mode of Course:</strong>
+                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.mode_of_course}</p>
+                      </div>
+                      <div>
+                        <strong>Subject of Study:</strong>
+                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.subject_of_study}</p>
+                      </div>
+                      <div>
+                        <strong>Session:</strong>
+                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.session}</p>
+                      </div>
+                      <div>
+                        <strong>Level of Course:</strong>
+                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.level_of_course}</p>
+                      </div>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <>
@@ -434,20 +614,22 @@ const handleLevelChange = (stDlevel) => {
                       <div style={{ display: '' }}>
                         <label htmlFor='session'>Session</label>
 
-                        <select value={session}
-                          onChange={(e) => setSession(e.target.value)}
-                          placeholder="Session"
+                        <select
+                          value={session}
+                          onChange={handleSessionChange}
                           style={{
                             width: "100%",
                             padding: "8px",
                             marginBottom: "10px",
                             border: "1px solid #ccc",
                             borderRadius: "4px",
-                          }} >
-                            <option key='2024/2025' value="2024/2025">
-                            2024/2025
-                            </option> 
-                            </select>
+                          }}
+                        >
+                          <option value="" disabled>
+                            Select a session
+                          </option>
+                          <option value="2024/2025">2024/2025</option>
+                        </select>
 
                       </div>
                       <div style={{ display: '' }}>
@@ -477,25 +659,32 @@ const handleLevelChange = (stDlevel) => {
 
                           <div key={index} style={{ margin: '1%' }}>
                             <label htmlFor={`course-${index}`}>Course {index + 1}</label>
-                            <select
-                              id={`course-${index}`}
-                              value={data.course}
-                              onChange={(e) => handleCourseChange(index, e.target.value)}
-                              style={{
-                                width: "100%",
-                                padding: "8px",
-                                marginBottom: "10px",
-                                border: "1px solid #ccc",
-                                borderRadius: "4px",
-                              }}
-                            >
-                              <option value="">Select a course</option>
-                              {availableCourses.map((availableCourse) => (
-                                <option key={availableCourse.id} value={availableCourse.course}>
-                                  {availableCourse.course}
-                                </option>
-                              ))}
-                            </select>
+                            {courses ? (
+                              <>
+                                <select
+
+                                  id={`course-${index}`}
+                                  value={data.course}
+                                  onChange={(e) => handleCourseChange(index, e.target.value)}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px",
+                                    marginBottom: "10px",
+                                    border: "1px solid #ccc",
+                                    borderRadius: "4px",
+                                  }}
+                                >
+                                  <option value="">Select a course</option>
+                                  {courses.map((course, index) => (
+                                    <option key={index} value={course}>
+                                      {course}
+                                    </option>
+                                  ))}
+                                </select>
+                              </>
+                            ) : (
+                              <></>
+                            )}
 
                           </div>
 
@@ -572,7 +761,7 @@ const handleLevelChange = (stDlevel) => {
                         marginBottom: "15px",
                       }}
                     >
-                      <PlusCircleFilled />
+                      Add <PlusCircleFilled />
                     </button>
                     <br />
                     <button
@@ -597,33 +786,51 @@ const handleLevelChange = (stDlevel) => {
             </div>
           </>
         )}
+        {/* {view === false && (
+          <>
+           
+          </>
+        )} */}
 
         <div style={{ backgroundColor: '#028f64', color: 'white', padding: '10px', borderRadius: '8px', fontWeight: 'bold', marginBottom: '10px' }}>
           Registered Courses
         </div>
-        <Flex style={{justifyContent:'space-evenly'}}>
+        <div className="responsive-tables-container">
 
 
         <Table
-          columns={columns}
-          dataSource={user1stCourses}
-          rowKey="code"
-          title={() => 'First Semester'}
-          pagination={false}
-          bordered
-          style={{ backgroundColor: 'white', margin: '2%' }}
-        />
+    columns={columns}
+    dataSource={user1stCourses}
+    rowKey="code"
+    title={() => 'First Semester'}
+    pagination={false}
+    bordered
+    style={{ 
+      backgroundColor: 'white', 
+      marginBottom: '20px',
+      width: '100%'
+    }}
+    scroll={{ x: true }}
+    size="small"
+    className="course-table"
+  />
 
-        <Table
-          columns={columns}
-          dataSource={user2ndCourses}
-          title={() => 'Second Semester'}
-          rowKey="code"
-          pagination={false}
-          bordered
-          style={{ backgroundColor: 'white', margin: '2%' }}
-        />
-        </Flex>
+  <Table
+    columns={columns}
+    dataSource={user2ndCourses}
+    title={() => 'Second Semester'}
+    rowKey="code"
+    pagination={false}
+    bordered
+    style={{ 
+      backgroundColor: 'white', 
+      width: '100%'
+    }}
+    scroll={{ x: true }}
+    size="small"
+    className="course-table"
+  />
+        </div>
       </div>
     </>
   );

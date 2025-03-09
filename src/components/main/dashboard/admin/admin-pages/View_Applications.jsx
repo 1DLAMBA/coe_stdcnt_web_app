@@ -18,7 +18,7 @@ const ViewApplications = () => {
   const centers = [
     "suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", 
     "Kagara", "Salka", "Kontogora", "Gawu", "Doko", 
-    "Katcha", "December"
+    "Katcha"
   ];
 
   const ViewApplication = (id) => {
@@ -73,7 +73,7 @@ const ViewApplications = () => {
       setLoading(true);
       try {
         const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`); // Replace with your API endpoint
-        const filteredData = response.data.filter((student) => !student.matric_number);
+        const filteredData = response.data.filter((student) => !student.matric_number && !student.has_admission);
         setData(filteredData);
         setFilteredData(filteredData); // Initial data for the table
       } catch (error) {
@@ -98,15 +98,38 @@ const ViewApplications = () => {
   };
 
   return (
-    <>
+    <div style={{ width: '85%', display: '', justifyContent: 'space-around', margin: '2% auto' }}>
+      
+      <ConfigProvider
+                                theme={{
+                                  token: {
+                                    // Seed Token
+                                    colorPrimary: '#028f64',
+                                    borderRadius: 2,
+          
+                                    // Alias Token
+                                    margin: '20px',
+                                    colorBgContainer: '#f6ffed',
+                                  },
+                                }}
+                              >
       <Spin spinning={loading}>
-        <Row justify="space-between" align="middle" style={{ marginBottom: "16px" }}>
+      <div className="table-head">
+              <h2>
+                New Applicants List
+              </h2>
+              <p>
+                This list contains data of students that have applied to the college
+              </p>
+            </div>
+        <Row justify="space-around" align="middle" style={{ margin: "1%" }}>
+          
           <Col>
             <Select
               placeholder="Select Study Center"
               onChange={handleFilterChange}
               value={selectedCenter}
-              style={{ width: 200 }}
+              style={{ width: 200 , margin:'auto'}}
               allowClear
             >
               {centers.map((center) => (
@@ -117,17 +140,22 @@ const ViewApplications = () => {
             </Select>
           </Col>
         </Row>
-        <div className="application_table">
+        
+         
+        <div className="flex gap-4 mb-4">
           <Table
             columns={columns}
             dataSource={filteredData}
             rowKey={(record) => record.id} // Use ID as a unique key
             pagination={{ pageSize: 10 }} // Pagination settings
             bordered
-          />
+            style={{width:'200%'}}
+            />
         </div>
+        
       </Spin>
-    </>
+            </ConfigProvider>
+    </div>
   );
 };
 

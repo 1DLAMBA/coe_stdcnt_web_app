@@ -29,7 +29,9 @@ const schoolsData = {
     "Mathematics / Geography",
     "Maths / Economics",
     "Maths / Biology",
+    "Maths / Computer Science",
     "Maths / Special Education",
+    "Biology / Inter Science",
     "Integrated Sciences (Double Major)",
     "Biology / Geography",
     "PHE (Double Major)",
@@ -71,6 +73,7 @@ const schoolsData = {
     "Hausa / Arabic",
     "Hausa / Social Studies",
     "Arabic / Islamic Studies",
+    "English / Islamic Studies",
     "Arabic / Social Studies",
     "English / Special Education",
     "Hausa / Special Education",
@@ -100,7 +103,7 @@ const Registration = () => {
   const [thirdStep, setThirdStep] = useState(null);
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const amount = 200000;
+  const amount = 400000;
   const [email, setEmail] = useState(firstStep.phone_number);
   const [current, setCurrent] = useState(0);
   const [uploadedOl1, setUploadedAL1] = useState('')
@@ -213,11 +216,12 @@ const Registration = () => {
 
 
       setStep('step3')
-    } else {
+    } else if(step==='step3') {
       setThirdStep(values)
+      userCheck()
       // setEmail(firstStep.email);
 
-      setStep('step4')
+      // setStep('step4')
 
       // console.log(values)
       // const personalResponse = await axios.post(API_ENDPOINTS.PERSONAL_DETAILS, firstStep);
@@ -232,6 +236,42 @@ const Registration = () => {
     }
   };
 
+  async function userCheck() {
+    try {
+      const form = { phoneNumber: firstStep.phone_number };
+      const schoolResponse = await axios.post(`${API_ENDPOINTS.API_BASE_URL}/check`, form);
+  
+      console.log('School Response:', schoolResponse);
+      if (schoolResponse?.data?.user && !schoolResponse?.data?.user.educational_detail) {
+        console.log('Third Form Values:', thirdStep);
+  
+        const educationFormData = {
+          ...thirdStep,
+          application_number: schoolResponse.data.user.id
+        } 
+  
+        const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, educationFormData);
+        console.log(finalResponse);
+        if (!finalResponse) {
+          setStep('step3');
+          message.error('An error occurred while processing your data. Please try again.');
+        return;
+        }
+        
+        navigate(`${schoolResponse.data.user.id}/success`);
+  
+      }else if (schoolResponse?.data?.user?.educational_detail){
+          message.error('User already with phone number already exists')
+      };
+    } catch (error) {
+      console.error("Error:", error.response ? error.response.data : error.message);
+  
+      // Set step4 ONLY when an error occurs
+      setStep('step4');
+    }
+  }
+  
+
   const componentProps = {
     email,
     amount,
@@ -241,7 +281,12 @@ const Registration = () => {
     split:{
       type: "flat",
       subaccounts: [
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 100000 },
+        // DANIEL ALAMBA
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 30000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 335000 },
+
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
       ]
     },
     publicKey,
@@ -298,9 +343,9 @@ const Registration = () => {
       const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, schoolFormData);
       console.log(schoolResponse);
 
-
+      console.log('Third Form Values:', thirdStep);
       const educationFormData = await { ...thirdStep, application_number: personalResponse.data.id }
-      const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, educationFormData)
+      const finalResponse = await axios.post(`${API_ENDPOINTS.EDUCATIONALS_APPLICATION}`, educationFormData)
       console.log(finalResponse);
       if (finalResponse) {
 
@@ -316,6 +361,7 @@ const Registration = () => {
     } catch (error) {
       console.error("Error sending user data:", error);
       alert("An error occurred while processing your payment. Please try again.");
+      setStep('step3')
     }
   }
 
@@ -1163,7 +1209,7 @@ const Registration = () => {
                     </h2>
 
                     <Row gutter={24}>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Type"
                           name="exam_type"
@@ -1178,7 +1224,7 @@ const Registration = () => {
                           </Select>
                         </Form.Item>
                       </Col>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Number"
                           name="exam_number"
@@ -1187,7 +1233,7 @@ const Registration = () => {
                           <Input placeholder="Enter Examination Number" />
                         </Form.Item>
                       </Col>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Month"
                           name="exam_month"
@@ -1204,7 +1250,7 @@ const Registration = () => {
                           </Select>
                         </Form.Item>
                       </Col>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Year"
                           name="exam_year"
@@ -1354,7 +1400,7 @@ const Registration = () => {
                     <div style={{ margin: "0.5rem 0" }}>
                       <Text type="warning"><WarningOutlined /> Please Ensure to review your submissions before proceeding to pay</Text><br />
                       <Text strong style={{ fontSize: "18px", color: "#028f64" }}>
-                        Fee Amount: ₦5,000
+                        Fee Amount: ₦4,000
                       </Text>
                     </div>
 

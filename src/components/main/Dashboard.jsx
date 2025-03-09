@@ -61,10 +61,9 @@ const Dashboard = () => {
       }
     };
 
-    if (userId) {
       fetchUser(); // Call the async function to fetch data
-    }
-  }, [userId]); // Only re-run if `userId` changes
+    
+  }, []); // Only re-run if `userId` changes
 
 
 

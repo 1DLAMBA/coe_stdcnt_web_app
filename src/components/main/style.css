@@ -34,6 +34,17 @@
     margin:auto
 }
 
+.btn-green{
+  /* background-color: green !important; */
+  color: white !important;
+  border:0.5px solid white !important;
+}
+.btn-green:hover{
+  background-color: white !important;
+  border:0.5px solid green !important;
+  color: green !important;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-image: url('../../assets/backgrround.jpg');
@@ -168,6 +179,7 @@ body {
 
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 .choice-sub{
   display: flex;

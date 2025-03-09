@@ -28,7 +28,7 @@ const BioData = () => {
   }
   const items = [
     {
-      path: '/Dashboard',
+      path: `/Dashboard/${id}`,
       title: <HomeFilled />,
     },
 
@@ -72,7 +72,7 @@ const BioData = () => {
     );
   }
 
-  
+
 
   return (
     <>
@@ -106,14 +106,25 @@ const BioData = () => {
               active='true'
               style={{
                 width: '80vw',
-                marginLeft:'10'
+                marginLeft: '10'
               }}
             />
           </>) : (<>
 
-            {bio.next_of_kin_relationship? (<>
+            {bio.application_number ? (<>
               <div style={{ padding: '1%' }}>
-                <Descriptions title="Personal Information" style={{ padding: '1%' }} bordered column={{ xs: 1, sm: 1, md: 2 }}>
+                <Descriptions
+                  title="Personal Information"
+                  bordered
+                  column={{ xs: 1, sm: 1, md: 2, lg: 3 }}
+                  size="small"
+                  className="mobile-descriptions"
+                  style={{
+                    padding: '0',
+                    fontSize: '14px',
+                    width: '100%'
+                  }}
+                >
                   <Descriptions.Item label="Email">{user?.email}</Descriptions.Item>
                   <Descriptions.Item label="Phone Number">{user?.phone_number}</Descriptions.Item>
                   <Descriptions.Item label="Gender">{user?.gender}</Descriptions.Item>
@@ -129,7 +140,15 @@ const BioData = () => {
                 <Divider />
 
                 {/* Academic Information */}
-                <Descriptions title="Academic Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
+                <Descriptions title="Academic Information" bordered
+                  column={{ xs: 1, sm: 1, md: 2, lg: 3 }}
+                  size="small"
+                  className="mobile-descriptions"
+                  style={{
+                    padding: '0',
+                    fontSize: '14px',
+                    width: '100%'
+                  }}>
 
                   <Descriptions.Item label="Level">{bio?.level}</Descriptions.Item>
                   {/* <Descriptions.Item label="Current Semester">{user?.current_semester}</Descriptions.Item> */}
@@ -169,9 +188,17 @@ const BioData = () => {
                 <Divider />
 
                 {/* Contact Information */}
-                <Descriptions title="Contact Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
+                <Descriptions title="Contact Information" bordered
+                  column={{ xs: 1, sm: 1, md: 2, lg: 3 }}
+                  size="small"
+                  className="mobile-descriptions"
+                  style={{
+                    padding: '0',
+                    fontSize: '14px',
+                    width: '100%'
+                  }}>
                   <Descriptions.Item label="Present Address">{user?.present_contact_address}</Descriptions.Item>
-                  <Descriptions.Item label="Permanent Address">{user?.permanent_home_address}</Descriptions.Item>
+                  <Descriptions.Item label="Permanent Address">{user?.address}</Descriptions.Item>
                   <Descriptions.Item label="Next of Kin">{bio?.next_of_kin}</Descriptions.Item>
                   <Descriptions.Item label="Next of Kin Phone">{bio?.next_of_kin_phone_number}</Descriptions.Item>
                   <Descriptions.Item label="Relationship">{bio?.next_of_kin_relationship}</Descriptions.Item>
@@ -180,60 +207,60 @@ const BioData = () => {
               </div>
             </>) : (<>
               <Card
-      style={{
-        maxWidth: '500px',
-        margin: '50px auto',
-        padding: '20px',
-        border: '1px solid #b7eb8f',
-        borderRadius: '10px',
-        backgroundColor: '#f6ffed',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        textAlign: 'center',
-      }}
-    >
-      <ExclamationCircleOutlined
-        style={{
-          fontSize: '48px',
-          color: '#52c41a',
-          marginBottom: '20px',
-        }}
-      />
-      <Typography.Title level={3} style={{ color: '#028f64', marginBottom: '10px' }}>
-        Action Required!
-      </Typography.Title>
-      <Text style={{ fontSize: '16px', color: '#595959' }}>
-        It looks like you haven't completed the <strong>Student Registration Form</strong> yet. This form is necessary to proceed further.
-      </Text>
-      <Text style={{ display: 'block', marginTop: '15px', fontSize: '14px', color: '#595959' }}>
-        Completing this form will allow us to process your details and ensure you're fully registered.
-      </Text>
-      <div style={{ marginTop: '30px' }}>
-      <ConfigProvider
-                theme={{
-                  token: {
-                    // Seed Token
-                    colorPrimary: '#028f64',
-                    borderRadius: 2,
-
-                    // Alias Token
-                    colorText: 'white',
-                    colorBgContainer: '#f6ffed',
-                  },
+                style={{
+                  maxWidth: '500px',
+                  margin: '50px auto',
+                  padding: '20px',
+                  border: '1px solid #b7eb8f',
+                  borderRadius: '10px',
+                  backgroundColor: '#f6ffed',
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                  textAlign: 'center',
                 }}
               >
-      <Button  block
+                <ExclamationCircleOutlined
                   style={{
-                    backgroundColor: "#028f64",
-                    borderColor: "#028f64",
-                    padding: "10px 40px",
-                    color: 'white',
-                    width: 'max-content'
-                  }} onClick={routeEdit} variant="outlined">
-                Update
-              </Button>
-              </ConfigProvider>
-      </div>
-    </Card>
+                    fontSize: '48px',
+                    color: '#52c41a',
+                    marginBottom: '20px',
+                  }}
+                />
+                <Typography.Title level={3} style={{ color: '#028f64', marginBottom: '10px' }}>
+                  Action Required!
+                </Typography.Title>
+                <Text style={{ fontSize: '16px', color: '#595959' }}>
+                  It looks like you haven't completed the <strong>Student Registration Form</strong> yet. This form is necessary to proceed further.
+                </Text>
+                <Text style={{ display: 'block', marginTop: '15px', fontSize: '14px', color: '#595959' }}>
+                  Completing this form will allow us to process your details and ensure you're fully registered.
+                </Text>
+                <div style={{ marginTop: '30px' }}>
+                  <ConfigProvider
+                    theme={{
+                      token: {
+                        // Seed Token
+                        colorPrimary: '#028f64',
+                        borderRadius: 2,
+
+                        // Alias Token
+                        colorText: 'white',
+                        colorBgContainer: '#f6ffed',
+                      },
+                    }}
+                  >
+                    <Button block
+                      style={{
+                        backgroundColor: "#028f64",
+                        borderColor: "#028f64",
+                        padding: "10px 40px",
+                        color: 'white',
+                        width: 'max-content'
+                      }} onClick={routeEdit} variant="outlined">
+                      Update
+                    </Button>
+                  </ConfigProvider>
+                </div>
+              </Card>
             </>)}
 
           </>)}

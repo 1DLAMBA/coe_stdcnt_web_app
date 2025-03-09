@@ -15,6 +15,8 @@ import Add_Applications from './components/main/dashboard/admin/admin-pages/Add_
 import Registration from './components/main/Registration';
 import Reg_Success from './components/Reg_Success';
 import Single_Application from './components/main/dashboard/admin/admin-pages/Single_Appliaction';
+import { Admin_dashboard } from './components/main/dashboard/admin/admin-pages/Admin_dashboard';
+import { View_approved } from './components/main/dashboard/admin/admin-pages/View_approved';
 
 
 function App() {
@@ -23,7 +25,10 @@ function App() {
       <Routes>
         <Route path="" element={<Main />} />
         <Route path="/admin" element={<Admin_Panel />} >
-          <Route path='/admin' element={<View_applications />} />
+          <Route path='/admin' element={<Admin_dashboard />} />
+          <Route path='/admin/view-applications' element={<View_applications />} />
+          <Route path='/admin/view-approved' element={<View_approved />} />
+          <Route path='/admin/view-approved/single/:id' element={<View_approved />} />
           <Route path='/admin/add-applications' element={<Add_Applications />} />
           <Route path='/admin/single-application/:id' element={<Single_Application />} />
 

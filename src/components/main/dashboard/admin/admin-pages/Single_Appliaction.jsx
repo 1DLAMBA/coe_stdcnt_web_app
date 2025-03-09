@@ -36,6 +36,16 @@ const Single_Application = () => {
    }
   }
 
+  async function reject(id){
+    try{
+      const personalResponse = await axios.get(`${API_ENDPOINTS.REJECT}/${id}`);
+      console.log(personalResponse)
+      window.location.reload();
+    } catch (error) {
+      console.error("Error :", error);
+    }
+  }
+
   async function view(type) {
      if(type =='olevel'){
       window.open(`${API_ENDPOINTS.IMAGE}/${data.olevel1}`, '_blank');
@@ -112,7 +122,7 @@ const Single_Application = () => {
 
   return (
     <div className="reg-success-container">
-      <Card className="" bordered={false}>
+      <Card className="" bordered={false} style={{ width: "82%" , margin: 'auto'}}>
         <div className="header-section">
           <Title level={3} style={{ color: "green", textAlign: "right" }}>
             {data.has_admission? (
@@ -146,6 +156,7 @@ const Single_Application = () => {
               color: "white",
               marginTop: "16px",
             }}
+            disabled
           ><CloseCircleFilled/>
             Reject
           </Button>

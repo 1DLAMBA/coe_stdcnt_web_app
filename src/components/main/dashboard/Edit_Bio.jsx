@@ -29,6 +29,7 @@ const Edit_Bio = () => {
   const [bioData, setBioData] = useState('');
   const userId=localStorage.getItem('id')
   const [data, setData] = useState([]);
+  const navigate = useNavigate();
 
   const [initialValues, setInitialValues] = useState({}); // State for form initial values
   const { id } = useParams();
@@ -202,6 +203,7 @@ const Edit_Bio = () => {
           nationality:values.nationality,
           mode_of_entry:values.mode_of_entry,
           session:values.session,
+          level:values.level,
           subject_combination:values.subject_combination,          
         }
 
@@ -237,8 +239,9 @@ const Edit_Bio = () => {
         const perosnalResponse = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, newPersonalForm);
 
         console.log('Response:', response.data);
+        // navigate(`/dashboard/${id}`);
         
-  // window.location.href = '/dashboard//bio-data';
+  window.location.href = `/dashboard/${id}/bio-data`;
     } catch (error) {
         console.error('Error saving bio-data:', error);
     } finally {
@@ -251,7 +254,7 @@ const Edit_Bio = () => {
     const fetchUser = async () => {
       try {
         console.log("Fetching user data for:", userId);
-        const response = await axios.get(`${API_ENDPOINTS}/bio-data/${userId}`);
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-data/${id}`);
         setBioData(response.data.data[0]); // Assuming the API returns an array in `data`
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -450,7 +453,7 @@ const Edit_Bio = () => {
         <Row gutter={[16, 16]}>
          
          
-          <Col xs={24} sm={12}>
+          <Col xs={24} sm={6}>
             <Form.Item label="Mode Of Entry" name="mode_of_entry">
             <Select>
                 <Option value="pre_nce">Pre NCE</Option>
@@ -458,8 +461,13 @@ const Edit_Bio = () => {
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Session" name="current_session">
+          <Col xs={24} sm={6}>
+            <Form.Item label="Session" name="session">
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={6}>
+            <Form.Item label="Level" name="level">
               <Input />
             </Form.Item>
           </Col>
@@ -472,9 +480,7 @@ const Edit_Bio = () => {
           
         </Row>
         <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "20px", color: "#028f64" }}>
-        Qualification and Results Form
-      </h1>
+     
       {/* <Form form={form} layout="vertical">
         <Table
           dataSource={data}
