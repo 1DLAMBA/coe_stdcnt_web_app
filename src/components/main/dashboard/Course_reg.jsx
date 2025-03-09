@@ -185,7 +185,7 @@ const Course_reg = () => {
       type: "flat",
       subaccounts: [
         //DANIEL ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 400000 },
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
         // COE ACCOUNT
         { subaccount: "ACCT_aan2ehxiej239du", share: 1480000 },
 
