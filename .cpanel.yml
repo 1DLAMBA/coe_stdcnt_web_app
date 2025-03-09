@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/coestudy/coe_web_app 
+    - export DEPLOYPATH=/home/coestudy/public_html/coe 
     - /bin/cp -R ./* $DEPLOYPATH
     - cd $DEPLOYPATH
     - npm install
