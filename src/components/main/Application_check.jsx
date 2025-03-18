@@ -215,7 +215,7 @@ const ApplicationCheck = () => {
               {view === 'acceptance' && (
                 <div className="acceptance-view">
                   <h4 className="text-green">Acceptance Fee Payment</h4>
-                  <p>Congratulations!! you have been offered admission to study <b>  {applicationNumber.course}</b> <br/>Please proceed to pay your acceptance fee of ₦4,100 to continue to application and registration </p>
+                  <p>Congratulations!! you have been offered admission to study <b>  {applicationNumber.course}</b> <br/>Please proceed to pay your acceptance fee of ₦3,000 to continue to application and registration </p>
                   {/* Add a button or link to payment page here if needed */}
                 <h3>{applicationNumber.other_names}</h3>
                 <h3>{applicationNumber.application_number}</h3>

@@ -17,6 +17,7 @@ import Reg_Success from './components/Reg_Success';
 import Single_Application from './components/main/dashboard/admin/admin-pages/Single_Appliaction';
 import { Admin_dashboard } from './components/main/dashboard/admin/admin-pages/Admin_dashboard';
 import { View_approved } from './components/main/dashboard/admin/admin-pages/View_approved';
+import Admission_Letter from './components/main/dashboard/documents/Admission_Letter';
 
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
           <Route path='/dashboard/:id/Bio-data' element={<Bio_data />} />
           <Route path='/dashboard/:id/Edit' element={<Edit_Bio />} />
           <Route path='/dashboard/:id/Course_reg' element={<Course_reg />} />
+          <Route path='/dashboard/:id/admission-letter' element={<Admission_Letter />} />
         </Route>
       </Routes>
     </BrowserRouter>

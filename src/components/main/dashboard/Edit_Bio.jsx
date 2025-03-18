@@ -6,6 +6,7 @@ import { IeOutlined, HomeFilled, EditOutlined, PlusOutlined } from '@ant-design/
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../Endpoints/environment';
+import dayjs from 'dayjs'; 
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -215,6 +216,7 @@ const Edit_Bio = () => {
             phone_number:values.phone_number,
             gender: values.gender,
             date_of_birth: values.date_of_birth,
+            place_of_birth: values.place_of_birth,
             local_government: values.local_government,
             name_of_father: values.name_of_father,
             father_place_of_birth: values.father_place_of_birth,
@@ -222,20 +224,21 @@ const Edit_Bio = () => {
             religion: values.religion,
         }
 
-        // console.log('BIO REG', payload.newForm)
-
+        
         const response = await axios.post(`${API_ENDPOINTS.BIO_REGISTRATION}`, RegForm, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-
-        console.log('Response:', response.data);
-        const newDateOfBirth = PersonalForm.date_of_birth.format('YYYY-MM-DD');
-        const newPersonalForm = {
-          ...PersonalForm,
-          date_of_birth: newDateOfBirth
-        }
+              headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            console.log('Response:', response.data);
+            const newDateOfBirth = PersonalForm.date_of_birth.format('YYYY-MM-DD');
+            const newPersonalForm = {
+              ...PersonalForm,
+              date_of_birth: newDateOfBirth
+            }
+            console.log('BIO REG', RegForm)
+            console.log('personal', newPersonalForm)
         const perosnalResponse = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, newPersonalForm);
 
         console.log('Response:', response.data);
@@ -254,8 +257,24 @@ const Edit_Bio = () => {
     const fetchUser = async () => {
       try {
         console.log("Fetching user data for:", userId);
-        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-data/${id}`);
-        setBioData(response.data.data[0]); // Assuming the API returns an array in `data`
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${id}`);
+        const perosnalResponse = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        setBioData(response.data); // Assuming the API returns an array in `data`
+      form.setFieldsValue(response.data);
+      form.setFieldsValue({
+        surname: perosnalResponse.data.surname,
+        other_names: perosnalResponse.data.other_names,
+        email: perosnalResponse.data.email,
+        phone_number: perosnalResponse.data.phone_number,
+        gender: perosnalResponse.data.gender,
+        date_of_birth: perosnalResponse.data.date_of_birth ? dayjs(perosnalResponse.date_of_birth): null,
+        marital_status: perosnalResponse.data.marital_status,
+        place_of_birth: perosnalResponse.data.place_of_birth,
+        religion: perosnalResponse.data.religion,
+        local_government: perosnalResponse.data.local_government,
+      });
+      console.log("Fetching user data for:", response);
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -304,7 +323,7 @@ const Edit_Bio = () => {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue(bioData);
     }
   }, [initialValues, form]);
 
@@ -380,7 +399,7 @@ const Edit_Bio = () => {
           </Row>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
-            <Form.Item label="Place of Birth" name="place_of_birth">
+            <Form.Item label="Place of Birth" name="place_of_birth"  rules={[{ required: true, message: 'Please enter place of birth' }]}>
               <Input />
             </Form.Item>
           </Col>

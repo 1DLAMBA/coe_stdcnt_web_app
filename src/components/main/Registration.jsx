@@ -219,17 +219,7 @@ const Registration = () => {
     } else if(step==='step3') {
       setThirdStep(values)
       userCheck()
-      // setEmail(firstStep.email);
 
-      // setStep('step4')
-
-      // console.log(values)
-      // const personalResponse = await axios.post(API_ENDPOINTS.PERSONAL_DETAILS, firstStep);
-      // console.log(personalResponse);
-      // const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, secondStep);
-      // console.log(schoolResponse);
-      // const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, values)
-      // console.log(finalResponse);
 
 
 
@@ -284,7 +274,7 @@ const Registration = () => {
         // DANIEL ALAMBA
         { subaccount: "ACCT_32iz48sbi1fshex", share: 30000 },
         // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 335000 },
+        { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
 
         // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
       ]

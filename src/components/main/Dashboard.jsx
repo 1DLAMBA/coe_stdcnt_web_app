@@ -1,13 +1,20 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import './Dashboard.css';
 import coverPhoto from '../../assets/backgrround.jpg';
-import { BarsOutlined, PhoneOutlined, MailOutlined,BookTwoTone, UserOutlined, BookFilled } from '@ant-design/icons';
+import {
+  BarsOutlined, PhoneOutlined, MailOutlined, BookTwoTone, UserOutlined, BookFilled,
+  BookOutlined,
+  FileTextOutlined,
+  LogoutOutlined,
+  HeatMapOutlined,
+  EnvironmentFilled
+} from '@ant-design/icons';
 import logo from '../../assets/logo2.png';
 import profilePic from '../../assets/pro-pic.png';
 import { PaystackButton } from "react-paystack";
 import { Routes, useNavigate } from 'react-router-dom';
-import { Outlet , useParams} from 'react-router-dom';
-import { Button, Popover, Skeleton,Space, ConfigProvider, Avatar, Flex } from 'antd';
+import { Outlet, useParams } from 'react-router-dom';
+import { Button, Popover, Skeleton, Space, ConfigProvider, Avatar, Flex, Tag } from 'antd';
 import axios from 'axios';
 import BioData from './dashboard/Bio_data';
 import API_ENDPOINTS from '../../Endpoints/environment';
@@ -19,18 +26,22 @@ const Dashboard = () => {
   const { id } = useParams();
   const [user, setUser] = useState('' || null);
   const [application, setApplication] = useState('');
-  const userId=localStorage.getItem('id')
+  const userId = localStorage.getItem('id')
   const [loader, setLoader] = useState(true);
 
 
   function routeBio() {
-    navigate(`Bio-data`);
+    navigate(`/Dashboard/${id}/Bio-data`);
   }
   function routeCourse() {
-    navigate(`Course_reg`);
+    navigate(`/Dashboard/${id}/Course_reg`);
   }
   function routeLogOUt() {
     navigate('/');
+  }
+
+  function routeAdmissionLetter() {
+    navigate(`/Dashboard/${id}/admission-letter`)
   }
 
   useEffect(() => {
@@ -47,13 +58,13 @@ const Dashboard = () => {
         //   console.log(responseBio.data.data);
         // }
 
-        if(!response.data.matric_number){
-    navigate('/');
+        if (!response.data.matric_number) {
+          navigate('/');
 
         }
 
 
-        console.log('Data',response.data.data);
+        console.log('Data', response.data.data);
         setLoader(false);
 
       } catch (error) {
@@ -61,39 +72,89 @@ const Dashboard = () => {
       }
     };
 
-      fetchUser(); // Call the async function to fetch data
-    
+    fetchUser(); // Call the async function to fetch data
+
   }, []); // Only re-run if `userId` changes
 
 
 
   // routeBio
   const content = (
-    <div>
-      <ConfigProvider
-        theme={{
-          token: {
-            // Seed Token
-            colorPrimary: 'green',
-            borderRadius: 2,
-            textAlign: 'start',
-            // Alias Token
-            colorBgContainer: '#f6ffed',
-          },
-        }}
-      >
-        <Button style={{ textAlign: 'start' }} block color="default" variant="outlined" onClick={routeBio}>
-          Bio Data
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: 'green',
+          borderRadius: 2,
+          // Removing textAlign from token as we'll handle it in the style
+          colorBgContainer: '#f6ffed',
+        },
+      }}
+    >
+      <Space direction="vertical" style={{ width: '100%' }}>
+        <Button
+          block
+          type="text"
+          onClick={routeBio}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <UserOutlined style={{ marginRight: '8px' }} /> Bio Data
         </Button>
 
-        <Button block color="default" variant="outlined" onClick={routeCourse}>
-          Course Reg
+        <Button
+          block
+          type="text"
+          onClick={routeCourse}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <BookOutlined style={{ marginRight: '8px' }} /> Course Reg
         </Button>
-        <Button block color="default" variant="outlined" onClick={routeLogOUt}>
-          Log Out
+
+        <Button
+          block
+          type="text"
+          onClick={routeAdmissionLetter}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <FileTextOutlined style={{ marginRight: '8px' }} /> Admission Letter
         </Button>
-      </ConfigProvider>
-    </div>
+
+        <div style={{ borderTop: '1px solid #e8e8e8', margin: '4px 0' }} />
+
+        <Button
+          block
+          danger
+          type="text"
+          onClick={routeLogOUt}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <LogoutOutlined style={{ marginRight: '8px' }} /> Log Out
+        </Button>
+      </Space>
+    </ConfigProvider>
   );
   // const
   return (
@@ -102,11 +163,39 @@ const Dashboard = () => {
       <div className="dashboard-container">
         <div className="head">
 
-          <img src={logo} alt="User" />
+          <img src={logo} alt="User"   style={{ marginLeft: '15%' }} />
 
-          <Popover content={content} trigger="click">
-            <BarsOutlined style={{ fontSize: '2rem', color: '#eef5f0', fontWeight: '600px', marginRight:'7%' }} />
-          </Popover>
+          <ConfigProvider
+            theme={{
+              token: {
+                // Seed Token
+                colorPrimary: '#028f64',
+                borderRadius: 2,
+
+                // Alias Token
+                margin: '20px',
+                colorBgContainer: '#f6ffed',
+                borderRadius: 40
+              },
+            }}
+          >
+            <Button type="primary" color='default' style={{ marginRight: '15%' }}  >
+              <Popover
+                overlayStyle={{ width: '13rem', marginRight: '10%' }}
+                content={content}
+                trigger="click"
+              >
+                <BarsOutlined
+                  style={{
+                    fontSize: '2rem',
+                    color: '#eef5f0',
+                    fontWeight: '600px',
+                    marginRight: '10%'
+                  }}
+                />
+              </Popover>
+            </Button>
+          </ConfigProvider>
 
         </div>
 
@@ -117,79 +206,81 @@ const Dashboard = () => {
       </div>
       <div className='content'>
         <div className="user-card">
+
           <Avatar
             size={140}
-            src={user?.photoId}
+            src={API_ENDPOINTS.API_BASE_URL + '/file/get/' + application?.passport}
             icon={<UserOutlined />}
             className="profile-pic"
           />
 
-{loader ? (<>
+          {loader ? (<>
 
-<div style={{display:'flex',width:'30%',justifyContent:'space-between', margin:'2%'}}>
+            <div style={{ display: 'flex', width: '30%', justifyContent: 'space-between', margin: '2%' }}>
 
-            <Skeleton.Node
-              active='true'
-              style={{
-                width: 170,
-                height:20
-              }}
-            />
-           
-            <Skeleton.Node
-              active='true'
-              style={{
-                width: 170,
-                height:20
-              }}
-            />
-</div>
-<div style={{display:'flex',width:'30%',justifyContent:'space-between',  margin:'2%'}}>
+              <Skeleton.Node
+                active='true'
+                style={{
+                  width: 170,
+                  height: 20
+                }}
+              />
 
-            <Skeleton.Node
-              active='true'
-              style={{
-                width: 170,
-                height:20
-              }}
-            />
-           
-            <Skeleton.Node
-              active='true'
-              style={{
-                width: 170,
-                height:20
-              }}
-            />
-</div>
+              <Skeleton.Node
+                active='true'
+                style={{
+                  width: 170,
+                  height: 20
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', width: '30%', justifyContent: 'space-between', margin: '2%' }}>
+
+              <Skeleton.Node
+                active='true'
+                style={{
+                  width: 170,
+                  height: 20
+                }}
+              />
+
+              <Skeleton.Node
+                active='true'
+                style={{
+                  width: 170,
+                  height: 20
+                }}
+              />
+            </div>
           </>) : (<>
-          {application?.surname? (<>
-            <div className='info-hold'>
-            <div style={{marginRight:'20px'}}>
-          <h2 className="user-name">{application?.surname} {application?.other_names} </h2>
-             
-              <p className="user-info">{<BookFilled/>}{application?.matric_number}</p>
-              <p className="user-info">{<BookTwoTone/>}{application?.course}</p>
+            {application?.surname ? (<>
+              <div className='info-hold'>
+                <div style={{ marginRight: '20px' }}>
+                  <h2 className="user-name">{application?.surname} {application?.other_names} </h2>
 
-            </div>
+                  <p className="user-info">{<BookFilled />}{application?.matric_number}</p>
+                  <p className="user-info">{<BookTwoTone />}{application?.course}</p>
 
-            <div style={{}}>
-              <p className="user-info"><PhoneOutlined /> {application.phone_number}</p>
+                </div>
 
-              <p className="user-info"><MailOutlined /> {application.email}</p>
-            </div>
-          </div></>):(<>
-            <div >
-            <h3>Your application number is {application.application_number}</h3>
-            <br></br>
-            <p style={{padding:'2%', border:'1px solid red', fontWeight:'bolder', borderRadius:'5px'}}>Please Update Personal Data</p>
-            
-          </div>
+                <div style={{}}>
+                  <p className="user-info"><PhoneOutlined /> {application.phone_number}</p>
+
+                  <p className="user-info"><MailOutlined /> {application.email}</p>
+                  <Tag  color="cyan" className="user-info" style={{padding:'2%'}}><EnvironmentFilled /> {application.desired_study_cent} study center</Tag>
+                </div>
+              </div></>) : (<>
+                <div >
+                  <h3>Your application number is {application.application_number}</h3>
+                  <br></br>
+                  <p style={{ padding: '2%', border: '1px solid red', fontWeight: 'bolder', borderRadius: '5px' }}>Please Update Personal Data</p>
+
+                </div>
+              </>)}
+
           </>)}
 
-          </>)}
 
-          
 
 
         </div>

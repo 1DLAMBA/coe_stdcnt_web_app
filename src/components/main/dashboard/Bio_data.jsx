@@ -80,9 +80,26 @@ const BioData = () => {
 
       <div className="bio-data-container">
         <div bordered={false} style={{ padding: '0 !important' }} className="bio-data-card">
-          <div style={{ textAlign: 'center', backgroundColor: '#028f64', padding: '10px', color: 'white', display: 'flex', alignItems: 'center', marginBottom: '1%' }}>
+          <div style={{ textAlign: 'center', backgroundColor: '#028f64', padding: '10px', color: 'white', display: 'flex', alignItems: 'center', marginBottom: '1%', justifyContent:'space-between' }}>
             <Title level={2} style={{ color: '#fff' }}>Bio Data</Title>
 
+ <ConfigProvider
+                theme={{
+                    token: {
+                        // Seed Token
+                        colorPrimary: '#028f64',
+                        borderRadius: 2,
+
+                        // Alias Token
+                        margin: '20px',
+                        colorBgContainer: '#fff',
+                    },
+                }}
+            >
+                <Button type="" color='default' style={{backgroundColor:'', color:""}} onClick={routeEdit} >
+                    Update
+                </Button>
+            </ConfigProvider>
           </div>
           {/* <Col className="profile-section" style={{ padding: '1%' }}>
             <div className="div">
@@ -129,7 +146,7 @@ const BioData = () => {
                   <Descriptions.Item label="Phone Number">{user?.phone_number}</Descriptions.Item>
                   <Descriptions.Item label="Gender">{user?.gender}</Descriptions.Item>
                   <Descriptions.Item label="Date of Birth">{user?.date_of_birth}</Descriptions.Item>
-                  <Descriptions.Item label="Place of Birth">{bio?.place_of_birth}</Descriptions.Item>
+                  <Descriptions.Item label="Place of Birth">{user?.place_of_birth}</Descriptions.Item>
                   <Descriptions.Item label="Marital Status">{user?.marital_status}</Descriptions.Item>
                   <Descriptions.Item label="Religion">{user?.religion}</Descriptions.Item>
                   <Descriptions.Item label="Nationality">{bio?.nationality}</Descriptions.Item>
@@ -152,16 +169,35 @@ const BioData = () => {
 
                   <Descriptions.Item label="Level">{bio?.level}</Descriptions.Item>
                   {/* <Descriptions.Item label="Current Semester">{user?.current_semester}</Descriptions.Item> */}
-                  <Descriptions.Item label="Session">{user?.current_session}</Descriptions.Item>
+                  <Descriptions.Item label="Session">{bio?.session}</Descriptions.Item>
                   <Descriptions.Item label="Matric Number">{user?.matric_number}</Descriptions.Item>
                   <Descriptions.Item label="Mode of Entry">{bio?.mode_of_entry}</Descriptions.Item>
-                  <Descriptions.Item label="Study Mode">{bio?.study_mode}</Descriptions.Item>
                   {/* <Descriptions.Item label="Entry Year">{bio?.entry_year}</Descriptions.Item> */}
                   <Descriptions.Item label="Program Duration">{user?.program_duration} years</Descriptions.Item>
                   {/* <Descriptions.Item label="Award in View">{user?.award_in_view}</Descriptions.Item> */}
                 </Descriptions>
 
                 <Divider />
+
+                <Descriptions title="Guardian Information" bordered
+                  column={{ xs: 1, sm: 1, md: 2, lg: 3 }}
+                  size="small"
+                  className="mobile-descriptions"
+                  style={{
+                    padding: '0',
+                    fontSize: '14px',
+                    width: '100%'
+                  }}>
+
+                  <Descriptions.Item label="Father's/Guardian name">{user?.name_of_father}</Descriptions.Item>
+                  {/* <Descriptions.Item label="Current Semester">{user?.current_semester}</Descriptions.Item> */}
+                  <Descriptions.Item label="Father's/Guardian State">{user?.father_state_of_origin}</Descriptions.Item>
+                  <Descriptions.Item label="Father's/Guardian P.O.B">{user?.father_place_of_birth}</Descriptions.Item>
+                  <Descriptions.Item label="Applicant Occupation">{bio?.applicant_occupation}</Descriptions.Item>
+                  {/* <Descriptions.Item label="Entry Year">{bio?.entry_year}</Descriptions.Item> */}
+                  {/* <Descriptions.Item label="Program Duration">{user?.program_duration} years</Descriptions.Item> */}
+                  {/* <Descriptions.Item label="Award in View">{user?.award_in_view}</Descriptions.Item> */}
+                </Descriptions>
 
                 {/* Payment Information */}
                 {/* <Descriptions title="Payment Information" bordered column={{ xs: 1, sm: 1, md: 2 }}>
@@ -188,7 +224,7 @@ const BioData = () => {
                 <Divider />
 
                 {/* Contact Information */}
-                <Descriptions title="Contact Information" bordered
+                <Descriptions title="Sponsorship Information" bordered
                   column={{ xs: 1, sm: 1, md: 2, lg: 3 }}
                   size="small"
                   className="mobile-descriptions"
