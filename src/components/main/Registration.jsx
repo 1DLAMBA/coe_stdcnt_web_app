@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider } from 'antd';
+import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider ,Alert} from 'antd';
 import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled } from '@ant-design/icons';
 import './style.css';
 import logo from '../../assets/logo2.png';
@@ -228,6 +228,10 @@ const Registration = () => {
 
   async function userCheck() {
     try {
+      if(!thirdStep){
+        message.error('Please fill the form Correctly')
+        return;
+      }
       const form = { phoneNumber: firstStep.phone_number };
       const schoolResponse = await axios.post(`${API_ENDPOINTS.API_BASE_URL}/check`, form);
   
@@ -239,8 +243,16 @@ const Registration = () => {
           ...thirdStep,
           application_number: schoolResponse.data.user.id
         } 
+      const year = new Date().getFullYear();
+
+        const newPersonalForm = {
+          application_number: `${year + thirdStep.exam_number}`,
+          application_reference: null,
+        }
   
+        const perosnalResponse = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${schoolResponse.data.user.id}`, newPersonalForm);
         const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, educationFormData);
+
         console.log(finalResponse);
         if (!finalResponse) {
           setStep('step3');
@@ -1393,8 +1405,9 @@ const Registration = () => {
                         Fee Amount: ₦4,000
                       </Text>
                     </div>
-
+                    
                     <PaystackButton className='btn btn-green' {...componentProps} />
+                     
 
                     <Divider />
                     <Button type="link" style={{ color: "#028f64" }}>

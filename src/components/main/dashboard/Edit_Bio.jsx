@@ -209,7 +209,6 @@ const Edit_Bio = () => {
         }
 
         const PersonalForm = {
-          application_number:id,
             surname: values.surname,
             other_names: values.other_names,
             email: values.email,
