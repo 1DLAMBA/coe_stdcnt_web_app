@@ -117,7 +117,24 @@ export const Admin_dashboard = () => {
             <Tag color="red">No</Tag>
           )}
         </span>
-      ),}
+      ),},
+       {
+          title: "Programme Type",
+          dataIndex: "bio_registration.mode_of_entry",
+          key: "programme_type",
+          render: (_, record) => {
+            const modeOfEntry = record.bio_registration?.mode_of_entry;
+            return (
+              <span>
+                {modeOfEntry === 'pre_nce' ? (
+                  <Tag color="green">Pre NCE</Tag>
+                ) : (
+                  <Tag color="cyan">{modeOfEntry || 'Direct NCE'}</Tag>
+                )}
+              </span>
+            );
+          },
+        },
     
   ];
 

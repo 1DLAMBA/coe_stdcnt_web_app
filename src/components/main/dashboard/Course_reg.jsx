@@ -15,9 +15,7 @@ import axios from 'axios';
 import API_ENDPOINTS from '../../../Endpoints/environment';
 
 const { Title, Text } = Typography;
-
 const { Option } = Select;
-
 
 const Course_reg = () => {
   const [courses, setCourses] = useState([""]); // Start with one empty course field
@@ -50,6 +48,7 @@ const Course_reg = () => {
   const [availableCourses, setAvailableCourses] = useState([]);
   const userId = localStorage.getItem('id')
   const { id } = useParams();
+  const [centerAccount, setCenterAccount] = useState('');
 
   const itemLink = [
     {
@@ -104,9 +103,9 @@ const Course_reg = () => {
         //Daniel Alamba
         { subaccount: "ACCT_32iz48sbi1fshex", share: 69000 },
         // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 3800000 },
-
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+        { subaccount: "ACCT_aan2ehxiej239du", share: 2090000 },
+        //CENTER ACCOUNT 
+        { subaccount: centerAccount, share: 1710000 },
       ]
     },
     text: "Pay Complete Fees Now",
@@ -146,9 +145,9 @@ const Course_reg = () => {
         // Daniel ALAMBA
         { subaccount: "ACCT_32iz48sbi1fshex", share: 69000 },
         // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 2220000 },
-
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+        { subaccount: "ACCT_aan2ehxiej239du", share: 1221000 },
+        //CENTER ACCOUNT 
+        { subaccount: centerAccount, share: 999000 },
       ]
     },
     text: "Pay 60% Now",
@@ -187,9 +186,9 @@ const Course_reg = () => {
         //DANIEL ALAMBA
         { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
         // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 1480000 },
-
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+        { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
+        //CENTER ACCOUNT 
+        { subaccount: centerAccount, share: 666000 },
       ]
     },
     text: "Pay Now",
@@ -235,15 +234,15 @@ const Course_reg = () => {
             textAlign: 'start',
             // Alias Token
             colorBgContainer: '#f6ffed',
-            
+
           },
         }}
       >
-        <PaystackButton style={{width:'100%', margin:'2%'}} className='btn btn-green' {...componentProps} />
-        <br/>
-        <br/>
+        <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
+        <br />
+        <br />
 
-        <PaystackButton style={{width:'100%', margin:'2%'}} className='btn btn-green' {...component60Props} />
+        <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...component60Props} />
 
       </ConfigProvider>
     </div>
@@ -335,45 +334,80 @@ const Course_reg = () => {
   };
 
   const fetchUser = async () => {
-    // console.log('check')
+    // Define the function before using it
+    const setCenterAccountBySite = (studyCenter) => {
+      switch (studyCenter) {
+        case 'New Bussa':
+          return 'ACCT_aan2ehxiej239du';
+        case 'Gulu':
+          return 'ACCT_0saux3r5q758ky6';
+        case 'suleja':
+          return 'ACCT_n3bppexq5wd5n85';
+        case 'Gawu':
+          return 'ACCT_by8wdwd0a10g68u';
+        case 'Mokwa':
+          return 'ACCT_bvaybztnxq9r7mk';
+        case 'Kagara':
+          return 'ACCT_sr3hi6ohw6w5bd3';
+        case 'Rijau':
+          return 'ACCT_te7rbklmjj58gja';
+        case 'Kontogora':
+          return 'ACCT_zbec9c9igq0alsz';
+        case 'Doko':
+          return 'ACCT_pft4xrq2nn8z3kz';
+        case 'Katcha':
+          return 'ACCT_q7hpb8aop6872xk';
+        case 'Salka':
+          return 'ACCT_zduspv9kbkc5wsp';
+        default:
+          return 'ACCT_aan2ehxiej239du'; // Default COE account
+      }
+    };
+
     try {
       const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/course-data`);
-      setAvailableCourses(response.data || []); // Assuming the API returns user data in `response.data`
+      setAvailableCourses(response.data || []);
       console.log('COURSES fetched', response);
+
       const user = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
       console.log('USER fetched', user);
-      handleCenterChange(user.data.desired_study_cent);
 
-      setUser(user.data)
+      handleCenterChange(user.data.desired_study_cent);
+      setUser(user.data);
+
+      // Move the center account logic here
+      if (user.data.desired_study_cent) {
+        const centerAccount = setCenterAccountBySite(user.data.desired_study_cent);
+        setCenterAccount(centerAccount);
+        console.log('Center Account', centerAccount);
+      }
 
       const bio = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${user.data.id}`);
-      console.log("USER BUI", bio)
+      console.log("USER BUI", bio);
 
-      setCourseLoading(false)
-
-      setSpinning(false)
+      setCourseLoading(false);
+      setSpinning(false);
 
       // finding the user courses
-      const center = await studyCenters.find((sc) => sc.name === user.data.desired_study_cent)
+      const center = await studyCenters.find((sc) => sc.name === user.data.desired_study_cent);
       if (center && center.levels[Number(bio.data.level)]) {
-        console.log(center.levels[Number(bio.data.level)])
-
-        setCourses(center.levels[Number(bio.data.level)])
+        console.log(center.levels[Number(bio.data.level)]);
+        setCourses(center.levels[Number(bio.data.level)]);
       }
-      if (!bio.data.application_number) {
-        navigate(`/Dashboard/${id}/bio-data`)
+
+      if (!bio.data.level) {
+        navigate(`/Dashboard/${id}/bio-data`);
       } else {
-        console.log("USER BIO", bio.data)
-        setEmail(user.data.email)
+        console.log("USER BIO", bio.data);
+        setEmail(user.data.email);
         handleLevelChange(bio.data.level);
-
-        setApplicationNumber(user.data.application_number)
-
+        setApplicationNumber(user.data.application_number);
       }
 
       const courses = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${user.data.id}`);
-      console.log("USER COURSES", courses)
+      console.log("USER COURSES", courses);
       setUserCourses(courses.data);
+
       const toBeFiltered = courses.data;
       const filteredCourses = toBeFiltered.filter(
         (course) => course.semester === "1st"
@@ -382,15 +416,14 @@ const Course_reg = () => {
         (course) => course.semester === "2nd"
       );
 
-
       if (user.data.course_paid) {
-        setView(false)
+        setView(false);
       }
-      setUser1stCourses(filteredCourses)
-      setUser2ndCourses(filtered2ndCourses)
+      setUser1stCourses(filteredCourses);
+      setUser2ndCourses(filtered2ndCourses);
 
       if (courses) {
-        setView(false)
+        setView(false);
       }
 
     } catch (error) {
@@ -467,7 +500,7 @@ const Course_reg = () => {
 
     <>
       <Breadcrumb style={{ marginLeft: '8.7%', marginTop: '1%', backgroundColor: 'white', width: '82.5%', color: 'white', borderRadius: '15px', padding: '0.5%' }} itemRender={itemRender} items={items} />
-      <Spin spinning={spinning}  fullscreen />
+      <Spin spinning={spinning} fullscreen />
       <div style={{ padding: '0 ', backgroundColor: '#fff', minHeight: '100vh', width: '83%', margin: '1% auto', display: 'flex', flexDirection: 'column' }}>
         <div style={{ textAlign: 'center', backgroundColor: '#028f64', padding: '10px', color: 'white', display: 'flex', alignItems: 'center' }}>
           <Title level={2} style={{ color: '#fff' }}>Course Registration</Title>
@@ -798,38 +831,38 @@ const Course_reg = () => {
         <div className="responsive-tables-container">
 
 
-        <Table
-    columns={columns}
-    dataSource={user1stCourses}
-    rowKey="code"
-    title={() => 'First Semester'}
-    pagination={false}
-    bordered
-    style={{ 
-      backgroundColor: 'white', 
-      marginBottom: '20px',
-      width: '100%'
-    }}
-    scroll={{ x: true }}
-    size="small"
-    className="course-table"
-  />
+          <Table
+            columns={columns}
+            dataSource={user1stCourses}
+            rowKey="code"
+            title={() => 'First Semester'}
+            pagination={false}
+            bordered
+            style={{
+              backgroundColor: 'white',
+              marginBottom: '20px',
+              width: '100%'
+            }}
+            scroll={{ x: true }}
+            size="small"
+            className="course-table"
+          />
 
-  <Table
-    columns={columns}
-    dataSource={user2ndCourses}
-    title={() => 'Second Semester'}
-    rowKey="code"
-    pagination={false}
-    bordered
-    style={{ 
-      backgroundColor: 'white', 
-      width: '100%'
-    }}
-    scroll={{ x: true }}
-    size="small"
-    className="course-table"
-  />
+          <Table
+            columns={columns}
+            dataSource={user2ndCourses}
+            title={() => 'Second Semester'}
+            rowKey="code"
+            pagination={false}
+            bordered
+            style={{
+              backgroundColor: 'white',
+              width: '100%'
+            }}
+            scroll={{ x: true }}
+            size="small"
+            className="course-table"
+          />
         </div>
       </div>
     </>

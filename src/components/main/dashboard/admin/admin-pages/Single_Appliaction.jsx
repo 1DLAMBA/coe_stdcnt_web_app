@@ -22,14 +22,23 @@ const Single_Application = () => {
 
   async function approve(id){
     try {
-      // if(studentDetails.desired_study_cent ==='suleja'){
-      //   const matricNumber ='SU'+ ;
-
-      // }
       const personalResponse = await axios.get(`${API_ENDPOINTS.APPROVE}/${id}`);
       console.log(personalResponse)
       window.location.reload();
+    } catch (error) {
+      console.error("Error :", error);
+   }
+  }
 
+  async function approve_prence(){
+    const formData = {
+      application_number: studentDetails.application_number,
+      mode_of_entry: 'pre_nce'
+    }
+    try {
+      const personalResponse = await axios.post(`${API_ENDPOINTS.APPROVE_PRENCE}`, formData );
+      console.log(personalResponse)
+      window.location.reload();
     } catch (error) {
       console.error("Error :", error);
 
@@ -146,7 +155,20 @@ const Single_Application = () => {
             <CheckCircleFilled/>
             Approve
           </Button>
-           
+          <Button
+            type="primary"
+            onClick={()=>approve_prence()}
+            style={{
+              backgroundColor: "#009999",
+              borderColor: "#009999",
+              color: "white",
+              marginTop: "16px",
+              marginRight: "16px",
+            }}
+          >
+            <CheckCircleFilled/>
+            Approve Pre NCE
+          </Button>
           <Button
             type="primary"
             onClick={handlePrint}

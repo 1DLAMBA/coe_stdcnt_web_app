@@ -128,7 +128,7 @@ const BioData = () => {
             />
           </>) : (<>
 
-            {bio.application_number ? (<>
+            {bio.level ? (<>
               <div style={{ padding: '1%' }}>
                 <Descriptions
                   title="Personal Information"
