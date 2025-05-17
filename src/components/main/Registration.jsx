@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider ,Alert} from 'antd';
-import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled } from '@ant-design/icons';
+import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled, LoadingOutlined } from '@ant-design/icons';
 import './style.css';
 import logo from '../../assets/logo2.png';
 import axios from 'axios';
@@ -116,6 +116,7 @@ const Registration = () => {
   const [selectedState, setSelectedState] = useState(null);
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingLGAs, setLoadingLGAs] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const next = () => {
     setCurrent(current + 1);
@@ -164,23 +165,28 @@ const Registration = () => {
 
   const handleUploadChange = (info, setUploadedState, type) => {
     const { status } = info.file;
-    if (status === 'done') {
+    if (status === 'uploading') {
+      setUploading(true);
+      message.loading('Uploading passport photo...', 0);
+    } else if (status === 'done') {
+      setUploading(false);
+      message.destroy(); // Clear the loading message
       message.success(`${info.file.name} file uploaded successfully.`);
       const reader = new FileReader();
 
-      const fileName = info.file.response.data; // Assuming the response contains the file name as "fileName"
+      const fileName = info.file.response.data;
       if (type === 'passport') {
         setPassport(fileName)
         console.log(info)
         setImageUrl(`${API_ENDPOINTS.IMAGE}/${info.file.response.data}`)
       } else if (type === 'olevel') {
-
         setUploadedAL1(fileName);
       } else if (type === 'nin') {
-
         setNIN(fileName);
       }
     } else if (status === 'error') {
+      setUploading(false);
+      message.destroy(); // Clear the loading message
       message.error(`${info.file.name} file upload failed.`);
     }
   };
@@ -213,8 +219,6 @@ const Registration = () => {
       console.log('First Form Values:', firstStep);
       next()
       window.scrollTo(0, 0)
-
-
       setStep('step3')
     } else if(step==='step3') {
       setThirdStep(values)
@@ -587,20 +591,23 @@ const Registration = () => {
                       beforeUpload={beforeUpload}
                       {...props(setUploadedAL1, 'passport')}
                       accept="image/*"
-                    ><ConfigProvider
-                      theme={{
-                        token: {
-                          // Seed Token
-                          colorPrimary: '#028f64',
-                          borderRadius: 2,
-
-                          // Alias Token
-                          margin: '20px',
-                          colorBgContainer: '#f6ffed',
-                        },
-                      }}
                     >
-                        <Button icon={<UploadOutlined />}>Upload Passport</Button>
+                      <ConfigProvider
+                        theme={{
+                          token: {
+                            colorPrimary: '#028f64',
+                            borderRadius: 2,
+                            margin: '20px',
+                            colorBgContainer: '#f6ffed',
+                          },
+                        }}
+                      >
+                        <Button 
+                          icon={uploading ? <LoadingOutlined /> : <UploadOutlined />} 
+                          disabled={uploading}
+                        >
+                          {uploading ? 'Uploading...' : 'Upload Passport'}
+                        </Button>
                       </ConfigProvider>
                     </Upload>
                   </div>

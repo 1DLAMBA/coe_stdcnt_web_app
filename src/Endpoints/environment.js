@@ -13,6 +13,7 @@ const API_ENDPOINTS = {
     EDUCATIONALS_APPLICATION:`${API_BASE_URL}/educational-details`,
     APPROVE:`${API_BASE_URL}/approve`,
     APPROVE_PRENCE:`${API_BASE_URL}/approve_prence`,
+    VERIFY_REFERENCE:`${API_BASE_URL}/verify_reference`,
 
 }
 

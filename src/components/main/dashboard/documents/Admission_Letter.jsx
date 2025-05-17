@@ -140,7 +140,7 @@ const Admission_Letter = () => {
                                 <br/>
                                 <Text>B. Sc, MSc</Text>
                                 <br/>
-                                <Text strong>Registrar:</Text> Malt. Aliyu Shehu Kontagora
+                                <Text strong>Registrar:</Text> Mall. Aliyu Shehu Kontagora
                            
                             </Col>
                             <Col span={4}>

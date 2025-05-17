@@ -98,38 +98,33 @@ const ViewApplications = () => {
   };
 
   return (
-    <div style={{ width: '85%', display: '', justifyContent: 'space-around', margin: '2% auto' }}>
+    <div style={{ width: '100%', maxWidth: '1200px', margin: '2% auto', padding: '0 20px' }}>
       
       <ConfigProvider
-                                theme={{
-                                  token: {
-                                    // Seed Token
-                                    colorPrimary: '#028f64',
-                                    borderRadius: 2,
-          
-                                    // Alias Token
-                                    margin: '20px',
-                                    colorBgContainer: '#f6ffed',
-                                  },
-                                }}
-                              >
+        theme={{
+          token: {
+            colorPrimary: '#028f64',
+            borderRadius: 2,
+            colorBgContainer: '#f6ffed',
+          },
+        }}
+      >
       <Spin spinning={loading}>
-      <div className="table-head">
-              <h2>
-                New Applicants List
-              </h2>
-              <p>
-                This list contains data of students that have applied to the college
-              </p>
-            </div>
+        <div className="table-head">
+          <h2>
+            New Applicants List
+          </h2>
+          <p>
+            This list contains data of students that have applied to the college
+          </p>
+        </div>
         <Row justify="space-around" align="middle" style={{ margin: "1%" }}>
-          
-          <Col>
+          <Col xs={24} sm={24} md={12} lg={8}>
             <Select
               placeholder="Select Study Center"
               onChange={handleFilterChange}
               value={selectedCenter}
-              style={{ width: 200 , margin:'auto'}}
+              style={{ width: '100%', maxWidth: '300px', margin: 'auto' }}
               allowClear
             >
               {centers.map((center) => (
@@ -141,20 +136,19 @@ const ViewApplications = () => {
           </Col>
         </Row>
         
-         
-        <div className="flex gap-4 mb-4">
+        <div style={{ overflowX: 'auto' }}>
           <Table
             columns={columns}
             dataSource={filteredData}
-            rowKey={(record) => record.id} // Use ID as a unique key
-            pagination={{ pageSize: 10 }} // Pagination settings
+            rowKey={(record) => record.id}
+            pagination={{ pageSize: 10 }}
             bordered
-            style={{width:'200%'}}
-            />
+            scroll={{ x: 'max-content' }}
+          />
         </div>
         
       </Spin>
-            </ConfigProvider>
+      </ConfigProvider>
     </div>
   );
 };

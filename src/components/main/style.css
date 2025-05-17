@@ -1,11 +1,14 @@
 @media only screen and (max-width: 600px) {
   .card {
-    margin: auto;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    margin-bottom: 5%;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 89vw;
-    padding: 2%;
+    width: 100%;
     display: flex;
+    
     flex-direction: column;
   }
 
@@ -16,8 +19,11 @@
 
 @media only screen and (min-width: 600px) {
   .card {
-    margin: auto;
-    border-radius: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    margin-bottom: 5%;  
+      border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 40vw;
     padding: 2%;
@@ -53,14 +59,19 @@ body {
   }
   
   .container {
-    height:100vh;
+    height: 100dvh;
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(10px);
-    background-color: #d2f5d35b;
-    width: 100%;
-  }
+    background-color: rgba(210, 245, 211, 0.36); /* More readable rgba format */
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
 
   .header{
     display: flex;

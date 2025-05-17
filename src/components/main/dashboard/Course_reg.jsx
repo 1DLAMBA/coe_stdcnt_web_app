@@ -3,11 +3,11 @@ import { useNavigate, Link, useParams } from 'react-router-dom';
 import {
   message,
   Button, Input, Spin, Table, Typography, ConfigProvider, Popover, Dropdown, Space, Breadcrumb, Select, Form,
-  Flex
+  Flex, Divider, Row, Col
 
 } from 'antd';
 import './BioData.css';
-import { ArrowLeftOutlined, SearchOutlined, BookOutlined, HomeFilled, SaveFilled, FolderAddFilled, PlusCircleFilled } from '@ant-design/icons';
+import { FieldTimeOutlined, BookFilled, NumberOutlined, BookOutlined, AppstoreAddOutlined, TagOutlined, DeleteOutlined, TrophyOutlined, CalendarOutlined, ReadOutlined, HomeFilled, SaveOutlined, FolderAddFilled, DollarOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { PaystackButton } from "react-paystack";
 import { studyCenters } from "./data";
 import { Card } from 'antd';
@@ -20,7 +20,8 @@ const { Option } = Select;
 const Course_reg = () => {
   const [courses, setCourses] = useState([""]); // Start with one empty course field
   const [courseInfo, setCourseInfo] = useState(''); // Start with one empty course field
-  const [userCourses, setUserCourses] = useState([""]); // Start with one empty course field
+  const [userCourses, setUserCourses] = useState([]); // Start with one empty course field
+  const [disabled, setDisabled] = useState(true); // Start with one empty course field
   const [user2ndCourses, setUser2ndCourses] = useState([""]); // Start with one empty course field
   const [user1stCourses, setUser1stCourses] = useState([""]); // Start with one empty course field
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ const Course_reg = () => {
   const [selectedLevel, setSelectedLevel] = useState("");
   const [view, setView] = useState(true);
   const [user, setUser] = useState('');
+  const [form] = Form.useForm();
   const [modeOfCourse, setModeOfCourse] = useState("");
   const [subjectOfStudy, setSubjectOfStudy] = useState("");
   const [session, setSession] = useState("");
@@ -40,7 +42,8 @@ const Course_reg = () => {
   const [spinning, setSpinning] = useState(false);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  // const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
   const [applicationNumber, setApplicationNumber] = useState('');
   const amount = 4000000;
   const amount60 = 2400000;
@@ -92,24 +95,24 @@ const Course_reg = () => {
     email,
     amount,
     metadata: {
-      // name,
-      // phone,
+      id: id,
+      pay_type: "complete_school_fees",
       // regNumber
     },
     publicKey,
-    split: {
-      type: "flat",
-      subaccounts: [
-        //Daniel Alamba
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 69000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 2090000 },
-        //CENTER ACCOUNT 
-        { subaccount: centerAccount, share: 1710000 },
-      ]
-    },
+    // split: {
+    //   type: "flat",
+    //   subaccounts: [
+    //     //Bantigi Oasis
+    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 68500 },
+    //     // COE ACCOUNT
+    //     { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
+    //     //CENTER ACCOUNT 
+    //     { subaccount: centerAccount, share: 1730000 },
+    //   ]
+    // },
     text: "Pay Complete Fees Now",
-    onSuccess: (reference) => {
+    onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         couse_fee_date: reference.reference,
@@ -121,10 +124,24 @@ const Course_reg = () => {
       };
       localStorage.setItem('UserData', formData)
       localStorage.setItem('app_number', applicationNumber)
-      const response = axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`,
-        formData,
-      );
-      navigate(`/dashboard/${id}`);
+      try {
+        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        console.log(response);
+        window.location.href = await `/dashboard/${id}/fees-receipt`;
+      } catch (error) {
+        console.error("Error updating personal details:", error);
+        message.error("Failed to update personal details");
+      } finally {
+        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        console.log(response);
+        if (response.data) {
+          message.loading("redirecting to fees receipt");
+          window.location.href = await `/dashboard/${id}/fees-receipt`;
+
+
+        }
+        setLoading(false);
+      }
 
     },
     onClose: () => alert("Wait! Don't leave :("),
@@ -134,24 +151,24 @@ const Course_reg = () => {
     email,
     amount: 2400000,
     metadata: {
-      // name,
-      // phone,
+      id: id,
+      pay_type: "partial_school_fees",
       // regNumber
     },
     publicKey,
-    split: {
-      type: "flat",
-      subaccounts: [
-        // Daniel ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 69000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 1221000 },
-        //CENTER ACCOUNT 
-        { subaccount: centerAccount, share: 999000 },
-      ]
-    },
+    // split: {
+    //   type: "flat",
+    //   subaccounts: [
+    //     // Daniel ALAMBA
+    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 61500 },
+    //     // COE ACCOUNT
+    //     { subaccount: "ACCT_aan2ehxiej239du", share: 1221000 },
+    //     //CENTER ACCOUNT 
+    //     { subaccount: centerAccount, share: 1006500 },
+    //   ]
+    // },
     text: "Pay 60% Now",
-    onSuccess: (reference) => {
+    onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         couse_fee_date: reference.reference,
@@ -162,10 +179,24 @@ const Course_reg = () => {
       };
       localStorage.setItem('UserData', formData)
       localStorage.setItem('app_number', applicationNumber)
-      const response = axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`,
-        formData,
-      );
-      navigate(`/dashboard/${id}`);
+      try {
+        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        console.log(response);
+        window.location.href = await `/dashboard/${id}/fees-receipt`;
+      } catch (error) {
+        console.error("Error updating personal details:", error);
+        message.error("Failed to update personal details");
+      } finally {
+        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        console.log(response);
+        if (response.data) {
+          message.loading("redirecting to fees receipt");
+          window.location.href = await `/dashboard/${id}/fees-receipt`;
+
+
+        }
+        setLoading(false);
+      }
 
     },
     onClose: () => alert("Wait! Don't leave :("),
@@ -175,24 +206,24 @@ const Course_reg = () => {
     email,
     amount: 1600000,
     metadata: {
-      // name,
-      // phone,
+      id: id,
+      pay_type: "school_fees_completion",
       // regNumber
     },
     publicKey,
-    split: {
-      type: "flat",
-      subaccounts: [
-        //DANIEL ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
-        //CENTER ACCOUNT 
-        { subaccount: centerAccount, share: 666000 },
-      ]
-    },
+    // split: {
+    //   type: "flat",
+    //   subaccounts: [
+    //     //DANIEL ALAMBA
+    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
+    //     // COE ACCOUNT
+    //     { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
+    //     //CENTER ACCOUNT 
+    //     { subaccount: centerAccount, share: 666000 },
+    //   ]
+    // },
     text: "Pay Now",
-    onSuccess: (reference) => {
+    onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         couse_fee_date: reference.reference,
@@ -203,18 +234,33 @@ const Course_reg = () => {
       };
       localStorage.setItem('UserData', formData)
       localStorage.setItem('app_number', applicationNumber)
-      const response = axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`,
-        formData,
-      );
-      navigate(`/dashboard/${id}`);
+      try {
+        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        console.log(response);
+        window.location.href = await `/dashboard/${id}/fees-receipt`;
+      } catch (error) {
+        console.error("Error updating personal details:", error);
+        message.error("Failed to update personal details");
+      } finally {
+        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        console.log(response);
+        if (response.data) {
+          message.loading("redirecting to fees receipt");
+          window.location.href = await `/dashboard/${id}/fees-receipt`;
 
+
+        }
+        setLoading(false);
+      }
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
 
   const handleAddCourse = () => {
+    setLoading(true)
     setCourseSemesterData([...courseSemesterData, { course: "", semester: "", course_type: "" }]);
     fetchUser()
+    setLoading(false)
   };
 
   const handleDelete = (code) => {
@@ -252,9 +298,8 @@ const Course_reg = () => {
     updatedData[index].course = value;
     setCourseSemesterData(updatedData);
   };
-  const handleSessionChange = (e) => {
-    setSession(e.target.value);
-    console.log("Selected session:", e.target.value);
+  const handleSessionChange = (value) => {
+    setSession(value); // ✅ Correct
   };
 
   const handleSemesterChange = (index, value) => {
@@ -270,9 +315,13 @@ const Course_reg = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    // e?.preventDefault();
     console.log("User Courses ", courses)
     setLoading(true);
+    if (!courseSemesterData) {
+      message.info('No course Selected')
+      return;
+    }
     if (userCourses[0]?.mode_of_course) {
       try {
         const promises = courseSemesterData.map((item) => {
@@ -298,7 +347,7 @@ const Course_reg = () => {
         alert(`Failed to add courses: ${error.response?.data?.message || error.message}`);
       } finally {
         setLoading(false);
-        navigate(`dashboard/${id}`)
+        navigate(`/dashboard/${id}`)
       }
 
     } else {
@@ -338,7 +387,7 @@ const Course_reg = () => {
     const setCenterAccountBySite = (studyCenter) => {
       switch (studyCenter) {
         case 'New Bussa':
-          return 'ACCT_aan2ehxiej239du';
+          return 'ACCT_p76xm5gfunxqp89';
         case 'Gulu':
           return 'ACCT_0saux3r5q758ky6';
         case 'suleja':
@@ -407,7 +456,16 @@ const Course_reg = () => {
       const courses = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${user.data.id}`);
       console.log("USER COURSES", courses);
       setUserCourses(courses.data);
+      if (courses.data) {
 
+        setDisabled(false);
+      }
+      form.setFieldsValue({
+        mode_of_course: courses.data[0]?.mode_of_course,
+        subject_of_study: courses.data[0]?.subject_of_study,
+        session: courses.data[0]?.session,
+        level_of_course: courses.data[0]?.level_of_course,
+      });
       const toBeFiltered = courses.data;
       const filteredCourses = toBeFiltered.filter(
         (course) => course.semester === "1st"
@@ -509,7 +567,7 @@ const Course_reg = () => {
 
         <div style={{ textAlign: 'center', margin: '20px' }}>
         </div>
-        {!user.course_paid ? (
+        {user.has_paid != 1 ? (
           <>
             <div className='' style={{ margin: '2% auto' }}>
               <Card
@@ -523,36 +581,31 @@ const Course_reg = () => {
                 }}
               >
                 <Space direction="vertical" size="small">
-                  {user.has_paid && !user.course_paid ? (<>
-                    <Space>
+
+                  <Space>
 
 
-                      <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
-                      <Title level={4} style={{ margin: 0, color: '#000' }}>
-                        Continue Registration Fees payment
-                      </Title>
-                    </Space>
-                    {/* <Text type="secondary">View your biodata details here</Text> */}
-
-                    <PaystackButton className='btn btn-green' {...component40Props} />
-                  </>) : !user.has_paid && !user.course_paid ? (<>
-                    <Space>
+                    <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
+                    <Title level={4} style={{ margin: 0, color: '#000' }}>
+                      Registration Fees payment
+                    </Title>
+                  </Space>
+                  <Popover content={content} trigger="click">
 
 
-                      <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
-                      <Title level={4} style={{ margin: 0, color: '#000' }}>
-                        Registration Fees payment
-                      </Title>
-                    </Space>
-                    <Popover content={content} trigger="click">
-
-
-                      <Button style={{ textAlign: 'start' }} block className='btn btn-green' variant="outlined">
-                        Select Payment option
-                      </Button>
-                    </Popover>
-                  </>) : (<></>)}
+                    <Button style={{ textAlign: 'start' }} block className='btn btn-green' variant="outlined">
+                      Select Payment option
+                    </Button>
+                  </Popover>
                 </Space>
+
+                {/* <Space direction="vertical" size="small">
+                  {user.has_paid && !user.course_paid ? (<>
+
+                  </>) : !user.has_paid && !user.course_paid ? (<>
+
+                  </>) : (<></>)}
+                </Space> */}
               </Card>
 
             </div>
@@ -561,269 +614,231 @@ const Course_reg = () => {
 
           <>
             <div style={{ maxWidth: "500px", margin: "auto", padding: "20px" }}>
-              {userCourses[0]?.mode_of_course ? (
+
+              <>
                 <>
-                  <div
-                    style={{
-                      maxWidth: "600px",
-                      margin: "20px auto",
-                      padding: "20px",
-                      border: "1px solid #ddd",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                      fontFamily: "'Arial', sans-serif",
-                      backgroundColor: "#f9f9f9",
-                    }}
-                  >
-                    <h2 style={{ textAlign: "center", marginBottom: "20px", color: "#333" }}>
-                      Course Details
-                    </h2>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: "15px",
-                        lineHeight: "1.5",
-                      }}
-                    >
-                      <div>
-                        <strong>Mode of Course:</strong>
-                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.mode_of_course}</p>
-                      </div>
-                      <div>
-                        <strong>Subject of Study:</strong>
-                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.subject_of_study}</p>
-                      </div>
-                      <div>
-                        <strong>Session:</strong>
-                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.session}</p>
-                      </div>
-                      <div>
-                        <strong>Level of Course:</strong>
-                        <p style={{ margin: "5px 0", color: "#555" }}>{userCourses[0]?.level_of_course}</p>
-                      </div>
-                    </div>
+                  <div>
+
+                    <ConfigProvider >
+                      {user?.course_paid == 1 ? (
+                        <>
+
+                        </>) : (<>
+                          <Space align="center" direction='horizontal' style={{ display: 'flex', justifyContent: 'space-between', border: 'solid 1px green', margin: '1%', padding: '1%', borderRadius: '8px', backgroundColor: 'white' }}>
+                            <BookFilled style={{ fontSize: '28px', color: 'green' }} />
+                            <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 600 }}>
+                              Complete  Fees Payment
+                            </Title>
+
+                            <PaystackButton
+                              style={{ width: '100%', margin: '1%' }} className='btn btn-green'
+                              {...component40Props}
+                            />
+                          </Space>
+                        </>)}
+
+
+
+                    </ConfigProvider>
+                  </div>
+
+                  <div className="registration-container" style={{ padding: '24px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+
+
+                      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                        <Row gutter={24}>
+                          <Col xs={24} sm={12}>
+                            <Form.Item
+                              label="Mode Of Course"
+                              name="mode_of_course"
+                              rules={[{ required: true, message: 'Please enter mode of course' }]}
+                            >
+                              <Input
+                                placeholder="Mode Of Course"
+                                prefix={<ReadOutlined style={{ color: '#bfbfbf' }} />}
+                                value={modeOfCourse}
+                                disabled={disabled}
+                                onChange={(e) => setModeOfCourse(e.target.value)}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} sm={12}>
+                            <Form.Item
+                              label="Subject Of Study"
+                              name="subject_of_study"
+                              rules={[{ required: true, message: 'Please enter subject of study' }]}
+                            >
+                              <Input
+                                placeholder="Subject Of Study"
+                                prefix={<BookOutlined style={{ color: '#bfbfbf' }} />}
+                                value={subjectOfStudy}
+                                disabled={disabled}
+                                onChange={(e) => setSubjectOfStudy(e.target.value)}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Row gutter={24}>
+                          <Col xs={24} sm={12}>
+                            <Form.Item
+                              label="Session"
+                              name="session"
+                              rules={[{ required: true, message: 'Please select a session' }]}
+                            >
+                              <Select
+                                placeholder="Select a session"
+                                value={session}
+                                onChange={handleSessionChange}
+                                suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
+                              >
+                                <Option value="" disabled>Select a session</Option>
+                                <Option value="2024/2025">2024/2025</Option>
+                              </Select>
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} sm={12}>
+                            <Form.Item
+                              label="Level Of Course"
+                              name="level_of_course"
+                              rules={[{ required: true, message: 'Please enter level of course' }]}
+                            >
+                              <Input
+                                placeholder="Level Of Course"
+                                prefix={<TrophyOutlined style={{ color: '#bfbfbf' }} />}
+                                value={levelOfCourse}
+                                disabled={disabled}
+                                onChange={(e) => setLevelOfCourse(e.target.value)}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+
+                        <Divider orientation="left">
+                          <Space>
+                            <AppstoreAddOutlined style={{ fontSize: '20px', color: '#1890ff' }} />
+                            <Text strong style={{ fontSize: '18px' }}>Add Courses</Text>
+                          </Space>
+                        </Divider>
+
+                        {courseSemesterData.map((data, index) => (
+                          <Card
+                            key={index}
+                            style={{ marginBottom: '16px' }}
+                            size="small"
+                            bordered
+                            extra={
+                              <Button
+                                danger
+                                icon={<DeleteOutlined />}
+                                size="small"
+                                type="text"
+                              />
+                            }
+                          >
+                            <Row gutter={16}>
+                              <Col xs={24} md={8}>
+                                <Form.Item
+                                  label={<Space><NumberOutlined /> Course {index + 1}</Space>}
+                                  required
+                                >
+                                  {courses ? (
+                                    <Select
+                                      value={data.course}
+                                      onChange={(value) => handleCourseChange(index, value)}
+                                      placeholder="Select a course"
+                                      disabled={courses.length < 1}
+                                      style={{ width: '100%' }}
+                                    >
+                                      <Option value="">Select a course</Option>
+                                      {courses.map((course, courseIndex) => (
+                                        <Option key={courseIndex} value={course}>
+                                          {course}
+                                        </Option>
+                                      ))}
+                                    </Select>
+                                  ) : (
+                                    <Input placeholder="Enter course" />
+                                  )}
+                                </Form.Item>
+                              </Col>
+
+                              <Col xs={24} md={8}>
+                                <Form.Item
+                                  label={<Space><FieldTimeOutlined /> Semester</Space>}
+                                  required
+                                >
+                                  <Select
+                                    value={data.semester}
+                                    onChange={(value) => handleSemesterChange(index, value)}
+                                    placeholder="Select semester"
+                                    style={{ width: '100%' }}
+                                  >
+                                    <Option value="">Select Semester</Option>
+                                    <Option value="1st">1st Semester</Option>
+                                    <Option value="2nd">2nd Semester</Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+
+                              <Col xs={24} md={8}>
+                                <Form.Item
+                                  label={<Space><TagOutlined /> Course Type</Space>}
+                                  required
+                                >
+                                  <Select
+                                    value={data.course_type}
+                                    onChange={(value) => handleCourseType(index, value)}
+                                    placeholder="Select course type"
+                                    style={{ width: '100%' }}
+                                  >
+                                    <Option value="">Select Course Type</Option>
+                                    <Option value="core">Core</Option>
+                                    <Option value="elective">Elective</Option>
+                                  </Select>
+                                </Form.Item>
+                              </Col>
+                            </Row>
+                          </Card>
+                        ))}
+
+                        <Space direction="vertical" size="large" style={{ width: '100%', marginTop: '16px' }}>
+                          <Button
+                            type="dashed"
+                            onClick={handleAddCourse}
+                            icon={<PlusCircleOutlined />}
+                            block
+                          >
+                            Add Course
+                          </Button>
+
+                          <Form.Item>
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              loading={loading}
+                              icon={<SaveOutlined />}
+                              size="large"
+                              color='green'
+                              style={{ width: '100%', height: '45px' }}
+                              className='btn btn-green'
+                            >
+                              {loading ? "Saving..." : "Save Registration"}
+                            </Button>
+                          </Form.Item>
+                        </Space>
+                      </Form>
+                    </Space>
                   </div>
                 </>
-              ) : (
-                <>
-                  <form onSubmit={handleSubmit}>
-
-
-                    <div style={{ display: 'flex' }}>
-                      <div style={{ display: '' }}>
-                        <label htmlFor='mode_of_course'>Mode Of Course</label>
-
-                        <input value={modeOfCourse}
-                          onChange={(e) => setModeOfCourse(e.target.value)}
-                          placeholder="Mode Of Course"
-                          style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginBottom: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                          }} />
-
-                      </div>
-                      <div style={{ display: '' }}>
-                        <label htmlFor='subject_of_study'>Subject Of Study</label>
-
-                        <input value={subjectOfStudy}
-                          onChange={(e) => setSubjectOfStudy(e.target.value)}
-                          placeholder="Subject Of study"
-                          style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginBottom: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                          }} />
-
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex' }}>
-                      <div style={{ display: '' }}>
-                        <label htmlFor='session'>Session</label>
-
-                        <select
-                          value={session}
-                          onChange={handleSessionChange}
-                          style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginBottom: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          <option value="" disabled>
-                            Select a session
-                          </option>
-                          <option value="2024/2025">2024/2025</option>
-                        </select>
-
-                      </div>
-                      <div style={{ display: '' }}>
-                        <label htmlFor='level_of_course'>Level Of Course</label>
-
-                        <input value={levelOfCourse}
-                          onChange={(e) => setLevelOfCourse(e.target.value)}
-                          placeholder="Level Of Course"
-                          style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginBottom: "10px",
-                            border: "1px solid #ccc",
-                            borderRadius: "4px",
-                          }} />
-
-                      </div>
-                    </div>
-
-
-                    <h2>Add Courses</h2>
-
-                    {courseSemesterData.map((data, index) => (
-                      <>
-                        <div className='' style={{ display: 'flex', justifyContent: 'space-between' }}>
-
-
-                          <div key={index} style={{ margin: '1%' }}>
-                            <label htmlFor={`course-${index}`}>Course {index + 1}</label>
-                            {courses ? (
-                              <>
-                                <select
-
-                                  id={`course-${index}`}
-                                  value={data.course}
-                                  onChange={(e) => handleCourseChange(index, e.target.value)}
-                                  style={{
-                                    width: "100%",
-                                    padding: "8px",
-                                    marginBottom: "10px",
-                                    border: "1px solid #ccc",
-                                    borderRadius: "4px",
-                                  }}
-                                >
-                                  <option value="">Select a course</option>
-                                  {courses.map((course, index) => (
-                                    <option key={index} value={course}>
-                                      {course}
-                                    </option>
-                                  ))}
-                                </select>
-                              </>
-                            ) : (
-                              <></>
-                            )}
-
-                          </div>
-
-                          <div key={index} style={{ margin: '1%' }}>
-                            <label htmlFor={`semester-${index}`}>semester {index + 1}</label>
-                            <select
-                              id={`semester-${index}`}
-                              value={data.semester}
-                              onChange={(e) => handleSemesterChange(index, e.target.value)}
-                              style={{
-                                width: "100%",
-                                padding: "8px",
-                                marginBottom: "10px",
-                                border: "1px solid #ccc",
-                                borderRadius: "4px",
-                              }}
-                            >
-                              <option value="">Select Semester</option>
-
-                              <option key="1" value="1st">
-                                1st Semester
-                              </option>
-                              <option key="2" value="2nd">
-                                2nd Semester
-                              </option>
-
-                            </select>
-
-                          </div>
-
-                          <div key={index} style={{ margin: '1%' }}>
-                            <label htmlFor={`course_type-${index}`}>Course Type </label>
-                            <select
-                              id={`course_type-${index}`}
-                              value={data.course_type}
-                              onChange={(e) => handleCourseType(index, e.target.value)}
-                              style={{
-                                width: "100%",
-                                padding: "8px",
-                                marginBottom: "10px",
-                                border: "1px solid #ccc",
-                                borderRadius: "4px",
-                              }}
-                            >
-                              <option value="">Select Course Type</option>
-
-                              <option key="1" value="core">
-                                Core
-                              </option>
-                              <option key="2" value="elective">
-                                Elective
-                              </option>
-
-                            </select>
-
-                          </div>
-                        </div>
-                      </>
-
-                    ))}
-
-
-
-                    <button
-                      type="button"
-                      onClick={handleAddCourse}
-                      style={{
-                        background: "#028f64",
-                        color: "white",
-                        border: "none",
-                        padding: "10px 15px",
-                        cursor: "pointer",
-                        borderRadius: "4px",
-                        marginBottom: "15px",
-                      }}
-                    >
-                      Add <PlusCircleFilled />
-                    </button>
-                    <br />
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      style={{
-                        background: "#4CAF50",
-                        color: "white",
-                        border: "none",
-                        padding: "10px 20px",
-                        cursor: "pointer",
-                        borderRadius: "4px",
-                      }}
-                    >
-                      <SaveFilled /> &nbsp;
-                      {loading ? "Saving..." : "Save "}
-                    </button>
-                  </form>
-                </>
-              )}
+              </>
+              {/* )} */}
 
             </div>
           </>
         )}
-        {/* {view === false && (
-          <>
-           
-          </>
-        )} */}
+
 
         <div style={{ backgroundColor: '#028f64', color: 'white', padding: '10px', borderRadius: '8px', fontWeight: 'bold', marginBottom: '10px' }}>
           Registered Courses

@@ -18,8 +18,10 @@ import Single_Application from './components/main/dashboard/admin/admin-pages/Si
 import { Admin_dashboard } from './components/main/dashboard/admin/admin-pages/Admin_dashboard';
 import { View_approved } from './components/main/dashboard/admin/admin-pages/View_approved';
 import Admission_Letter from './components/main/dashboard/documents/Admission_Letter';
-
-
+import Acceptance_Receipt from './components/main/dashboard/documents/Acceptance_Receipt';
+import Fees_Receipt from './components/main/dashboard/documents/Fees_Receipt';
+import { Student_Stats } from './components/main/dashboard/admin/admin-pages/Student_Stats';
+import Exam_Card from './components/main/dashboard/documents/exam_card';
 function App() {
   return (
     <BrowserRouter>
@@ -28,6 +30,7 @@ function App() {
         <Route path="/admin" element={<Admin_Panel />} >
           <Route path='/admin' element={<Admin_dashboard />} />
           <Route path='/admin/view-applications' element={<View_applications />} />
+          <Route path='/admin/student-stats' element={<Student_Stats />} />
           <Route path='/admin/view-approved' element={<View_approved />} />
           <Route path='/admin/view-approved/single/:id' element={<View_approved />} />
           <Route path='/admin/add-applications' element={<Add_Applications />} />
@@ -45,6 +48,9 @@ function App() {
           <Route path='/dashboard/:id/Edit' element={<Edit_Bio />} />
           <Route path='/dashboard/:id/Course_reg' element={<Course_reg />} />
           <Route path='/dashboard/:id/admission-letter' element={<Admission_Letter />} />
+          <Route path='/dashboard/:id/exam-card' element={<Exam_Card />} />
+          <Route path='/dashboard/:id/acceptance-receipt' element={<Acceptance_Receipt />} />
+          <Route path='/dashboard/:id/fees-receipt' element={<Fees_Receipt />} />
         </Route>
       </Routes>
     </BrowserRouter>

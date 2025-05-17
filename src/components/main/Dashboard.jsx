@@ -7,7 +7,8 @@ import {
   FileTextOutlined,
   LogoutOutlined,
   HeatMapOutlined,
-  EnvironmentFilled
+  EnvironmentFilled,
+  MenuOutlined
 } from '@ant-design/icons';
 import logo from '../../assets/logo2.png';
 import profilePic from '../../assets/pro-pic.png';
@@ -44,12 +45,24 @@ const Dashboard = () => {
     navigate(`/Dashboard/${id}/admission-letter`)
   }
 
+  function routeAcceptanceFee() {
+    navigate(`/dashboard/${id}/acceptance-receipt`);
+  }
+  function routeSchoolFees() {
+    navigate(`/dashboard/${id}/fees-receipt`);
+  }
+  function routeExamCard() {
+    navigate(`/dashboard/${id}/exam-card`);
+  }
+
+
   useEffect(() => {
     // console.log('check')
     const fetchUser = async () => {
       // console.log('check')
       try {
         const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        const responseBio = await axios.get(`${API_ENDPOINTS.BIO_REGISTRATION}/${id}`);
         setApplication(response.data); // Assuming the API returns user data in `response.data`
         // const responseBio = await axios.get(`http://127.0.0.1:8000/api/bio-data/${id}`);
         // if(responseBio){
@@ -57,7 +70,7 @@ const Dashboard = () => {
 
         //   console.log(responseBio.data.data);
         // }
-
+        setUser(responseBio.data)
         if (!response.data.matric_number) {
           navigate('/');
 
@@ -92,7 +105,7 @@ const Dashboard = () => {
     >
       <Space direction="vertical" style={{ width: '100%' }}>
         <Button
-          block
+          block 
           type="text"
           onClick={routeBio}
           style={{
@@ -120,6 +133,7 @@ const Dashboard = () => {
         >
           <BookOutlined style={{ marginRight: '8px' }} /> Course Reg
         </Button>
+        <div style={{ borderTop: '1px solid #e8e8e8', margin: '4px 0' }} />
 
         <Button
           block
@@ -134,6 +148,51 @@ const Dashboard = () => {
           }}
         >
           <FileTextOutlined style={{ marginRight: '8px' }} /> Admission Letter
+        </Button>
+        <Button
+          block
+          type="text"
+          disabled={user?.level !== "100"}
+          onClick={routeAcceptanceFee}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <FileTextOutlined style={{ marginRight: '8px' }} /> Acceptance Fee receipt
+        </Button>
+        <Button
+          block
+          type="text"
+          disabled={!application?.has_paid}
+          onClick={routeSchoolFees}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <FileTextOutlined style={{ marginRight: '8px' }} /> School Fees receipt
+        </Button>
+        <Button
+          block
+          type="text"
+          disabled={!application?.course_paid}
+          onClick={routeExamCard}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        > 
+          <FileTextOutlined style={{ marginRight: '8px' }} /> Exam Card
         </Button>
 
         <div style={{ borderTop: '1px solid #e8e8e8', margin: '4px 0' }} />
@@ -163,39 +222,52 @@ const Dashboard = () => {
       <div className="dashboard-container">
         <div className="head">
 
-          <img src={logo} alt="User"   style={{ marginLeft: '15%' }} />
+          <img src={logo} alt="User"   style={{ marginLeft: '10%' }} />
 
           <ConfigProvider
-            theme={{
-              token: {
-                // Seed Token
-                colorPrimary: '#028f64',
-                borderRadius: 2,
-
-                // Alias Token
-                margin: '20px',
-                colorBgContainer: '#f6ffed',
-                borderRadius: 40
-              },
-            }}
-          >
-            <Button type="primary" color='default' style={{ marginRight: '15%' }}  >
-              <Popover
-                overlayStyle={{ width: '13rem', marginRight: '10%' }}
-                content={content}
-                trigger="click"
-              >
-                <BarsOutlined
-                  style={{
-                    fontSize: '2rem',
-                    color: '#eef5f0',
-                    fontWeight: '600px',
-                    marginRight: '10%'
-                  }}
-                />
-              </Popover>
-            </Button>
-          </ConfigProvider>
+      theme={{
+        token: {
+          // Modern color scheme
+          colorPrimary: '#028f64',
+          colorBgContainer: '#ffffff',
+          
+          // Refined radius and spacing
+          borderRadius: 8,
+          margin: 16,
+          
+          // Adding box shadow for depth
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        },
+      }}
+    >
+      <Popover
+        content={content}
+        trigger="click"
+        placement="bottomRight"
+        overlayStyle={{ 
+          width: '220px',
+          borderRadius: '12px',
+        }}
+      >
+        <Button 
+          type="primary"
+          shape="circle"
+          size="large"
+          icon={<MenuOutlined />}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '48px',
+            height: '48px',
+            boxShadow: '0 4px 12px rgba(163, 197, 84, 0.41)',
+            transition: 'all 0.3s ease',
+            marginRight: '10%'
+          }}
+          className="hover:shadow-lg"
+        />
+      </Popover>
+    </ConfigProvider>
 
         </div>
 
@@ -209,9 +281,10 @@ const Dashboard = () => {
 
           <Avatar
             size={140}
-            src={API_ENDPOINTS.API_BASE_URL + '/file/get/' + application?.passport}
-            icon={<UserOutlined />}
+            src={application?.passport ? `${API_ENDPOINTS.API_BASE_URL}/file/get/${application.passport}` : undefined}
+            icon={!application?.passport && <UserOutlined style={{ fontSize: '70px' }} />}
             className="profile-pic"
+            style={{ backgroundColor: '#028f64' }}
           />
 
           {loader ? (<>

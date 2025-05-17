@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ArrowDownOutlined, ArrowUpOutlined, EyeFilled, UserOutlined } from '@ant-design/icons';
-import { Card, Col, Tag, ConfigProvider, Statistic, Button, Table, Input, Select, Spin } from 'antd';
+import { Card, Col, Tag, ConfigProvider, Statistic, Button, Table, Input, Select, Spin, Row } from 'antd';
 import axios from "axios";
 import '../admin-pages/styles/application.css';
 import API_ENDPOINTS from "../../../../../Endpoints/environment";
@@ -172,9 +172,7 @@ export const View_approved = () => {
 
   return (
     <div>
-
-
-      <div style={{ width: '85%', display: '', justifyContent: 'space-around', margin: '2% auto' }}>
+      <div style={{ width: '100%', maxWidth: '1200px', margin: '2% auto', padding: '0 20px' }}>
         <div className="table-head">
           <h2>
             Approved Students List
@@ -183,56 +181,57 @@ export const View_approved = () => {
             This list contains data of students that have admission in the college
           </p>
         </div>
-        <div className="flex gap-4 mb-4">
-          <Search
-            placeholder="Search by Matric/Application Number"
-            allowClear
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
-
-          <Select
-            placeholder="Filter by Study Center"
-            allowClear
-            onChange={handleFilterChange}
-            style={{ width: 200 }}
-          >
-            <Option value="Salka">Salka</Option>
-            <Option value="Mokwa">Mokwa</Option>
-            <Option value="suleja">Suleja</Option>
-            <Option value="Kagara">Kagara</Option>
-            <Option value="New Bussa">New Bussa</Option>
-            <Option value="Gulu">Gulu</Option>
-            <Option value="Gawu">Gawu</Option>
-            <Option value="Doko">Doko</Option>
-            <Option value="Katcha">Katcha</Option>
-          </Select>
-        </div>
+        <Row gutter={[16, 16]} style={{ marginBottom: '20px' }}>
+          <Col xs={24} sm={24} md={12} lg={8}>
+            <Search
+              placeholder="Search by Matric/Application Number"
+              allowClear
+              onSearch={handleSearch}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={12} lg={8}>
+            <Select
+              placeholder="Filter by Study Center"
+              allowClear
+              onChange={handleFilterChange}
+              style={{ width: '100%' }}
+            >
+              <Option value="Salka">Salka</Option>
+              <Option value="Mokwa">Mokwa</Option>
+              <Option value="suleja">Suleja</Option>
+              <Option value="Kagara">Kagara</Option>
+              <Option value="New Bussa">New Bussa</Option>
+              <Option value="Gulu">Gulu</Option>
+              <Option value="Gawu">Gawu</Option>
+              <Option value="Doko">Doko</Option>
+              <Option value="Katcha">Katcha</Option>
+            </Select>
+          </Col>
+        </Row>
         <ConfigProvider
           theme={{
             token: {
-              // Seed Token
               colorPrimary: '#028f64',
               borderRadius: 2,
-
-              // Alias Token
-              margin: '20px',
               colorBgContainer: '#f6ffed',
             },
           }}
         >
           <Spin spinning={loading} size="large" style={{ backgroundColor: 'white !important' }}>
-            <Table
-              columns={columns}
-              dataSource={students}
-              rowKey={(record) => record.id}
-              pagination={pagination}
-              onChange={handleTableChange}
-              bordered
-            />
+            <div style={{ overflowX: 'auto' }}>
+              <Table
+                columns={columns}
+                dataSource={students}
+                rowKey={(record) => record.id}
+                pagination={pagination}
+                onChange={handleTableChange}
+                bordered
+                scroll={{ x: 'max-content' }}
+              />
+            </div>
           </Spin>
         </ConfigProvider>
-
       </div>
     </div>
   );

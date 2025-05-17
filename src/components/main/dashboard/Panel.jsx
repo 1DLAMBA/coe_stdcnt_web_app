@@ -53,7 +53,6 @@ const Panel = () => {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         backgroundColor: '#fff',
         padding: '16px',
-        marginBottom: '10px'
       }}
     >
       <Space direction="vertical" size="small">
