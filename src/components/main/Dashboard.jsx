@@ -167,7 +167,7 @@ const Dashboard = () => {
         <Button
           block
           type="text"
-          disabled={!application?.has_paid}
+          disabled={application?.has_paid == 0}
           onClick={routeSchoolFees}
           style={{
             display: 'flex',

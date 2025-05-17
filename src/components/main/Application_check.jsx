@@ -4,15 +4,13 @@ import logo from '../../assets/logo2.png';
 import { useNavigate } from 'react-router-dom';
 import { PaystackButton } from "react-paystack";
 import axios from 'axios';
-import { message, Result, Button, Layout, ConfigProvider, Card, Alert, Modal, Input, Typography } from "antd";
-import { WarningFilled, UserOutlined, CreditCardFilled } from "@ant-design/icons";
+import { message, Result, Button, Layout, ConfigProvider, Card, Alert, Modal, Input, Typography, Space, Divider } from "antd";
+import { WarningFilled, UserOutlined, CreditCardFilled, ArrowLeftOutlined } from "@ant-design/icons";
 import API_ENDPOINTS from '../../Endpoints/environment';
 import PaystackVerification from './dashboard/Verify_payment';
 
-
 const { Content } = Layout;
-const { Title } = Typography;
-
+const { Title, Text } = Typography;
 
 const ApplicationCheck = () => {
   const [applicationNumber, setApplicationNumber] = useState('');
@@ -167,13 +165,14 @@ const ApplicationCheck = () => {
 
 
   return (
-    <div className="container">
+    <div className="application-check-container">
       <Modal
         title="Admin Authentication"
         open={isModalVisible}
         onOk={handleOk}
         onCancel={() => setIsModalVisible(false)}
         okText="Login"
+        centered
       >
         <Input.Password
           placeholder="Enter Admin Passkey"
@@ -181,162 +180,150 @@ const ApplicationCheck = () => {
           onChange={(e) => setPasskey(e.target.value)}
         />
       </Modal>
-      <div className="row justify-content-center align-items-center">
-        <div className="col-md-6">
+      
+      <div className="application-card">
+        <div className="card-header">
+          <img src={logo} width="80px" alt="Logo" className="logo" />
+          <Title level={3} style={{marginBottom: '0', marginTop: '0'}} className="text-center text-green ">College of Education Study Centre</Title>
+        </div>
 
-          <div className="card bg-light-green">
-            <img src={logo} width="100px" alt="Logo" />
-            <div className="card-body">
-              <h3 className="text-green text-center">College of Education Study Centre</h3>
-
-              {view === 'form' && (
-                <form onSubmit={handleSubmit}>
-                  <div className="form-group">
-                    <label htmlFor="applicationNumber">Application Number/Matric Number:</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="applicationNumber"
-                      value={applicationNumber}
-                      onChange={handleInputChange}
-                      placeholder="Enter your application number or Matric Number"
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-green btn-block">
-                    Enter
-                  </button>
-                  <Alert
-                    message="Information"
-                    description="New Applicants should Input their Application Number, returning students should input thier Matriculation Number"
-                    type="warning"
-                    className='alert'
-
+        <div className="card-content">
+          {view === 'form' && (
+            <Space direction="vertical" size="medium" style={{ width: '100%' }}>
+              <form onSubmit={handleSubmit} className="application-form">
+                <div className="form-group">
+                  <label htmlFor="applicationNumber">Application Number/Matric Number</label>
+                  <Input
+                    size="large"
+                    id="applicationNumber"
+                    value={applicationNumber}
+                    onChange={handleInputChange}
+                    placeholder="Enter your application number or Matric Number"
+                    required
                   />
-                </form>
-              )}
+                </div>
+                <Button type="primary" htmlType="submit" block size="large" className="btn-green">
+                  Continue
+                </Button>
+              </form>
+              
+              <Alert
+                message="Important Information"
+                description="New Applicants should input their Application Number, returning students should input their Matriculation Number"
+                type="info"
+                showIcon
+                className="info-alert"
+              />
+            </Space>
+          )}
 
-              {view === 'acceptance' && (
-                <div className="acceptance-view">
-                  <h4 className="text-green">Acceptance Fee Payment</h4>
-                  <p>Congratulations!! you have been offered admission to study <b>  {applicationNumber.course}</b> <br />Please proceed to pay your acceptance fee of ₦3,000 to continue to application and registration </p>
-                  {/* Add a button or link to payment page here if needed */}
-                  <h3>{applicationNumber.other_names}</h3>
-                  <h3>{applicationNumber.application_number}</h3>
-                  <h3>{applicationNumber.email}</h3>
-                  <div className="d-flex">
-                    <button className='btn-red-outline' onClick={back}> Back </button>
-                    <PaystackButton className='btn btn-green' {...componentProps} />
-                    <Button
-                      className="btn outline btn-block"
-                      style={{ position: "absolute", bottom: "10px", right: '10%' }}
-                      onClick={() => setView('verification')}
+          {view === 'acceptance' && (
+            <div className="acceptance-view">
+              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+                <Card className="acceptance-card">
+                  <Title level={4} className="text-green">Acceptance Fee Payment</Title>
+                  <Text>
+                    Congratulations! You have been offered admission to study <b>{applicationNumber.course}</b>
+                  </Text>
+                  <Text>
+                    Please proceed to pay your acceptance fee of ₦3,000 to continue with application and registration
+                  </Text>
+                  
+                  <Divider />
+                  
+                  <Space direction="vertical" size="small">
+                    <Text strong>Student Details:</Text>
+                    <Text>Name: {applicationNumber.other_names}</Text>
+                    <Text>Application Number: {applicationNumber.application_number}</Text>
+                    <Text>Email: {applicationNumber.email}</Text>
+                  </Space>
+
+                  <div className="action-buttons">
+                    <Button 
+                      icon={<ArrowLeftOutlined />} 
+                      onClick={back}
+                      className="back-button"
                     >
-                      <CreditCardFilled /> Payment Verification
+                      Back
                     </Button>
+                    <PaystackButton className='btn btn-green' {...componentProps} />
                   </div>
+                </Card>
+              </Space>
+            </div>
+          )}
 
-                </div>
-              )}
-              {view === 'pending' && (
-                <div className="pending-view">
-                  <Card className="pending-card" bordered={false}>
-                    <Result
-                      icon={<WarningFilled className="icon-style" style={{ color: 'green' }} />}
-                      title={
-                        <Typography.Title level={3} className="title-text">
-                          Admission Status: Not Offered
-                        </Typography.Title>
-                      }
-                      subTitle={
-                        <Typography.Text className="subtitle-text">
-                          We regret to inform you that you have not been offered admission yet. However, keep checking for updates, as statuses may change over time.
-                        </Typography.Text>
-                      }
-                      extra={
-                        <div className="action-buttons">
-                          <button className="btn btn-green btn-block" onClick={() => window.location.reload()}>
-                            Refresh Status
-                          </button>
-                          <Button type="default" size="large" onClick={() => console.log("Contact Support")}>
-                            Contact Support
-                          </Button>
-                        </div>
-                      }
-                    />
-
-                  </Card>
-                </div>
-              )}
-              {view === 'dashboard' && (
-                <div className="dashboard-view">
-                  <h4 className="text-green">Welcome to Your Dashboard</h4>
-                  <p>You have successfully logged in.</p>
-                  {/* Add dashboard link or redirect here if needed */}
-                </div>
-              )}
-
-              {view === 'notFound' && (
-                <div className="invalid-feedback">
-                  Application number does not exist. Please check and try again.
-                </div>
-              )}
-              {view === 'verification' && (<>
-                <Layout>
-                  <Content style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
-                    <Title level={2} style={{ textAlign: 'center', marginBottom: '24px' }}>
-                      Payment Verification
+          {view === 'pending' && (
+            <div className="pending-view">
+              <Card className="pending-card">
+                <Result
+                  icon={<WarningFilled className="icon-style" />}
+                  title={
+                    <Title level={3} className="title-text">
+                      Admission Status: Not Offered
                     </Title>
-
-                    <PaystackVerification
-                      userEmail={email} id={applicationNumber.id} applicationNumber={applicationNumber}
-                    />
-
-                    <div style={{ marginTop: '24px', textAlign: 'center' }}>
-                      <Typography.Text type="secondary">
-                        Please enter the reference code from your payment receipt and the amount you paid.
-                      </Typography.Text>
-                    </div>
-                  </Content>
-                </Layout>              </>
-              )}
+                  }
+                  subTitle={
+                    <Text className="subtitle-text">
+                      We regret to inform you that you have not been offered admission yet. However, keep checking for updates, as statuses may change over time.
+                    </Text>
+                  }
+                  extra={
+                    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                      <Button type="primary" block onClick={() => window.location.reload()}>
+                        Refresh Status
+                      </Button>
+                      <Button block onClick={() => console.log("Contact Support")}>
+                        Contact Support
+                      </Button>
+                    </Space>
+                  }
+                />
+              </Card>
             </div>
-            <div style={{ backgroundColor: 'white', marginTop: '4%', padding: '2%', borderRadius: '10px', justifyContent: 'space-between', display: 'flex' }}>
-              Click Here if you wish to register
-              <ConfigProvider
-                theme={{
-                  token: {
-                    // Seed Token
-                    colorPrimary: '#028f64',
-                    borderRadius: 2,
+          )}
 
-                    // Alias Token
-                    margin: '20px',
-                    colorBgContainer: '#f6ffed',
-                  },
-                }}
-              >
-                <Button className="btn outline btn-block" onClick={() => navigate('/registration')}>
-                  Register
-                </Button>
-                <Button
-                  className="btn outline btn-block"
-                  style={{ position: "absolute", bottom: "5%", left: '10%' }}
-                  onClick={() => setIsModalVisible(true)}
-                >
-                  <UserOutlined /> Admin Portal
-                </Button>
-                {/* <Button
-                  className="btn outline btn-block"
-                  style={{ position: "absolute", bottom: "10px", right: '10%' }}
-                  onClick={() => setView('verification')}
-                >
-                  <CreditCardFilled /> Payment Verification
-                </Button> */}
-              </ConfigProvider>
-            </div>
-          </div>
+          {view === 'verification' && (
+            <Layout>
+              <Content className="verification-content">
+                <Title level={2} style={{ textAlign: 'center', marginBottom: '24px' }}>
+                  Payment Verification
+                </Title>
 
+                <PaystackVerification
+                  userEmail={email}
+                  id={applicationNumber.id}
+                  applicationNumber={applicationNumber}
+                />
+
+                <Text type="secondary" className="verification-info">
+                  Please enter the reference code from your payment receipt and the amount you paid.
+                </Text>
+              </Content>
+            </Layout>
+          )}
+        </div>
+
+        <div className="card-footer">
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Text>New to the portal?</Text>
+            <Button 
+              type="primary" 
+              block 
+              onClick={() => navigate('/registration')}
+              className="register-button"
+            >
+              Register Now
+            </Button>
+            <Button
+              icon={<UserOutlined />}
+              onClick={() => setIsModalVisible(true)}
+              block
+              className="admin-button"
+            >
+              Admin Portal
+            </Button>
+          </Space>
         </div>
       </div>
     </div>
