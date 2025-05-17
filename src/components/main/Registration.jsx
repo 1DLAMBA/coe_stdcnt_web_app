@@ -89,7 +89,8 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Registration = () => {
-  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  // const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
   const [step, setStep] = useState('step1')
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -284,17 +285,17 @@ const Registration = () => {
     metadata: {
       phone: firstStep.phone_number,
     },
-    split:{
-      type: "flat",
-      subaccounts: [
-        // DANIEL ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 30000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
+    // split:{
+    //   type: "flat",
+    //   subaccounts: [
+    //     // DANIEL ALAMBA
+    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 30000 },
+    //     // COE ACCOUNT
+    //     { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
 
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
-      ]
-    },
+    //     // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+    //   ]
+    // },
     publicKey,
     text: "Pay Now",
     onSuccess: async (reference) => {
