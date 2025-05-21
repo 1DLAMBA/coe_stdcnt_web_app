@@ -42,8 +42,8 @@ const Course_reg = () => {
   const [spinning, setSpinning] = useState(false);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  // const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
-  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  // const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
   const [applicationNumber, setApplicationNumber] = useState('');
   const amount = 4000000;
   const amount60 = 2400000;
@@ -100,17 +100,17 @@ const Course_reg = () => {
       // regNumber
     },
     publicKey,
-    // split: {
-    //   type: "flat",
-    //   subaccounts: [
-    //     //Bantigi Oasis
-    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 68500 },
-    //     // COE ACCOUNT
-    //     { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
-    //     //CENTER ACCOUNT 
-    //     { subaccount: centerAccount, share: 1730000 },
-    //   ]
-    // },
+    split: {
+      type: "flat",
+      subaccounts: [
+        //Bantigi Oasis
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 68500 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
+        //CENTER ACCOUNT 
+        { subaccount: centerAccount, share: 1730000 },
+      ]
+    },
     text: "Pay Complete Fees Now",
     onSuccess: async (reference) => {
       const paidOn = new Date();
@@ -156,17 +156,17 @@ const Course_reg = () => {
       // regNumber
     },
     publicKey,
-    // split: {
-    //   type: "flat",
-    //   subaccounts: [
-    //     // Daniel ALAMBA
-    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 61500 },
-    //     // COE ACCOUNT
-    //     { subaccount: "ACCT_aan2ehxiej239du", share: 1221000 },
-    //     //CENTER ACCOUNT 
-    //     { subaccount: centerAccount, share: 1006500 },
-    //   ]
-    // },
+    split: {
+      type: "flat",
+      subaccounts: [
+        // Daniel ALAMBA
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 61500 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 1201000 },
+        //CENTER ACCOUNT 
+        { subaccount: centerAccount, share: 1026000 },
+      ]
+    },
     text: "Pay 60% Now",
     onSuccess: async (reference) => {
       const paidOn = new Date();
@@ -211,17 +211,17 @@ const Course_reg = () => {
       // regNumber
     },
     publicKey,
-    // split: {
-    //   type: "flat",
-    //   subaccounts: [
-    //     //DANIEL ALAMBA
-    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
-    //     // COE ACCOUNT
-    //     { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
-    //     //CENTER ACCOUNT 
-    //     { subaccount: centerAccount, share: 666000 },
-    //   ]
-    // },
+    split: {
+      type: "flat",
+      subaccounts: [
+        //DANIEL ALAMBA
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
+        //CENTER ACCOUNT 
+        { subaccount: centerAccount, share: 666000 },
+      ]
+    },
     text: "Pay Now",
     onSuccess: async (reference) => {
       const paidOn = new Date();

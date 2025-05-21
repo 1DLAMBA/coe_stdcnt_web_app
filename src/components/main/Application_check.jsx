@@ -15,8 +15,8 @@ const { Title, Text } = Typography;
 const ApplicationCheck = () => {
   const [applicationNumber, setApplicationNumber] = useState('');
   const navigate = useNavigate();
-  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
-  // const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  // const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
   const amount = 300000;
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -32,17 +32,17 @@ const ApplicationCheck = () => {
       id: applicationNumber.id,
       pay_type: "acceptance_fees",
     },
-    // split: {
-    //   type: "flat",
-    //   subaccounts: [
-    //     // Daniel Alamba
-    //     { subaccount: "ACCT_32iz48sbi1fshex", share: 41000 },
-    //     // COE ACCOUNT
-    //     { subaccount: "ACCT_aan2ehxiej239du", share: 200000 },
+    split: {
+      type: "flat",
+      subaccounts: [
+        // Daniel Alamba
+        { subaccount: "ACCT_32iz48sbi1fshex", share: 41000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 200000 },
 
-    //     // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
-    //   ]
-    // },
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+      ]
+    },
     publicKey,
     text: "Pay Now",
     onSuccess: async (reference) => {
@@ -190,7 +190,7 @@ const ApplicationCheck = () => {
         <div className="card-content">
           {view === 'form' && (
             <Space direction="vertical" size="medium" style={{ width: '100%' }}>
-              <form onSubmit={handleSubmit} className="application-form">
+              <form onSubmit={handleSubmit} style={{  marginBottom:'2%', marginTop:'0%'}} className="application-form">
                 <div className="form-group">
                   <label htmlFor="applicationNumber">Application Number/Matric Number</label>
                   <Input
@@ -323,6 +323,17 @@ const ApplicationCheck = () => {
             >
               Admin Portal
             </Button>
+            {view === 'acceptance' && (
+
+            <Button
+              icon={<UserOutlined />}
+              onClick={() => setView('verification')}
+              block
+              className="admin-button"
+            >
+              Payment Verification
+            </Button>
+            )}
           </Space>
         </div>
       </div>
