@@ -250,7 +250,7 @@ const Registration = () => {
       const year = new Date().getFullYear();
 
         const newPersonalForm = {
-          application_number: `${year + thirdStep.exam_number}`,
+          application_number: `${thirdStep.exam_year + thirdStep.exam_number}`,
           application_reference: null,
         }
   
@@ -311,7 +311,7 @@ const Registration = () => {
 
       const personalFormData = {
         ...firstStep,
-        application_number: `${year + thirdStep.exam_number}`,
+        application_number: `${thirdStep.exam_year + thirdStep.exam_number}`,
         date_of_birth: adjustedDOB,
         application_reference: reference.reference,
         passport: passport, olevel1: uploadedOl1,

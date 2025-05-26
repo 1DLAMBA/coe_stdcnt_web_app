@@ -140,7 +140,7 @@ const Acceptance_Receipt = () => {
                                 <br/>
                                 <Text>B. Sc, MSc</Text>
                                 <br/>
-                                <Text strong>Registrar:</Text> Mall. Aliyu Shehu Kontagora
+                                <Text strong>Registrar:</Text> Haj. Zainab Sidi Aliyu
                            
                             </Col>
                             <Col span={4}>

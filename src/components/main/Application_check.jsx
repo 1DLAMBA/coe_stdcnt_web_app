@@ -76,6 +76,8 @@ const ApplicationCheck = () => {
 
 
         }
+          // window.location.href = await `/dashboard/${applicationNumber.id}/fees-receipt`;
+
         // setLoading(false);
       }
     },

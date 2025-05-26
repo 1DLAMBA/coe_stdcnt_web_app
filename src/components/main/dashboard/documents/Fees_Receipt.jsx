@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Button, Card, Typography, Row, Divider, Col, ConfigProvider, Breadcrumb } from "antd";
+import { Button, Card, Spin, Typography, Row, Divider, Col, ConfigProvider, Breadcrumb } from "antd";
 import { PrinterOutlined, HomeFilled, PrinterFilled } from "@ant-design/icons";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -20,6 +20,8 @@ const Fees_Receipt = () => {
     const [application, setApplication] = useState('');
     const [loader, setLoader] = useState(true);
     const { id } = useParams();
+    const [spinning, setSpinning] = useState(false);
+
     const navigate = useNavigate();
 
 
@@ -38,6 +40,8 @@ const Fees_Receipt = () => {
     ];
 
     useEffect(() => {
+        setSpinning(true)
+
         // console.log('check')
         const fetchUser = async () => {
             // console.log('check')
@@ -45,7 +49,7 @@ const Fees_Receipt = () => {
                 const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
                 setApplication(response.data); // Assuming the API returns user data in `response.data`
 
-
+                setSpinning(false)
                 if (!response.data.matric_number) {
                     navigate('/');
 
@@ -57,6 +61,8 @@ const Fees_Receipt = () => {
 
             } catch (error) {
                 console.error("Error fetching user data:", error);
+                setSpinning(false)
+
             }
         };
 
@@ -93,6 +99,7 @@ const Fees_Receipt = () => {
 
             <Breadcrumb style={{ margin: ' 1% auto', backgroundColor: 'white', width: '82.5%', color: 'white', borderRadius: '15px', padding: '0.5%' }} itemRender={itemRender} items={items} />
             <div className="" style={{ padding: 20, textAlign: "center", backgroundColor: 'white', backgroundSize: "contain" }}>
+                <Spin spinning={spinning} fullscreen />
 
                 <ConfigProvider
                     theme={{
@@ -140,7 +147,7 @@ const Fees_Receipt = () => {
                                 <br />
                                 <Text>B. Sc, MSc</Text>
                                 <br />
-                                <Text strong>Registrar:</Text> Mall. Aliyu Shehu Kontagora
+                                <Text strong>Registrar:</Text> Haj. Zainab Sidi Aliyu
 
                             </Col>
                             <Col span={4}>
@@ -209,7 +216,7 @@ const Fees_Receipt = () => {
                     <Divider />
                     <Paragraph>
                         <Text strong>Total Amount Paid:</Text>
-                        ₦{application.has_paid ==1 && application.course_paid == 1 ? (<>
+                        ₦{application.has_paid == 1 && application.course_paid == 1 ? (<>
                             40,0000
                         </>
                         ) : (<> {(application.has_paid == 1 && application.course_paid == 0) ? (<>24,000.00</>) : (<>

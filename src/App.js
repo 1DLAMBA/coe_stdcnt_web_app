@@ -22,7 +22,15 @@ import Acceptance_Receipt from './components/main/dashboard/documents/Acceptance
 import Fees_Receipt from './components/main/dashboard/documents/Fees_Receipt';
 import { Student_Stats } from './components/main/dashboard/admin/admin-pages/Student_Stats';
 import Exam_Card from './components/main/dashboard/documents/exam_card';
+import { useEffect } from 'react';
+
 function App() {
+
+  useEffect(() => {
+    if (window.location.hostname === 'admin.coestudycenter.com.ng') {
+      window.location.href = 'https://coestudycenter.com.ng/admin/student-stats';
+    }
+  }, []);
   return (
     <BrowserRouter>
       <Routes>
@@ -40,7 +48,7 @@ function App() {
         <Route path="/registration" element={<Registration />} />
         <Route path='/registration/:id/success' element={<Reg_Success />} />
 
-       
+
 
         <Route path='/dashboard/:id' element={<Dashboard />}>
           <Route path='/dashboard/:id' element={<Panel />} />
@@ -58,3 +66,6 @@ function App() {
 }
 
 export default App;
+
+
+
