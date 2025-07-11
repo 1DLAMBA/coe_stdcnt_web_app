@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider } from 'antd';
-import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled } from '@ant-design/icons';
+import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider ,Alert} from 'antd';
+import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled, LoadingOutlined } from '@ant-design/icons';
 import './style.css';
 import logo from '../../assets/logo2.png';
 import axios from 'axios';
@@ -29,7 +29,9 @@ const schoolsData = {
     "Mathematics / Geography",
     "Maths / Economics",
     "Maths / Biology",
+    "Maths / Computer Science",
     "Maths / Special Education",
+    "Biology / Inter Science",
     "Integrated Sciences (Double Major)",
     "Biology / Geography",
     "PHE (Double Major)",
@@ -71,6 +73,7 @@ const schoolsData = {
     "Hausa / Arabic",
     "Hausa / Social Studies",
     "Arabic / Islamic Studies",
+    "English / Islamic Studies",
     "Arabic / Social Studies",
     "English / Special Education",
     "Hausa / Special Education",
@@ -86,7 +89,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Registration = () => {
-  const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
   const [step, setStep] = useState('step1')
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -100,7 +103,7 @@ const Registration = () => {
   const [thirdStep, setThirdStep] = useState(null);
   const { token } = theme.useToken();
   const navigate = useNavigate();
-  const amount = 200000;
+  const amount = 400000;
   const [email, setEmail] = useState(firstStep.phone_number);
   const [current, setCurrent] = useState(0);
   const [uploadedOl1, setUploadedAL1] = useState('')
@@ -113,6 +116,7 @@ const Registration = () => {
   const [selectedState, setSelectedState] = useState(null);
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingLGAs, setLoadingLGAs] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const next = () => {
     setCurrent(current + 1);
@@ -161,23 +165,28 @@ const Registration = () => {
 
   const handleUploadChange = (info, setUploadedState, type) => {
     const { status } = info.file;
-    if (status === 'done') {
+    if (status === 'uploading') {
+      setUploading(true);
+      message.loading('Uploading passport photo...', 0);
+    } else if (status === 'done') {
+      setUploading(false);
+      message.destroy(); // Clear the loading message
       message.success(`${info.file.name} file uploaded successfully.`);
       const reader = new FileReader();
 
-      const fileName = info.file.response.data; // Assuming the response contains the file name as "fileName"
+      const fileName = info.file.response.data;
       if (type === 'passport') {
         setPassport(fileName)
         console.log(info)
         setImageUrl(`${API_ENDPOINTS.IMAGE}/${info.file.response.data}`)
       } else if (type === 'olevel') {
-
         setUploadedAL1(fileName);
       } else if (type === 'nin') {
-
         setNIN(fileName);
       }
     } else if (status === 'error') {
+      setUploading(false);
+      message.destroy(); // Clear the loading message
       message.error(`${info.file.name} file upload failed.`);
     }
   };
@@ -210,33 +219,77 @@ const Registration = () => {
       console.log('First Form Values:', firstStep);
       next()
       window.scrollTo(0, 0)
-
-
       setStep('step3')
-    } else {
+    } else if(step==='step3') {
       setThirdStep(values)
-      // setEmail(firstStep.email);
-
-      setStep('step4')
-
-      // console.log(values)
-      // const personalResponse = await axios.post(API_ENDPOINTS.PERSONAL_DETAILS, firstStep);
-      // console.log(personalResponse);
-      // const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, secondStep);
-      // console.log(schoolResponse);
-      // const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, values)
-      // console.log(finalResponse);
-
-
-
+      userCheck();
     }
   };
+
+  async function userCheck() {
+    try {
+      if(!thirdStep){
+        message.error('Please fill the form Correctly')
+        return;
+      }
+      const form = { phoneNumber: firstStep.phone_number };
+      const schoolResponse = await axios.post(`${API_ENDPOINTS.API_BASE_URL}/check`, form);
+  
+      console.log('School Response:', schoolResponse);
+      if (schoolResponse?.data?.user && !schoolResponse?.data?.user.educational_detail) {
+        console.log('Third Form Values:', thirdStep);
+  
+        const educationFormData = {
+          ...thirdStep,
+          application_number: schoolResponse.data.user.id
+        } 
+      const year = new Date().getFullYear();
+
+        const newPersonalForm = {
+          application_number: `${thirdStep.exam_year + thirdStep.exam_number}`,
+          application_reference: null,
+        }
+  
+        const perosnalResponse = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${schoolResponse.data.user.id}`, newPersonalForm);
+        const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, educationFormData);
+
+        console.log(finalResponse);
+        if (!finalResponse) {
+          setStep('step3');
+          message.error('An error occurred while processing your data. Please try again.');
+        return;
+        }
+        
+        navigate(`${schoolResponse.data.user.id}/success`);
+  
+      }else if (schoolResponse?.data?.user?.educational_detail){
+          message.error('User already with phone number already exists')
+      };
+    } catch (error) {
+      console.error("Error:", error.response ? error.response.data : error.message);
+  
+      // Set step4 ONLY when an error occurs
+      setStep('step4');
+    }
+  }
+  
 
   const componentProps = {
     email,
     amount,
     metadata: {
       phone: firstStep.phone_number,
+    },
+    split:{
+      type: "flat",
+      subaccounts: [
+        // DANIEL ALAMBA
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
+
+        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
+      ]
     },
     publicKey,
     text: "Pay Now",
@@ -254,7 +307,7 @@ const Registration = () => {
 
       const personalFormData = {
         ...firstStep,
-        application_number: `${year + thirdStep.exam_number}`,
+        application_number: `${thirdStep.exam_year + thirdStep.exam_number}`,
         date_of_birth: adjustedDOB,
         application_reference: reference.reference,
         passport: passport, olevel1: uploadedOl1,
@@ -292,9 +345,9 @@ const Registration = () => {
       const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, schoolFormData);
       console.log(schoolResponse);
 
-
+      console.log('Third Form Values:', thirdStep);
       const educationFormData = await { ...thirdStep, application_number: personalResponse.data.id }
-      const finalResponse = await axios.post(API_ENDPOINTS.EDUCATIONALS_APPLICATION, educationFormData)
+      const finalResponse = await axios.post(`${API_ENDPOINTS.EDUCATIONALS_APPLICATION}`, educationFormData)
       console.log(finalResponse);
       if (finalResponse) {
 
@@ -310,6 +363,7 @@ const Registration = () => {
     } catch (error) {
       console.error("Error sending user data:", error);
       alert("An error occurred while processing your payment. Please try again.");
+      setStep('step3')
     }
   }
 
@@ -378,7 +432,7 @@ const Registration = () => {
     getStatesFromApi();
     async function fetchData() {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/course-data`);
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/course-data`);
         setSubjects(response.data || []);
         console.log('COURSES fetched', response);
       } catch (error) {
@@ -533,20 +587,23 @@ const Registration = () => {
                       beforeUpload={beforeUpload}
                       {...props(setUploadedAL1, 'passport')}
                       accept="image/*"
-                    ><ConfigProvider
-                      theme={{
-                        token: {
-                          // Seed Token
-                          colorPrimary: '#028f64',
-                          borderRadius: 2,
-
-                          // Alias Token
-                          margin: '20px',
-                          colorBgContainer: '#f6ffed',
-                        },
-                      }}
                     >
-                        <Button icon={<UploadOutlined />}>Upload Passport</Button>
+                      <ConfigProvider
+                        theme={{
+                          token: {
+                            colorPrimary: '#028f64',
+                            borderRadius: 2,
+                            margin: '20px',
+                            colorBgContainer: '#f6ffed',
+                          },
+                        }}
+                      >
+                        <Button 
+                          icon={uploading ? <LoadingOutlined /> : <UploadOutlined />} 
+                          disabled={uploading}
+                        >
+                          {uploading ? 'Uploading...' : 'Upload Passport'}
+                        </Button>
                       </ConfigProvider>
                     </Upload>
                   </div>
@@ -1157,7 +1214,7 @@ const Registration = () => {
                     </h2>
 
                     <Row gutter={24}>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Type"
                           name="exam_type"
@@ -1172,7 +1229,7 @@ const Registration = () => {
                           </Select>
                         </Form.Item>
                       </Col>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Number"
                           name="exam_number"
@@ -1181,7 +1238,7 @@ const Registration = () => {
                           <Input placeholder="Enter Examination Number" />
                         </Form.Item>
                       </Col>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Month"
                           name="exam_month"
@@ -1198,7 +1255,7 @@ const Registration = () => {
                           </Select>
                         </Form.Item>
                       </Col>
-                      <Col span={6}>
+                      <Col xs={12} md={8}>
                         <Form.Item
                           label="Examination Year"
                           name="exam_year"
@@ -1348,11 +1405,12 @@ const Registration = () => {
                     <div style={{ margin: "0.5rem 0" }}>
                       <Text type="warning"><WarningOutlined /> Please Ensure to review your submissions before proceeding to pay</Text><br />
                       <Text strong style={{ fontSize: "18px", color: "#028f64" }}>
-                        Fee Amount: ₦5,000
+                        Fee Amount: ₦4,000
                       </Text>
                     </div>
-
+                    
                     <PaystackButton className='btn btn-green' {...componentProps} />
+                     
 
                     <Divider />
                     <Button type="link" style={{ color: "#028f64" }}>

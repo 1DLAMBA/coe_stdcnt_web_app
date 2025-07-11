@@ -39,9 +39,9 @@ const Panel = () => {
   }
   return (
     <>
-    <Breadcrumb style={{marginLeft:'8.7%', marginTop: '1%', backgroundColor:'white', width:'82.5%', color:'white', borderRadius:'15px', padding:'0.5%'}} itemRender={itemRender} items={items} />
+    <Breadcrumb style={{marginLeft:'8.7%', marginTop: '0%', backgroundColor:'white', width:'82.5%', color:'white', borderRadius:'15px', padding:'0.5%'}} itemRender={itemRender} items={items} />
    
-    <div className="d-flex m-auto" style={{width:'85%',  justifyContent:'space-around', paddingTop: '2%', flexWrap:'wrap'}}>
+    <div className="d-flex m-auto" style={{width:'85%',  justifyContent:'space-around', paddingTop: '', flexWrap:'wrap'}}>
 
 
     <Card
@@ -53,7 +53,6 @@ const Panel = () => {
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         backgroundColor: '#fff',
         padding: '16px',
-        marginBottom: '10px'
       }}
     >
       <Space direction="vertical" size="small">

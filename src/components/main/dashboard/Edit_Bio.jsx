@@ -6,6 +6,7 @@ import { IeOutlined, HomeFilled, EditOutlined, PlusOutlined } from '@ant-design/
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../Endpoints/environment';
+import dayjs from 'dayjs'; 
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -29,6 +30,7 @@ const Edit_Bio = () => {
   const [bioData, setBioData] = useState('');
   const userId=localStorage.getItem('id')
   const [data, setData] = useState([]);
+  const navigate = useNavigate();
 
   const [initialValues, setInitialValues] = useState({}); // State for form initial values
   const { id } = useParams();
@@ -202,11 +204,12 @@ const Edit_Bio = () => {
           nationality:values.nationality,
           mode_of_entry:values.mode_of_entry,
           session:values.session,
+          place_of_birth: values.place_of_birth,
+          level:values.level,
           subject_combination:values.subject_combination,          
         }
 
         const PersonalForm = {
-          application_number:id,
             surname: values.surname,
             other_names: values.other_names,
             email: values.email,
@@ -216,29 +219,32 @@ const Edit_Bio = () => {
             local_government: values.local_government,
             name_of_father: values.name_of_father,
             father_place_of_birth: values.father_place_of_birth,
+            father_state_of_origin: values.father_state_of_origin,
             marital_status: values.marital_status,
             religion: values.religion,
         }
 
-        // console.log('BIO REG', payload.newForm)
-
+        
         const response = await axios.post(`${API_ENDPOINTS.BIO_REGISTRATION}`, RegForm, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-
-        console.log('Response:', response.data);
-        const newDateOfBirth = PersonalForm.date_of_birth.format('YYYY-MM-DD');
-        const newPersonalForm = {
-          ...PersonalForm,
-          date_of_birth: newDateOfBirth
-        }
+              headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            
+            console.log('Response:', response.data);
+            const newDateOfBirth = PersonalForm.date_of_birth.format('YYYY-MM-DD');
+            const newPersonalForm = {
+              ...PersonalForm,
+              date_of_birth: newDateOfBirth
+            }
+            console.log('BIO REG', RegForm)
+            console.log('personal', newPersonalForm)
         const perosnalResponse = await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, newPersonalForm);
 
         console.log('Response:', response.data);
+        // navigate(`/dashboard/${id}`);
         
-  // window.location.href = '/dashboard//bio-data';
+  window.location.href = `/dashboard/${id}/bio-data`;
     } catch (error) {
         console.error('Error saving bio-data:', error);
     } finally {
@@ -251,8 +257,27 @@ const Edit_Bio = () => {
     const fetchUser = async () => {
       try {
         console.log("Fetching user data for:", userId);
-        const response = await axios.get(`http://127.0.0.1:8000/api/bio-data/${userId}`);
-        setBioData(response.data.data[0]); // Assuming the API returns an array in `data`
+        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/bio-registrations/${id}`);
+        const perosnalResponse = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+        setBioData(response.data); // Assuming the API returns an array in `data`
+      form.setFieldsValue(response.data);
+      form.setFieldsValue({
+        surname: perosnalResponse.data.surname,
+        other_names: perosnalResponse.data.other_names,
+        email: perosnalResponse.data.email,
+        phone_number: perosnalResponse.data.phone_number,
+        gender: perosnalResponse.data.gender,
+        name_of_father:perosnalResponse.data.name_of_father,
+        father_place_of_birth:perosnalResponse.data.father_place_of_birth,
+        father_state_of_origin:perosnalResponse.data.father_state_of_origin,
+        date_of_birth: perosnalResponse.data.date_of_birth ? dayjs(perosnalResponse.date_of_birth): null,
+        marital_status: perosnalResponse.data.marital_status,
+        place_of_birth: perosnalResponse.data.place_of_birth,
+        religion: perosnalResponse.data.religion,
+        local_government: perosnalResponse.data.local_government,
+      });
+      console.log("Fetching user data for:", response);
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -301,7 +326,7 @@ const Edit_Bio = () => {
 
   useEffect(() => {
     if (initialValues) {
-      form.setFieldsValue(initialValues);
+      form.setFieldsValue(bioData);
     }
   }, [initialValues, form]);
 
@@ -377,7 +402,7 @@ const Edit_Bio = () => {
           </Row>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
-            <Form.Item label="Place of Birth" name="place_of_birth">
+            <Form.Item label="Place of Birth" name="place_of_birth"  rules={[{ required: true, message: 'Please enter place of birth' }]}>
               <Input />
             </Form.Item>
           </Col>
@@ -402,13 +427,18 @@ const Edit_Bio = () => {
         </Row>
         <Row gutter={[16, 16]}>
 
-        <Col xs={24} sm={12}>
+        <Col xs={24} sm={8}>
             <Form.Item label="Name Of Father" name="name_of_father">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
+          <Col xs={24} sm={8}>
             <Form.Item label="Father's Place of Birth" name="father_place_of_birth">
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Form.Item label="Father's State Of Origin" name="father_state_of_origin">
               <Input />
             </Form.Item>
           </Col>
@@ -450,16 +480,21 @@ const Edit_Bio = () => {
         <Row gutter={[16, 16]}>
          
          
-          <Col xs={24} sm={12}>
+          <Col xs={24} sm={6}>
             <Form.Item label="Mode Of Entry" name="mode_of_entry">
-            <Select>
+            <Select disabled={bioData?.mode_of_entry === 'pre_nce'}>
                 <Option value="pre_nce">Pre NCE</Option>
                 <Option value="direct_nce">Direct NCE</Option>
               </Select>
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
-            <Form.Item label="Session" name="current_session">
+          <Col xs={24} sm={6}>
+            <Form.Item label="Session" name="session">
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={6}>
+            <Form.Item label="Level" name="level">
               <Input />
             </Form.Item>
           </Col>
@@ -472,9 +507,7 @@ const Edit_Bio = () => {
           
         </Row>
         <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-      <h1 style={{ textAlign: "center", marginBottom: "20px", color: "#028f64" }}>
-        Qualification and Results Form
-      </h1>
+     
       {/* <Form form={form} layout="vertical">
         <Table
           dataSource={data}
