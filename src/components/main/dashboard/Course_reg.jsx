@@ -104,7 +104,7 @@ const Course_reg = () => {
       type: "flat",
       subaccounts: [
         //Bantigi Oasis
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 68500 },
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 68500 },
         // COE ACCOUNT
         { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
         //CENTER ACCOUNT 
@@ -160,7 +160,7 @@ const Course_reg = () => {
       type: "flat",
       subaccounts: [
         // Daniel ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 61500 },
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 61500 },
         // COE ACCOUNT
         { subaccount: "ACCT_aan2ehxiej239du", share: 1201000 },
         //CENTER ACCOUNT 
@@ -215,7 +215,7 @@ const Course_reg = () => {
       type: "flat",
       subaccounts: [
         //DANIEL ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 40000 },
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 40000 },
         // COE ACCOUNT
         { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
         //CENTER ACCOUNT 
@@ -743,24 +743,12 @@ const Course_reg = () => {
                                   label={<Space><NumberOutlined /> Course {index + 1}</Space>}
                                   required
                                 >
-                                  {courses ? (
-                                    <Select
-                                      value={data.course}
-                                      onChange={(value) => handleCourseChange(index, value)}
-                                      placeholder="Select a course"
-                                      disabled={courses.length < 1}
-                                      style={{ width: '100%' }}
-                                    >
-                                      <Option value="">Select a course</Option>
-                                      {courses.map((course, courseIndex) => (
-                                        <Option key={courseIndex} value={course}>
-                                          {course}
-                                        </Option>
-                                      ))}
-                                    </Select>
-                                  ) : (
-                                    <Input placeholder="Enter course" />
-                                  )}
+                                  <Input
+                                    value={data.course}
+                                    onChange={(e) => handleCourseChange(index, e.target.value)}
+                                    placeholder="Enter course"
+                                    style={{ width: '100%' }}
+                                  />
                                 </Form.Item>
                               </Col>
 

@@ -204,6 +204,7 @@ const Edit_Bio = () => {
           nationality:values.nationality,
           mode_of_entry:values.mode_of_entry,
           session:values.session,
+          place_of_birth: values.place_of_birth,
           level:values.level,
           subject_combination:values.subject_combination,          
         }
@@ -215,10 +216,10 @@ const Edit_Bio = () => {
             phone_number:values.phone_number,
             gender: values.gender,
             date_of_birth: values.date_of_birth,
-            place_of_birth: values.place_of_birth,
             local_government: values.local_government,
             name_of_father: values.name_of_father,
             father_place_of_birth: values.father_place_of_birth,
+            father_state_of_origin: values.father_state_of_origin,
             marital_status: values.marital_status,
             religion: values.religion,
         }
@@ -266,6 +267,9 @@ const Edit_Bio = () => {
         email: perosnalResponse.data.email,
         phone_number: perosnalResponse.data.phone_number,
         gender: perosnalResponse.data.gender,
+        name_of_father:perosnalResponse.data.name_of_father,
+        father_place_of_birth:perosnalResponse.data.father_place_of_birth,
+        father_state_of_origin:perosnalResponse.data.father_state_of_origin,
         date_of_birth: perosnalResponse.data.date_of_birth ? dayjs(perosnalResponse.date_of_birth): null,
         marital_status: perosnalResponse.data.marital_status,
         place_of_birth: perosnalResponse.data.place_of_birth,
@@ -423,13 +427,18 @@ const Edit_Bio = () => {
         </Row>
         <Row gutter={[16, 16]}>
 
-        <Col xs={24} sm={12}>
+        <Col xs={24} sm={8}>
             <Form.Item label="Name Of Father" name="name_of_father">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12}>
+          <Col xs={24} sm={8}>
             <Form.Item label="Father's Place of Birth" name="father_place_of_birth">
+              <Input />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Form.Item label="Father's State Of Origin" name="father_state_of_origin">
               <Input />
             </Form.Item>
           </Col>

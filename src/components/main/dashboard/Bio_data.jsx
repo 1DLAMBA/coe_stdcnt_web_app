@@ -146,7 +146,7 @@ const BioData = () => {
                   <Descriptions.Item label="Phone Number">{user?.phone_number}</Descriptions.Item>
                   <Descriptions.Item label="Gender">{user?.gender}</Descriptions.Item>
                   <Descriptions.Item label="Date of Birth">{user?.date_of_birth}</Descriptions.Item>
-                  <Descriptions.Item label="Place of Birth">{user?.place_of_birth}</Descriptions.Item>
+                  <Descriptions.Item label="Place of Birth">{bio?.place_of_birth}</Descriptions.Item>
                   <Descriptions.Item label="Marital Status">{user?.marital_status}</Descriptions.Item>
                   <Descriptions.Item label="Religion">{user?.religion}</Descriptions.Item>
                   <Descriptions.Item label="Nationality">{bio?.nationality}</Descriptions.Item>
@@ -193,7 +193,7 @@ const BioData = () => {
                   {/* <Descriptions.Item label="Current Semester">{user?.current_semester}</Descriptions.Item> */}
                   <Descriptions.Item label="Father's/Guardian State">{user?.father_state_of_origin}</Descriptions.Item>
                   <Descriptions.Item label="Father's/Guardian P.O.B">{user?.father_place_of_birth}</Descriptions.Item>
-                  <Descriptions.Item label="Applicant Occupation">{bio?.applicant_occupation}</Descriptions.Item>
+                  <Descriptions.Item label="Applicant Occupation">{user?.applicant_occupation}</Descriptions.Item>
                   {/* <Descriptions.Item label="Entry Year">{bio?.entry_year}</Descriptions.Item> */}
                   {/* <Descriptions.Item label="Program Duration">{user?.program_duration} years</Descriptions.Item> */}
                   {/* <Descriptions.Item label="Award in View">{user?.award_in_view}</Descriptions.Item> */}

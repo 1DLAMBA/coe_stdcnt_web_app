@@ -36,7 +36,7 @@ const ApplicationCheck = () => {
       type: "flat",
       subaccounts: [
         // Daniel Alamba
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 41000 },
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 41000 },
         // COE ACCOUNT
         { subaccount: "ACCT_aan2ehxiej239du", share: 200000 },
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, DollarOutlined, ReadOutlined, NumberOutlined } from '@ant-design/icons';
-import { Card, Col, ConfigProvider, Statistic, Tag, Table, Input, Select, Spin, Row, Button, Space, message, Modal, Typography, Divider } from 'antd';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, DollarOutlined, ReadOutlined, NumberOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Col, ConfigProvider, Statistic, Tag, Table, Input, Select, Spin, Row, Button, Space, message, Modal, Typography, Form } from 'antd';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import axios from "axios";
 import '../admin-pages/styles/application.css';
 import API_ENDPOINTS from "../../../../../Endpoints/environment";
@@ -9,7 +9,66 @@ import API_ENDPOINTS from "../../../../../Endpoints/environment";
 const { Search } = Input;
 const { Option } = Select;
 const { Title, Text } = Typography;
-
+const schoolsData = {
+    "School of Sciences": [
+        "Mathematics / Geography",
+        "Maths / Economics",
+        "Maths / Biology",
+        "Maths / Computer Science",
+        "Maths / Special Education",
+        "Biology / Inter Science",
+        "Integrated Sciences (Double Major)",
+        "Biology / Geography",
+        "PHE (Double Major)",
+        "Biology / Special Education",
+    ],
+    "School of Technical Education": [
+        "Technical Education Double Major",
+        "Electrical / Electronics",
+        "Automobile",
+        "Building",
+        "Wood Work",
+        "Metal Work",
+    ],
+    "School of Arts and Social Sciences": [
+        "Geography / History",
+        "Geography / Economics",
+        "Geography / Social Studies",
+        "History / CRS",
+        "History / Islamic Studies",
+        "Social Studies / Economics",
+        "Social Studies / CRS",
+        "Social Studies / Islamic Studies",
+        "Islamic Studies / Special Education",
+        "Eco / Special Education",
+        "CRS / Special Education",
+        "History / Special Education",
+    ],
+    "School of Education": [
+        "Primary Education Studies (Double Major)",
+        "Early Childhood Care Education (Double Major)",
+    ],
+    "School of Languages": [
+        "English / History",
+        "English / CRS",
+        "English / Arabic",
+        "English / Hausa",
+        "English / Social Studies",
+        "Hausa / Islamic Studies",
+        "Hausa / Arabic",
+        "Hausa / Social Studies",
+        "Arabic / Islamic Studies",
+        "English / Islamic Studies",
+        "Arabic / Social Studies",
+        "English / Special Education",
+        "Hausa / Special Education",
+    ],
+    "School of Vocational Education": [
+        "Agricultural Science Education (Double Major)",
+        "Home Economics (Double Major)",
+        "Business Education (Double Major)",
+    ],
+};
 const styles = {
     container: {
         paddingLeft: '5%',
@@ -57,14 +116,24 @@ const styles = {
     },
 };
 
+
+
 export const Student_Stats = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [studentsWithPartialPayment, setStudentsWithPartialPayment] = useState(0);
     const [studentsWithFullPayment, setStudentsWithFullPayment] = useState(0);
     const [studentsWithMatric, setStudentsWithMatric] = useState(0);
+    const [studentsWithNotPaid, setStudentsWithNotPaid] = useState(0);
     const [approvedStudents, setApprovedStudents] = useState(0);
     const [totalApplications, setTotalApplications] = useState(0);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [student_details, setstudent_details] = useState(null);
+    const [searchNumber, setSearchNumber] = useState("");
+    const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [selectedSchool, setSelectedSchool] = useState("");
+    const [selectedCourse, setSelectedCourse] = useState("");
+    const [student_id, setStudent_id] = useState("");
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
     const [search, setSearch] = useState("");
     const [studyCent, setStudyCent] = useState("");
@@ -72,7 +141,7 @@ export const Student_Stats = () => {
     const [allData, setAllData] = useState([]);
     const [isExportModalVisible, setIsExportModalVisible] = useState(false);
     const [selectedExportCenter, setSelectedExportCenter] = useState("");
-
+    const [studentName, setStudentName] = useState("");
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
     const fetchData = async () => {
@@ -81,8 +150,9 @@ export const Student_Stats = () => {
             const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
             setData(response.data);
             setAllData(response.data);
-            setStudentsWithPartialPayment(response.data.filter((student) => student.has_paid === "1" && student.course_paid === "0").length);
-            setStudentsWithFullPayment(response.data.filter((student) => student.course_paid === "1").length);
+            setStudentsWithPartialPayment(response.data.filter((student) => student.has_paid == "1" && student.course_paid == "0").length);
+            setStudentsWithFullPayment(response.data.filter((student) => student.course_paid == "1").length);
+            setStudentsWithNotPaid(response.data.filter((student) => student.matric_number && student.has_paid == "0").length);
             setStudentsWithMatric(response.data.filter((student) => student.matric_number).length);
             setApprovedStudents(response.data.filter((student) => student.has_admission).length);
             setTotalApplications(response.data.length);
@@ -90,9 +160,10 @@ export const Student_Stats = () => {
             // Process study center data    
             const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora'];
             const centerStats = centers.map(center => {
-                const centerStudents = response.data.filter(student => student.desired_study_cent === center);
+                const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
+                const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
                 return {
-                    name: center,
+                    name: '(' + centerStudents.length + ')' + ' ' + center,
                     total: centerStudents.length,
                     approved: centerStudents.filter(student => student.has_admission).length
                 };
@@ -104,6 +175,7 @@ export const Student_Stats = () => {
             setLoading(false);
         }
     };
+    // statsBy
 
     useEffect(() => {
         fetchData();
@@ -152,7 +224,7 @@ export const Student_Stats = () => {
     const pieData = [
         { name: 'Partial Payment', value: studentsWithPartialPayment },
         { name: 'Full Payment', value: studentsWithFullPayment },
-        { name: 'Not Paid', value: studentsWithMatric }
+        { name: 'Not Paid', value: studentsWithNotPaid }
     ];
 
     const columns = [
@@ -176,9 +248,9 @@ export const Student_Stats = () => {
             key: "payment_status",
             render: (_, record) => (
                 <span>
-                    {record.course_paid === "1" ? (
+                    {record.course_paid == "1" ? (
                         <Tag color="green">Full Payment</Tag>
-                    ) : record.has_paid === "1" ? (
+                    ) : record.has_paid == "1" ? (
                         <Tag color="blue">Partial Payment</Tag>
                     ) : (
                         <Tag color="red">No Payment</Tag>
@@ -203,7 +275,7 @@ export const Student_Stats = () => {
     ];
 
     const exportToCSV = (data, filename, includeAmount = false) => {
-        if (!data || data.length === 0) {
+        if (!data || data.length == 0) {
             message.warning('No data to export');
             return;
         }
@@ -213,26 +285,26 @@ export const Student_Stats = () => {
         if (includeAmount) {
             headers.push('Amount Paid (₦)');
         }
-        
+
         // Create CSV content
         const csvContent = [
             headers.join(','),
             ...data.map(row => {
                 let rowData = columns.map(col => {
-                    if (col.key === 'payment_status') {
-                        if (row.course_paid === "1") return 'Full Payment';
-                        if (row.has_paid === "1" && row.course_paid === "0") return 'Partial Payment';
+                    if (col.key == 'payment_status') {
+                        if (row.course_paid == "1") return 'Full Payment';
+                        if (row.has_paid == "1" && row.course_paid == "0") return 'Partial Payment';
                         return 'No Payment';
                     }
-                    if (col.dataIndex === 'has_admission') {
+                    if (col.dataIndex == 'has_admission') {
                         return row[col.dataIndex] ? 'Approved' : 'Not Approved';
                     }
                     return row[col.dataIndex] || '';
                 });
 
                 if (includeAmount) {
-                    const amount = row.course_paid === "1" ? "₦40,000" : 
-                                 (row.has_paid === "1" ? "₦24,000" : "₦0");
+                    const amount = row.course_paid == "1" ? "₦40,000" :
+                        (row.has_paid == "1" ? "₦24,000" : "₦0");
                     rowData.push(amount);
                 }
 
@@ -254,53 +326,53 @@ export const Student_Stats = () => {
 
     const getStudentLevel = (matricNumber) => {
         if (!matricNumber) return null;
-        
+
         // Extract the year part from matric number
         const match = matricNumber.match(/\/(\d{2})\/\d+/);
         if (!match) return null;
-        
+
         const year = parseInt(match[1]);
         const currentYear = new Date().getFullYear() % 100; // Get last 2 digits of current year
-        
+
         // Calculate level based on year difference
         const level = currentYear - year + 1;
         return level >= 1 && level <= 4 ? level : null;
     };
 
     const getLevelCount = (level) => {
-        return allData.filter(student => getStudentLevel(student.matric_number) === level).length;
+        return allData.filter(student => getStudentLevel(student.matric_number) == level).length;
     };
 
     const getFilteredData = (filterType) => {
         let filteredData = allData;
-        
+
         // First filter by selected center if any
         if (selectedExportCenter) {
-            filteredData = filteredData.filter(student => student.desired_study_cent === selectedExportCenter);
+            filteredData = filteredData.filter(student => student.desired_study_cent == selectedExportCenter);
         }
 
         // Then apply the specific filter type
         switch (filterType) {
             case 'partial':
-                return filteredData.filter(student => student.has_paid === "1" && student.course_paid === "0");
+                return filteredData.filter(student => student.has_paid == "1" && student.course_paid == "0");
             case 'full':
-                return filteredData.filter(student => student.course_paid === "1");
+                return filteredData.filter(student => student.course_paid == "1");
             case 'none':
-                return filteredData.filter(student => student.has_paid === "0");
+                return filteredData.filter(student => student.has_paid == "0");
             case 'matric':
                 return filteredData.filter(student => student.matric_number);
             case 'paid':
-                return filteredData.filter(student => student.has_paid === "1" || student.course_paid === "1");
+                return filteredData.filter(student => student.has_paid == "1" || student.course_paid == "1");
             case 'acceptance':
                 return filteredData.filter(student => student.application_reference !== null);
             case 'level1':
-                return filteredData.filter(student => getStudentLevel(student.matric_number) === 1);
+                return filteredData.filter(student => getStudentLevel(student.matric_number) == 1);
             case 'level2':
-                return filteredData.filter(student => getStudentLevel(student.matric_number) === 2);
+                return filteredData.filter(student => getStudentLevel(student.matric_number) == 2);
             case 'level3':
-                return filteredData.filter(student => getStudentLevel(student.matric_number) === 3);
+                return filteredData.filter(student => getStudentLevel(student.matric_number) == 3);
             case 'level4':
-                return filteredData.filter(student => getStudentLevel(student.matric_number) === 4);
+                return filteredData.filter(student => getStudentLevel(student.matric_number) == 4);
             default:
                 return filteredData;
         }
@@ -339,9 +411,10 @@ export const Student_Stats = () => {
                 }}
                 footer={null}
                 width={600}
+                centered
             >
                 <div className="export-modal-content">
-                    
+
 
                     {renderExportGroup("All Students", <TeamOutlined />, [
                         <Button
@@ -361,7 +434,7 @@ export const Student_Stats = () => {
                     ])}
 
 
-{renderExportGroup("Level-wise Export", <ReadOutlined />, [
+                    {renderExportGroup("Level-wise Export", <ReadOutlined />, [
                         <Button
                             key="level1"
                             className="export-button"
@@ -503,7 +576,7 @@ export const Student_Stats = () => {
                         </Button>
                     ])}
 
-                    
+
 
                     {renderExportGroup("Other Exports", <NumberOutlined />, [
                         <Button
@@ -529,6 +602,80 @@ export const Student_Stats = () => {
         );
     };
 
+    const handleSearchStudent = async () => {
+        if (!searchNumber) {
+            message.error("Please enter an application/matric number");
+            return;
+        }
+        setLoading(true);
+        try {
+            const response = await axios.post(`${API_ENDPOINTS.STUDENT_CHECK}`, {
+                application_number: searchNumber,
+            });
+            console.log(response.data);
+            if (response.data.student_detail || response.data.user.student_detail) {
+                setstudent_details(response.data.student_detail || response.data.user.student_detail);
+                const surname = response.data?.surname || response.data.user?.surname;
+                const otherNames = response.data?.other_names || response.data.user?.other_names;
+                const fullName = surname + " " + otherNames;
+                setStudentName(fullName);
+                setSelectedSchool(response.data?.student_detail?.first_school || response.data.user?.student_detail?.first_school);
+                setSelectedCourse(response.data?.student_detail?.first_course || response.data.user?.student_detail?.first_course);
+                setButtonDisabled(false);
+                setStudent_id(response.data?.id || response.data.user?.id);
+            } else {
+                message.error("Student not found");
+                setstudent_details(null);
+                setButtonDisabled(true);
+            }
+        } catch (error) {
+            console.error("Error checking student:", error);
+            message.error("Error checking student details");
+            setstudent_details(null);
+            setButtonDisabled(true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSubmit = async (values) => {
+        if (!selectedSchool || !selectedCourse) {
+            message.error("Please select both school and course");
+            return;
+        }
+        try {
+            const formData = {
+                new_school: values.first_school,
+                new_course: values.first_course
+            }
+            console.log(formData);
+            const courseChange = await axios.put(`${API_ENDPOINTS.SCHOOL_DETAILS}/${student_id}`, formData);
+            console.log(courseChange);
+            if (courseChange) {
+                message.success("Course updated successfully");
+                // Reset all states
+                setIsModalVisible(false);
+                setstudent_details(null);
+                setSearchNumber("");
+                setSelectedSchool("");
+                setSelectedCourse("");
+                setButtonDisabled(true);
+                setLoading(false);
+                // Refresh the data
+                fetchData();
+            } else {
+                message.error("Failed to update course");
+                setButtonDisabled(false);
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error("Error updating course:", error);
+            message.error("Error updating course");
+            setButtonDisabled(false);
+            setLoading(false);
+        }
+    };
+
     return (
         <div style={styles.container}>
             <Row gutter={[16, 16]}>
@@ -540,6 +687,9 @@ export const Student_Stats = () => {
                             valueStyle={{ color: '#1890ff' }}
                             prefix={<UserOutlined />}
                         />
+                        <Text type="secondary" style={{ display: 'block', marginTop: '8px', fontSize: '12px' }}>
+                            Students who have paid at least 60% of their total fees.
+                        </Text>
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
@@ -550,16 +700,22 @@ export const Student_Stats = () => {
                             valueStyle={{ color: '#3f8600' }}
                             prefix={<UserOutlined />}
                         />
+                        <Text type="secondary" style={{ display: 'block', marginTop: '8px', fontSize: '12px' }}>
+                            Students who have completed full payment of their fees for the session.
+                        </Text>
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
                     <Card bordered={false} style={styles.card}>
                         <Statistic
                             title="Students Not Paid"
-                            value={studentsWithMatric}
-                            valueStyle={{ color: '#3f8600' }}
+                            value={studentsWithNotPaid}
+                            valueStyle={{ color: '#cf1322' }}
                             prefix={<UserOutlined />}
                         />
+                        <Text type="secondary" style={{ display: 'block', marginTop: '8px', fontSize: '12px' }}>
+                            Students with a matric number (admitted) but have not paid their school fees.
+                        </Text>
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
@@ -570,6 +726,9 @@ export const Student_Stats = () => {
                             valueStyle={{ color: '#3f8600' }}
                             prefix={<UserOutlined />}
                         />
+                        <Text type="secondary" style={{ display: 'block', marginTop: '8px', fontSize: '12px' }}>
+                            All students with approved admission — not just new intakes.
+                        </Text>
                     </Card>
                 </Col>
             </Row>
@@ -611,15 +770,15 @@ export const Student_Stats = () => {
                                 <YAxis />
                                 <Tooltip />
                                 <Legend />
-                                <Bar 
-                                    dataKey="total" 
-                                    name="Total Applications" 
+                                <Bar
+                                    dataKey="total"
+                                    name="Total Applications"
                                     fill="#8884d8"
                                     radius={[4, 4, 0, 0]}
                                 />
-                                <Bar 
-                                    dataKey="approved" 
-                                    name="Approved Applications" 
+                                <Bar
+                                    dataKey="approved"
+                                    name="Approved Applications"
                                     fill="#82ca9d"
                                     radius={[4, 4, 0, 0]}
                                 />
@@ -642,41 +801,51 @@ export const Student_Stats = () => {
                 >
                     <div className="table-header-section">
                         <div className="table-header-left">
-                        <Search
-                            placeholder="Search by Matric/Application Number"
-                            allowClear
-                            onSearch={handleSearch}
+                            <Search
+                                placeholder="Search by Matric/Application Number"
+                                allowClear
+                                onSearch={handleSearch}
                                 className="search-input"
-                        />
+                            />
 
-                        <Select
-                            placeholder="Filter by Study Center"
-                            allowClear
-                            onChange={handleFilterChange}
+                            <Select
+                                placeholder="Filter by Study Center"
+                                allowClear
+                                onChange={handleFilterChange}
                                 className="filter-select"
-                        >
-                            <Option value="Salka">Salka</Option>
-                            <Option value="Mokwa">Mokwa</Option>
-                            <Option value="suleja">Suleja</Option>
-                            <Option value="Kagara">Kagara</Option>
-                            <Option value="New Bussa">New Bussa</Option>
-                            <Option value="Gulu">Gulu</Option>
-                            <Option value="Gawu">Gawu</Option>
-                            <Option value="Doko">Doko</Option>
-                            <Option value="Katcha">Katcha</Option>
-                            <Option value="Rijau">Rijau</Option>
-                            <Option value="Kontogora">Kontogora</Option>
-                        </Select>
-                    </div>
+                            >
+                                <Option value="Salka">Salka</Option>
+                                <Option value="Mokwa">Mokwa</Option>
+                                <Option value="suleja">Suleja</Option>
+                                <Option value="Kagara">Kagara</Option>
+                                <Option value="New Bussa">New Bussa</Option>
+                                <Option value="Gulu">Gulu</Option>
+                                <Option value="Gawu">Gawu</Option>
+                                <Option value="Doko">Doko</Option>
+                                <Option value="Katcha">Katcha</Option>
+                                <Option value="Rijau">Rijau</Option>
+                                <Option value="Kontogora">Kontogora</Option>
+                            </Select>
+                        </div>
 
                         <div className="table-header-right">
                             <Button
                                 type="primary"
                                 className="export-trigger-button"
                                 onClick={() => setIsExportModalVisible(true)}
+                                style={{ marginRight: '10px' }}
                             >
                                 <FileExcelOutlined />
                                 <span>Export Student Data</span>
+                            </Button>
+                            <Button
+                                type="primary"
+                                className="export-trigger-button"
+                                onClick={() => setIsModalVisible(true)}
+                                style={{ backgroundColor: '#028f64', borderColor: '#028f64' }}
+                            >
+                                <UserOutlined />
+                                <span>Change Course</span>
                             </Button>
                         </div>
                     </div>
@@ -694,7 +863,142 @@ export const Student_Stats = () => {
                     </Spin>
                 </ConfigProvider>
             </Card>
+            <Modal
+                title="Change New Student Course"
+                open={isModalVisible}
+                onCancel={() => {
+                    setIsModalVisible(false);
+                    setstudent_details(null);
+                    setSearchNumber("");
+                    setSelectedSchool("");
+                    setSelectedCourse("");
+                    setButtonDisabled(true);
+                    setLoading(false);
+                }}
+                footer={null}
+                centered
+            >
+                <div className="choice-sub">
+                    <Form
+                        layout="vertical"
+                        onFinish={handleSubmit}
+                        className="application-form"
+                    >
+                        <div style={{ marginBottom: "20px" }}>
+                            <Form.Item
+                                label="Application"
+                                required
+                            >
+                                <Input
+                                    placeholder="Enter application of new student"
+                                    value={searchNumber}
+                                    onChange={(e) => setSearchNumber(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </Form.Item>
+                            <Button
+                                type="primary"
+                                onClick={handleSearchStudent}
+                                loading={loading}
+                                style={{ 
+                                    marginBottom: "20px",
+                                    borderColor: "#028f64",
+                                    color: "#028f64",
+                                    backgroundColor: "transparent"
+                                }}
+                                icon={<SearchOutlined />}
+                            >
+                                Search Student
+                            </Button>
+                        </div>
 
+                        {student_details && (
+                            <>
+                                <h3 style={{ marginBottom: "20px" }}>{studentName}</h3>
+                                <div style={{ marginBottom: "20px" }}>
+                                    <Form.Item
+                                        label="Current School"
+                                    >
+                                        <Input value={student_details.first_school} disabled />
+                                    </Form.Item>
+                                    <Form.Item
+                                        label="Current Course"
+                                    >
+                                        <Input value={student_details.first_course} disabled />
+                                    </Form.Item>
+                                </div>
+
+                                <div style={{ marginBottom: "20px" }}>
+                                    <Form.Item
+                                        label="Select New School"
+                                        name="first_school"
+                                        rules={[
+                                            { required: true, message: "Please select a school!" },
+                                        ]}
+                                    >
+                                        <Select
+                                            placeholder="-- Select a School --"
+                                            value={selectedSchool}
+                                            onChange={(value) => setSelectedSchool(value)}
+                                            allowClear
+                                        >
+                                            {Object.keys(schoolsData).map((school, index) => (
+                                                <Option key={index} value={school}>
+                                                    {school}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </div>
+
+                                <div style={{ marginBottom: "20px" }}>
+                                    <Form.Item
+                                        label="Select New Course"
+                                        name="first_course"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: "Please select a course!",
+                                            },
+                                        ]}
+                                    >
+                                        <Select
+                                            placeholder="-- Select a Course --"
+                                            allowClear
+                                            value={selectedCourse}
+                                            onChange={(value) => setSelectedCourse(value)}
+                                            disabled={!selectedSchool}
+                                        >
+                                            {selectedSchool &&
+                                                schoolsData[selectedSchool].map((course, index) => (
+                                                    <Option key={index} value={course}>
+                                                        {course}
+                                                    </Option>
+                                                ))}
+                                        </Select>
+                                    </Form.Item>
+                                </div>
+
+                                <Button
+                                    type="primary"
+                                    htmlType="submit"
+                                    block
+                                    disabled={buttonDisabled}
+                                    style={{
+                                        backgroundColor: "#028f64",
+                                        borderColor: "#028f64",
+                                        padding: "10px 40px",
+                                        color: 'white',
+                                        width: 'max-content'
+                                    }}
+                                >
+                                    Update Course
+                                </Button>
+                            </>
+                        )}
+                    </Form>
+                </div>
+            </Modal>
             <ExportModal />
         </div>
     );

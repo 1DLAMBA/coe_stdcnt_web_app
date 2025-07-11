@@ -222,11 +222,7 @@ const Registration = () => {
       setStep('step3')
     } else if(step==='step3') {
       setThirdStep(values)
-      userCheck()
-
-
-
-
+      userCheck();
     }
   };
 
@@ -288,7 +284,7 @@ const Registration = () => {
       type: "flat",
       subaccounts: [
         // DANIEL ALAMBA
-        { subaccount: "ACCT_32iz48sbi1fshex", share: 30000 },
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
         // COE ACCOUNT
         { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
 
