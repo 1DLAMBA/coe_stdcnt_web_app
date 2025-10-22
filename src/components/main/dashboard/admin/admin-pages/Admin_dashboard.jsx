@@ -265,6 +265,8 @@ export const Admin_dashboard = () => {
                             <Option value="Katcha">Katcha</Option>
                             <Option value="Rijau">Rijau</Option>
                             <Option value="Kontogora">Kontogora</Option>
+                            <Option value="Bida">Bida</Option>
+
                         </Select>
                     </div>
                     <Spin spinning={loading}>

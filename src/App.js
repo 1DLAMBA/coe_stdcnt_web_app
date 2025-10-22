@@ -21,8 +21,10 @@ import Admission_Letter from './components/main/dashboard/documents/Admission_Le
 import Acceptance_Receipt from './components/main/dashboard/documents/Acceptance_Receipt';
 import Fees_Receipt from './components/main/dashboard/documents/Fees_Receipt';
 import { Student_Stats } from './components/main/dashboard/admin/admin-pages/Student_Stats';
+import View_student from './components/main/dashboard/admin/admin-pages/View_student';
 import Exam_Card from './components/main/dashboard/documents/exam_card';
 import { useEffect } from 'react';
+import { StudentList } from './components/main/dashboard/student/StudentList';
 
 function App() {
 
@@ -43,6 +45,7 @@ function App() {
           <Route path='/admin/view-approved/single/:id' element={<View_approved />} />
           <Route path='/admin/add-applications' element={<Add_Applications />} />
           <Route path='/admin/single-application/:id' element={<Single_Application />} />
+          <Route path='/admin/view-student/:id' element={<View_student />} />
 
         </Route>
         <Route path="/registration" element={<Registration />} />
@@ -60,6 +63,7 @@ function App() {
           <Route path='/dashboard/:id/acceptance-receipt' element={<Acceptance_Receipt />} />
           <Route path='/dashboard/:id/fees-receipt' element={<Fees_Receipt />} />
         </Route>
+        <Route path="student" element={<StudentList />} />
       </Routes>
     </BrowserRouter>
   );

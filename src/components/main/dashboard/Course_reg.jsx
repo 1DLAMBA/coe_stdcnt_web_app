@@ -408,6 +408,8 @@ const Course_reg = () => {
           return 'ACCT_q7hpb8aop6872xk';
         case 'Salka':
           return 'ACCT_zduspv9kbkc5wsp';
+        case 'Bida':
+          return 'ACCT_xbd6r3fuguhi807';
         default:
           return 'ACCT_aan2ehxiej239du'; // Default COE account
       }
@@ -694,7 +696,7 @@ const Course_reg = () => {
                                 suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
                               >
                                 <Option value="" disabled>Select a session</Option>
-                                <Option value="2024/2025">2024/2025</Option>
+                                <Option value="2025/2026">2025/2026</Option>
                               </Select>
                             </Form.Item>
                           </Col>

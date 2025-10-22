@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, DollarOutlined, ReadOutlined, NumberOutlined, SearchOutlined } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
+import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, DollarOutlined, ReadOutlined, NumberOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { Card, Col, ConfigProvider, Statistic, Tag, Table, Input, Select, Spin, Row, Button, Space, message, Modal, Typography, Form } from 'antd';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import axios from "axios";
@@ -119,6 +120,7 @@ const styles = {
 
 
 export const Student_Stats = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [studentsWithPartialPayment, setStudentsWithPartialPayment] = useState(0);
@@ -158,7 +160,7 @@ export const Student_Stats = () => {
             setTotalApplications(response.data.length);
 
             // Process study center data    
-            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora'];
+            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida'];
             const centerStats = centers.map(center => {
                 const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
                 const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
@@ -221,6 +223,10 @@ export const Student_Stats = () => {
         setStudyCent(value);
     };
 
+    const ViewStudent = (id) => {
+        navigate(`/admin/view-student/${id}`);
+    };
+
     const pieData = [
         { name: 'Partial Payment', value: studentsWithPartialPayment },
         { name: 'Full Payment', value: studentsWithFullPayment },
@@ -237,6 +243,11 @@ export const Student_Stats = () => {
             title: "Application/ Matric Number",
             dataIndex: "application_number",
             key: "application_number",
+        },
+        {
+            title: "Course",
+            dataIndex: "course",
+            key: "course",
         },
         {
             title: "Study Center",
@@ -270,6 +281,14 @@ export const Student_Stats = () => {
                         <Tag color="red">Not Approved</Tag>
                     )}
                 </span>
+            ),
+        },
+        {
+            title: "View",
+            dataIndex: "id",
+            key: "id",
+            render: (id) => (
+                <Button icon={<EyeOutlined/>} borderRadius={10} type="primary" onClick={() => { ViewStudent(id); }}>View</Button>
             ),
         },
     ];
@@ -663,6 +682,7 @@ export const Student_Stats = () => {
                 setLoading(false);
                 // Refresh the data
                 fetchData();
+                fetchStudents();
             } else {
                 message.error("Failed to update course");
                 setButtonDisabled(false);
@@ -825,6 +845,8 @@ export const Student_Stats = () => {
                                 <Option value="Katcha">Katcha</Option>
                                 <Option value="Rijau">Rijau</Option>
                                 <Option value="Kontogora">Kontogora</Option>
+                                <Option value="Bida">Bida</Option>
+
                             </Select>
                         </div>
 
