@@ -182,7 +182,7 @@ const Dashboard = () => {
         <Button
           block
           type="text"
-          disabled={!application?.course_paid}
+          disabled={application?.course_paid === "0" || application?.has_paid === "0"}
           onClick={routeExamCard}
           style={{
             display: 'flex',

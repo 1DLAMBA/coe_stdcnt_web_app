@@ -410,6 +410,8 @@ const Course_reg = () => {
           return 'ACCT_zduspv9kbkc5wsp';
         case 'Bida':
           return 'ACCT_xbd6r3fuguhi807';
+        case 'Patigi':
+          return 'ACCT_8bh96hpa23avb1w';
         default:
           return 'ACCT_aan2ehxiej239du'; // Default COE account
       }

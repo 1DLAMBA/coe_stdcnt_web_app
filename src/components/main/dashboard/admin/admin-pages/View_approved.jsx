@@ -207,6 +207,7 @@ export const View_approved = () => {
               <Option value="Doko">Doko</Option>
               <Option value="Katcha">Katcha</Option>
               <Option value="Bida">Bida</Option>
+              <Option value="Patigi">Patigi</Option>
 
             </Select>
           </Col>

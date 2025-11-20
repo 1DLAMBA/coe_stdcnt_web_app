@@ -266,6 +266,7 @@ export const Admin_dashboard = () => {
                             <Option value="Rijau">Rijau</Option>
                             <Option value="Kontogora">Kontogora</Option>
                             <Option value="Bida">Bida</Option>
+                            <Option value="Patigi">Patigi</Option>
 
                         </Select>
                     </div>

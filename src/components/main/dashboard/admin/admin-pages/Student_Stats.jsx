@@ -150,7 +150,7 @@ export const Student_Stats = () => {
         setLoading(true);
         try {
             const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
-            setData(response.data);
+            // setData(response.data);
             setAllData(response.data);
             setStudentsWithPartialPayment(response.data.filter((student) => student.has_paid == "1" && student.course_paid == "0").length);
             setStudentsWithFullPayment(response.data.filter((student) => student.course_paid == "1").length);
@@ -160,7 +160,7 @@ export const Student_Stats = () => {
             setTotalApplications(response.data.length);
 
             // Process study center data    
-            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida'];
+            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi'];
             const centerStats = centers.map(center => {
                 const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
                 const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
@@ -198,7 +198,7 @@ export const Student_Stats = () => {
                     type: null,
                 },
             });
-
+            
             setData(response.data.data);
             setPagination({
                 ...pagination,
@@ -236,8 +236,12 @@ export const Student_Stats = () => {
     const columns = [
         {
             title: "Name",
-            dataIndex: "other_names",
-            key: "other_names",
+            key: "full_name",
+            render: (_, record) => {
+                const surname = record.surname || "";
+                const otherNames = record.other_names || "";
+                return `${surname} ${otherNames}`.trim();
+            },
         },
         {
             title: "Application/ Matric Number",
@@ -314,6 +318,11 @@ export const Student_Stats = () => {
                         if (row.course_paid == "1") return 'Full Payment';
                         if (row.has_paid == "1" && row.course_paid == "0") return 'Partial Payment';
                         return 'No Payment';
+                    }
+                    if (col.key == 'full_name') {
+                        const surname = row.surname || "";
+                        const otherNames = row.other_names || "";
+                        return `${surname} ${otherNames}`.trim();
                     }
                     if (col.dataIndex == 'has_admission') {
                         return row[col.dataIndex] ? 'Approved' : 'Not Approved';
@@ -846,6 +855,7 @@ export const Student_Stats = () => {
                                 <Option value="Rijau">Rijau</Option>
                                 <Option value="Kontogora">Kontogora</Option>
                                 <Option value="Bida">Bida</Option>
+                                <Option value="Patigi">Patigi</Option>
 
                             </Select>
                         </div>
