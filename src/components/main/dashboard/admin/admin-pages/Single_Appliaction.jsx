@@ -97,7 +97,7 @@ const Single_Application = () => {
   async function approve_prence() {
     const formData = {
       application_number: studentDetails.application_number,
-      mode_of_entry: 'pre_nce'
+      mode_of_entry: 'conditional'
     }
     try {
       const personalResponse = await axios.post(`${API_ENDPOINTS.APPROVE_PRENCE}`, formData);
@@ -358,7 +358,7 @@ const Single_Application = () => {
                   }}
                 >
                   <CheckCircleFilled />
-                  Approve Pre NCE
+                  Conditional Admission
                 </Button>
                 <Button
                   type="primary"

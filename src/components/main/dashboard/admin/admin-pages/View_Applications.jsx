@@ -18,7 +18,7 @@ const ViewApplications = () => {
   const centers = [
     "suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", 
     "Kagara", "Salka", "Kontogora", "Gawu", "Doko", 
-    "Katcha", "Bida", "Patigi"
+    "Katcha", "Bida", "Patigi", "Pandogari"
   ];
 
   const ViewApplication = (id) => {

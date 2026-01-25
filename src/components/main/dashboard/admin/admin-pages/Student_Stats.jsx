@@ -147,7 +147,7 @@ export const Student_Stats = () => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
     const fetchData = async () => {
-        setLoading(true);
+        // setLoading(true);
         try {
             const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
             // setData(response.data);
@@ -160,7 +160,7 @@ export const Student_Stats = () => {
             setTotalApplications(response.data.length);
 
             // Process study center data    
-            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi'];
+            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi', 'Pandogari'];
             const centerStats = centers.map(center => {
                 const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
                 const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
@@ -856,7 +856,7 @@ export const Student_Stats = () => {
                                 <Option value="Kontogora">Kontogora</Option>
                                 <Option value="Bida">Bida</Option>
                                 <Option value="Patigi">Patigi</Option>
-
+                                <Option value="Pandogari">Pandogari</Option>
                             </Select>
                         </div>
 
