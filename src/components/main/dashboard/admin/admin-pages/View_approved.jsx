@@ -209,7 +209,7 @@ export const View_approved = () => {
               <Option value="Bida">Bida</Option>
               <Option value="Patigi">Patigi</Option>
               <Option value="Pandogari">Pandogari</Option>
-
+              <Option value="Agaie">Agaie</Option>
 
             </Select>
           </Col>

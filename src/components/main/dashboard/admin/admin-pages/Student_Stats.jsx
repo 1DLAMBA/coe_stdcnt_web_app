@@ -160,7 +160,7 @@ export const Student_Stats = () => {
             setTotalApplications(response.data.length);
 
             // Process study center data    
-            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi', 'Pandogari'];
+            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi', 'Pandogari', 'Agaie'];
             const centerStats = centers.map(center => {
                 const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
                 const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
@@ -857,6 +857,7 @@ export const Student_Stats = () => {
                                 <Option value="Bida">Bida</Option>
                                 <Option value="Patigi">Patigi</Option>
                                 <Option value="Pandogari">Pandogari</Option>
+                                <Option value="Agaie">Agaie</Option>
                             </Select>
                         </div>
 

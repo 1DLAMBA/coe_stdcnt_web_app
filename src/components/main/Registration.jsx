@@ -830,7 +830,7 @@ const Registration = () => {
                       rules={[{ required: true, message: "Please enter your Centre Location" }]}
                     >
                       <Select placeholder="Select Location">
-                        {["suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", "Kagara", "Salka", "Kontogora", "Gawu", "Doko", "Katcha","Bida","Patigi", "Pandogari"].map(
+                        {["suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", "Kagara", "Salka", "Kontogora", "Gawu", "Doko", "Katcha","Bida","Patigi", "Pandogari", "Agaie"].map(
                           (month) => (
                             <Option key={month} value={month}>
                               {month}

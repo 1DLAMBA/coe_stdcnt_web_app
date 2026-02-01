@@ -433,6 +433,47 @@ export const studyCenters = [
         "MATHS/ECONOMICS"
       ]
     }
+  }, {
+    name: "Agaie",
+    levels: {
+      "100": [
+        "ISC (DM)",
+        "TED (DM)",
+        "MATH/ECONOMICS",
+        "ECONOMICS/SOCIAL STUDIES",
+        "ENGLISH/SOCIAL STUDIES",
+        "BIOLOGY/GEOGRAPHY",
+        "MATHS/BIOLOGY",
+        "PRIMARY EDUCATION STUDIES (PES)"
+      ],
+      "200": [
+        "ISC (DM)",
+        "PRIMARY EDUCATION STUDIES (PES)",
+        "MATHS/ECONOMICS",
+        "TED (DM)",
+        "ECONOMICS/SOCIAL STUDIES",
+        "BIOLOGY/GEOGRAPHY",
+        "MATHS/BIOLOGY",
+        "MATHS/ECONOMICS"
+      ],
+      "300": [
+        "ISC (DM)",
+        "ECONOMICS/SOCIAL STUDIES",
+        "MATHS/ECONOMICS",
+        "TED (DM)",
+        "PRIMARY EDUCATION STUDIES (PES)"
+      ],
+      "400": [
+        "PHE (DM)",
+        "ISC (DM)",
+        "PRIMARY EDUCATION STUDIES (PES)",
+        "ECONOMICS/SOCIAL STUDIES",
+        "ENGLISH/SOCIAL STUDIES",
+        "MATHS/BIOLOGY",
+        "BIOLOGY/GEOGRAPHY",
+        "MATHS/ECONOMICS"
+      ]
+    }
   }
   
   
