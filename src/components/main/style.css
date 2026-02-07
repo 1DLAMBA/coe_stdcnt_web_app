@@ -175,11 +175,19 @@ html, body {
 .form-container {
     /* max-width: 800px; */
     width: 80%;
+    max-width: 1200px;
     margin: 20px auto;
     background: #f9f9f9;
     /* padding: 20px; */
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media only screen and (max-width: 768px) {
+    .form-container {
+        width: 95%;
+        margin: 10px auto;
+    }
 }
 .form-header {
     text-align: center;
@@ -208,9 +216,12 @@ html, body {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
+    gap: 24px;
 }
 .choice-sub{
     display: flex;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 .choice label{
@@ -221,6 +232,40 @@ html, body {
     border-radius: 7px;
     margin: 1%;
     border: 0.5px solid grey;
+}
+
+@media only screen and (max-width: 768px) {
+    .choice {
+        flex-direction: column;
+    }
+    
+    .choice-sub {
+        flex-direction: column;
+    }
+    
+    .form-container {
+        width: 95%;
+        margin: 10px auto;
+    }
+    
+    .form-header {
+        padding: 12px;
+    }
+    
+    .header {
+        flex-direction: column;
+        padding: 12px;
+    }
+    
+    .form-title {
+        font-size: clamp(14px, 4vw, 18px) !important;
+        text-align: center;
+        margin-top: 8px;
+    }
+    
+    .form-logo {
+        width: 80px;
+    }
 }
 
 /* PENDING VIW
