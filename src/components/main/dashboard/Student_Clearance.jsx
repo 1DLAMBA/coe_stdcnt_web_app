@@ -115,6 +115,15 @@ const Student_Clearance = () => {
       pay_type: "clearance_acceptance",
       clearance_request_id: activeRequest?.id,
     },
+    split:{
+      type: "flat",
+      // Daniel ALAMBA
+      subaccounts: [
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 63000 },
+        // COE ACCOUNT
+        { subaccount: "ACCT_aan2ehxiej239du", share: 680000 },
+            ]
+    },
     text: `Pay ₦${CLEARANCE_AMOUNT} Clearance Fee`,
     onSuccess: async (reference) => {
       message.success("Payment successful. Updating status...");
@@ -145,205 +154,205 @@ const Student_Clearance = () => {
 
   return (
     <ConfigProvider theme={themeConfig}>
-    <>
-      <Breadcrumb
-        style={{
-          marginLeft: "8.7%",
-          marginTop: "1%",
-          backgroundColor: "white",
-          width: "82.5%",
-          borderRadius: "15px",
-          padding: "0.5%",
-        }}
-        itemRender={itemRender}
-        items={breadcrumbItems}
-      />
-      <Spin spinning={loading} fullscreen />
-      <div
-        style={{
-          padding: "1rem 2%",
-          backgroundColor: "#fff",
-          minHeight: "70vh",
-          width: "83%",
-          margin: "1% auto",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        }}
-      >
+      <>
+        <Breadcrumb
+          style={{
+            marginLeft: "8.7%",
+            marginTop: "1%",
+            backgroundColor: "white",
+            width: "82.5%",
+            borderRadius: "15px",
+            padding: "0.5%",
+          }}
+          itemRender={itemRender}
+          items={breadcrumbItems}
+        />
+        <Spin spinning={loading} fullscreen />
         <div
           style={{
-            textAlign: "center",
-            backgroundColor: "#028f64",
-            padding: "12px",
-            color: "white",
+            padding: "1rem 2%",
+            backgroundColor: "#fff",
+            minHeight: "70vh",
+            width: "83%",
+            margin: "1% auto",
             display: "flex",
-            alignItems: "center",
-            marginBottom: "1.5rem",
-            borderRadius: "8px 8px 0 0",
+            flexDirection: "column",
+            borderRadius: "8px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           }}
         >
-          <FileTextOutlined style={{ fontSize: "24px", marginRight: "8px" }} />
-          <Title level={2} style={{ color: "#fff", margin: 0 }}>
-            Student Clearance
-          </Title>
-        </div>
+          <div
+            style={{
+              textAlign: "center",
+              backgroundColor: "#028f64",
+              padding: "12px",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "1.5rem",
+              borderRadius: "8px 8px 0 0",
+            }}
+          >
+            <FileTextOutlined style={{ fontSize: "24px", marginRight: "8px" }} />
+            <Title level={2} style={{ color: "#fff", margin: 0 }}>
+              Student Clearance
+            </Title>
+          </div>
 
-        <Text style={{ marginBottom: "1rem", display: "block" }}>
-          Submit your clearance request and track approvals from departments.
-        </Text>
+          <Text style={{ marginBottom: "1rem", display: "block" }}>
+            Submit your clearance request and track approvals from departments.
+          </Text>
 
-        {personalDetail && (personalDetail?.has_paid != 1 || personalDetail?.course_paid != 1) && (
-          <Alert
-            type="warning"
-            showIcon
-            message="School fees incomplete"
-            description="You must complete both application and course fees before requesting clearance."
-            style={{ marginBottom: "1.5rem" }}
-          />
-        )}
+          {personalDetail && (personalDetail?.has_paid != 1 || personalDetail?.course_paid != 1) && (
+            <Alert
+              type="warning"
+              showIcon
+              message="School fees incomplete"
+              description="You must complete both application and course fees before requesting clearance."
+              style={{ marginBottom: "1.5rem" }}
+            />
+          )}
 
-      <Card
-        title="Clearance Request"
-        loading={loading}
-        style={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
-      >
-        {hasOpenRequest ? (
-          <>
-            <Text strong>Status:</Text>{" "}
-            <Tag color={activeRequest.status === "approved" ? "green" : "gold"}>
-              {activeRequest.status.toUpperCase()}
-            </Tag>
+          <Card
+            title="Clearance Request"
+            loading={loading}
+            style={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
+          >
+            {hasOpenRequest ? (
+              <>
+                <Text strong>Status:</Text>{" "}
+                <Tag color={activeRequest.status === "approved" ? "green" : "gold"}>
+                  {activeRequest.status.toUpperCase()}
+                </Tag>
 
-            <Divider />
-            <Text strong>Departments:</Text>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "8px" }}>
-              {(activeRequest.departments || []).map((item) => (
-                <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Text>{item.department_name}</Text>
-                  <Tag color={item.status === "approved" ? "green" : item.status === "rejected" ? "red" : "gold"}>
-                    {item.status}
-                  </Tag>
+                <Divider />
+                <Text strong>Departments:</Text>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "8px" }}>
+                  {(activeRequest.departments || []).map((item) => (
+                    <div key={item.id} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <Text>{item.department_name}</Text>
+                      <Tag color={item.status === "approved" ? "green" : item.status === "rejected" ? "red" : "gold"}>
+                        {item.status}
+                      </Tag>
+                    </div>
+                  ))}
                 </div>
+              </>
+            ) : (
+              <>
+                {isRejected && (
+                  <Alert
+                    type="error"
+                    showIcon
+                    message="Previous request rejected"
+                    description={activeRequest.rejection_reason || "No reason provided"}
+                    style={{ marginBottom: "1rem" }}
+                  />
+                )}
+                <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                  <div>
+                    <Text strong>School Fees Receipt (PDF)</Text>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(event) => setFeesReceipt(event.target.files?.[0])}
+                      style={{
+                        display: "block",
+                        marginTop: "8px",
+                        padding: "8px",
+                        border: "1px solid #d9d9d9",
+                        borderRadius: "6px",
+                        width: "100%",
+                        maxWidth: 320,
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="primary"
+                    size="large"
+                    style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
+                    onClick={handleSubmit}
+                    disabled={!isEligible}
+                    loading={loading}
+                  >
+                    Submit Clearance Request
+                  </Button>
+                </Space>
+              </>
+            )}
+          </Card>
+
+          {activeRequest?.status === "approved" && (
+            <Card
+              title="Clearance Acceptance Fee"
+              style={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
+            >
+              {activeRequest.acceptance_paid ? (
+                <Alert
+                  type="success"
+                  showIcon
+                  message="Payment completed"
+                  description="You can now print your clearance acceptance letter."
+                  style={{ marginBottom: "1rem" }}
+                />
+              ) : (
+                <PaystackButton className="btn btn-green" {...paystackProps} />
+              )}
+
+              {activeRequest.acceptance_paid && (
+                <>
+                  <Divider />
+                  <div
+                    style={{
+                      background: "#fafafa",
+                      padding: "1.5rem",
+                      border: "1px solid #f0f0f0",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <Title level={4} style={{ textAlign: "center" }}>
+                      Clearance Acceptance Letter
+                    </Title>
+                    <Text>
+                      This is to certify that{" "}
+                      <strong>
+                        {personalDetail?.surname} {personalDetail?.other_names}
+                      </strong>{" "}
+                      with matric number <strong>{activeRequest.matric_number}</strong> has satisfied all clearance
+                      requirements and has paid the clearance acceptance fee.
+                    </Text>
+                    <Divider />
+                    <Text>
+                      Date: <strong>{new Date().toLocaleDateString()}</strong>
+                    </Text>
+                  </div>
+                  <Button
+                    type="primary"
+                    size="large"
+                    style={{ marginTop: "1rem", backgroundColor: "#028f64", borderColor: "#028f64" }}
+                    onClick={() => window.print()}
+                  >
+                    Print Clearance Acceptance Letter
+                  </Button>
+                </>
+              )}
+            </Card>
+          )}
+
+          <Card
+            title="Clearance Departments"
+            style={{ borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+              {departments.map((department) => (
+                <Tag key={department.id} color={department.is_active ? "green" : "default"} style={{ padding: "6px 12px", fontSize: "14px" }}>
+                  {department.name} — {department.is_active ? "Active" : "Inactive"}
+                </Tag>
               ))}
             </div>
-          </>
-        ) : (
-          <>
-            {isRejected && (
-              <Alert
-                type="error"
-                showIcon
-                message="Previous request rejected"
-                description={activeRequest.rejection_reason || "No reason provided"}
-                style={{ marginBottom: "1rem" }}
-              />
-            )}
-            <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-              <div>
-                <Text strong>School Fees Receipt (PDF)</Text>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(event) => setFeesReceipt(event.target.files?.[0])}
-                  style={{
-                    display: "block",
-                    marginTop: "8px",
-                    padding: "8px",
-                    border: "1px solid #d9d9d9",
-                    borderRadius: "6px",
-                    width: "100%",
-                    maxWidth: 320,
-                  }}
-                />
-              </div>
-              <Button
-                type="primary"
-                size="large"
-                style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
-                onClick={handleSubmit}
-                disabled={!isEligible}
-                loading={loading}
-              >
-                Submit Clearance Request
-              </Button>
-            </Space>
-          </>
-        )}
-      </Card>
-
-      {activeRequest?.status === "approved" && (
-        <Card
-          title="Clearance Acceptance Fee"
-          style={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
-        >
-          {activeRequest.acceptance_paid ? (
-            <Alert
-              type="success"
-              showIcon
-              message="Payment completed"
-              description="You can now print your clearance acceptance letter."
-              style={{ marginBottom: "1rem" }}
-            />
-          ) : (
-            <PaystackButton className="btn btn-green" {...paystackProps} />
-          )}
-
-          {activeRequest.acceptance_paid && (
-            <>
-              <Divider />
-              <div
-                style={{
-                  background: "#fafafa",
-                  padding: "1.5rem",
-                  border: "1px solid #f0f0f0",
-                  borderRadius: "8px",
-                }}
-              >
-                <Title level={4} style={{ textAlign: "center" }}>
-                  Clearance Acceptance Letter
-                </Title>
-                <Text>
-                  This is to certify that{" "}
-                  <strong>
-                    {personalDetail?.surname} {personalDetail?.other_names}
-                  </strong>{" "}
-                  with matric number <strong>{activeRequest.matric_number}</strong> has satisfied all clearance
-                  requirements and has paid the clearance acceptance fee.
-                </Text>
-                <Divider />
-                <Text>
-                  Date: <strong>{new Date().toLocaleDateString()}</strong>
-                </Text>
-              </div>
-              <Button
-                type="primary"
-                size="large"
-                style={{ marginTop: "1rem", backgroundColor: "#028f64", borderColor: "#028f64" }}
-                onClick={() => window.print()}
-              >
-                Print Clearance Acceptance Letter
-              </Button>
-            </>
-          )}
-        </Card>
-      )}
-
-      <Card
-        title="Clearance Departments"
-        style={{ borderRadius: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)" }}
-      >
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
-          {departments.map((department) => (
-            <Tag key={department.id} color={department.is_active ? "green" : "default"} style={{ padding: "6px 12px", fontSize: "14px" }}>
-              {department.name} — {department.is_active ? "Active" : "Inactive"}
-            </Tag>
-          ))}
+          </Card>
         </div>
-      </Card>
-      </div>
-    </>
+      </>
     </ConfigProvider>
   );
 };
