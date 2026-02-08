@@ -21,8 +21,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "env-cmd -f environments/.env.development react-scripts start",
     "build": "react-scripts build",
+    "build:prod": "CI=false env-cmd -f environments/.env.production react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
@@ -47,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "env-cmd": "^10.1.0",
     "gh-pages": "^6.2.0",
     "react-router-dom": "^6.27.0"
   }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, DollarOutlined, ReadOutlined, NumberOutlined, SearchOutlined } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
+import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, DollarOutlined, ReadOutlined, NumberOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { Card, Col, ConfigProvider, Statistic, Tag, Table, Input, Select, Spin, Row, Button, Space, message, Modal, Typography, Form } from 'antd';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import axios from "axios";
@@ -119,6 +120,7 @@ const styles = {
 
 
 export const Student_Stats = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [studentsWithPartialPayment, setStudentsWithPartialPayment] = useState(0);
@@ -145,10 +147,10 @@ export const Student_Stats = () => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
     const fetchData = async () => {
-        setLoading(true);
+        // setLoading(true);
         try {
             const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
-            setData(response.data);
+            // setData(response.data);
             setAllData(response.data);
             setStudentsWithPartialPayment(response.data.filter((student) => student.has_paid == "1" && student.course_paid == "0").length);
             setStudentsWithFullPayment(response.data.filter((student) => student.course_paid == "1").length);
@@ -158,7 +160,7 @@ export const Student_Stats = () => {
             setTotalApplications(response.data.length);
 
             // Process study center data    
-            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora'];
+            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi', 'Pandogari', 'Agaie'];
             const centerStats = centers.map(center => {
                 const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
                 const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
@@ -196,7 +198,7 @@ export const Student_Stats = () => {
                     type: null,
                 },
             });
-
+            
             setData(response.data.data);
             setPagination({
                 ...pagination,
@@ -221,6 +223,10 @@ export const Student_Stats = () => {
         setStudyCent(value);
     };
 
+    const ViewStudent = (id) => {
+        navigate(`/admin/view-student/${id}`);
+    };
+
     const pieData = [
         { name: 'Partial Payment', value: studentsWithPartialPayment },
         { name: 'Full Payment', value: studentsWithFullPayment },
@@ -230,13 +236,22 @@ export const Student_Stats = () => {
     const columns = [
         {
             title: "Name",
-            dataIndex: "other_names",
-            key: "other_names",
+            key: "full_name",
+            render: (_, record) => {
+                const surname = record.surname || "";
+                const otherNames = record.other_names || "";
+                return `${surname} ${otherNames}`.trim();
+            },
         },
         {
             title: "Application/ Matric Number",
             dataIndex: "application_number",
             key: "application_number",
+        },
+        {
+            title: "Course",
+            dataIndex: "course",
+            key: "course",
         },
         {
             title: "Study Center",
@@ -272,6 +287,14 @@ export const Student_Stats = () => {
                 </span>
             ),
         },
+        {
+            title: "View",
+            dataIndex: "id",
+            key: "id",
+            render: (id) => (
+                <Button icon={<EyeOutlined/>} borderRadius={10} type="primary" onClick={() => { ViewStudent(id); }}>View</Button>
+            ),
+        },
     ];
 
     const exportToCSV = (data, filename, includeAmount = false) => {
@@ -295,6 +318,11 @@ export const Student_Stats = () => {
                         if (row.course_paid == "1") return 'Full Payment';
                         if (row.has_paid == "1" && row.course_paid == "0") return 'Partial Payment';
                         return 'No Payment';
+                    }
+                    if (col.key == 'full_name') {
+                        const surname = row.surname || "";
+                        const otherNames = row.other_names || "";
+                        return `${surname} ${otherNames}`.trim();
                     }
                     if (col.dataIndex == 'has_admission') {
                         return row[col.dataIndex] ? 'Approved' : 'Not Approved';
@@ -663,6 +691,7 @@ export const Student_Stats = () => {
                 setLoading(false);
                 // Refresh the data
                 fetchData();
+                fetchStudents();
             } else {
                 message.error("Failed to update course");
                 setButtonDisabled(false);
@@ -825,6 +854,10 @@ export const Student_Stats = () => {
                                 <Option value="Katcha">Katcha</Option>
                                 <Option value="Rijau">Rijau</Option>
                                 <Option value="Kontogora">Kontogora</Option>
+                                <Option value="Bida">Bida</Option>
+                                <Option value="Patigi">Patigi</Option>
+                                <Option value="Pandogari">Pandogari</Option>
+                                <Option value="Agaie">Agaie</Option>
                             </Select>
                         </div>
 

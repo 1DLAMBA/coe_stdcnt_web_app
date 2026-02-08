@@ -482,8 +482,8 @@ const Edit_Bio = () => {
          
           <Col xs={24} sm={6}>
             <Form.Item label="Mode Of Entry" name="mode_of_entry">
-            <Select disabled={bioData?.mode_of_entry === 'pre_nce'}>
-                <Option value="pre_nce">Pre NCE</Option>
+            <Select disabled={bioData?.mode_of_entry === 'conditional'}>
+                <Option value="conditional">Conditional</Option>
                 <Option value="direct_nce">Direct NCE</Option>
               </Select>
             </Form.Item>

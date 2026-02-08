@@ -42,8 +42,7 @@ const Course_reg = () => {
   const [spinning, setSpinning] = useState(false);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
-  // const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [applicationNumber, setApplicationNumber] = useState('');
   const amount = 4000000;
   const amount60 = 2400000;
@@ -408,6 +407,14 @@ const Course_reg = () => {
           return 'ACCT_q7hpb8aop6872xk';
         case 'Salka':
           return 'ACCT_zduspv9kbkc5wsp';
+        case 'Bida':
+          return 'ACCT_xbd6r3fuguhi807';
+        case 'Patigi':
+          return 'ACCT_8bh96hpa23avb1w';
+        case 'Pandogari':
+          return 'ACCT_5ljhtgc5cihxenj';
+        case 'Agaie':
+          return 'ACCT_cga221mhd2awqol';
         default:
           return 'ACCT_aan2ehxiej239du'; // Default COE account
       }
@@ -694,7 +701,7 @@ const Course_reg = () => {
                                 suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
                               >
                                 <Option value="" disabled>Select a session</Option>
-                                <Option value="2024/2025">2024/2025</Option>
+                                <Option value="2025/2026">2025/2026</Option>
                               </Select>
                             </Form.Item>
                           </Col>

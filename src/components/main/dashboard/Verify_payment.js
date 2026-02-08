@@ -21,21 +21,10 @@ const PaystackVerification = ({ userEmail, id, applicationNumber }) => {
     const navigate = useNavigate();
 
 
-    // This is a proxy function that would call your secure backend service
-    // Keeping the secret key secure is critical and should never be in frontend code
+    // Verification is done via backend so the Paystack secret key is never exposed
     const verifyWithPaystack = async (reference) => {
-        // Replace this URL with your service/proxy endpoint
-        // This could be a serverless function URL
-        const verificationUrl = `${process.env.REACT_APP_VERIFICATION_SERVICE_URL}`;
-
         try {
-            const response = await axios.get(`https://api.paystack.co/transaction/verify/${reference}`,
-                {
-                    headers: {
-                        Authorization: `Bearer sk_live_e3b9e696b9659fd262cfa02496ac33e3df09dd6f`,
-                        'Content-Type': 'application/json',
-                    }
-                });
+            const response = await axios.get(`${API_ENDPOINTS.VERIFY_PAYSTACK}/${reference}`);
             return response.data;
         } catch (error) {
             throw new Error(error.response?.data?.message || 'Verification service unavailable');

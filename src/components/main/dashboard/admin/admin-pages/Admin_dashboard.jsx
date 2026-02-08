@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import { ArrowDownOutlined, ArrowUpOutlined, EyeFilled, UserOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, EyeFilled, UserOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Card, Col, ConfigProvider, Statistic, Tag, Button, Table, Input, Select, Spin, Row } from 'antd';
 import axios from "axios";
 import '../admin-pages/styles/application.css';
@@ -16,6 +16,10 @@ const styles = {
     },
     card: {
         boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+        height: '100%',
+    },
+    kpiCard: {
+        padding: '12px 16px',
     },
     searchContainer: {
         display: 'flex',
@@ -37,6 +41,7 @@ export const Admin_dashboard = () => {
     const [noAdmissionCount, setNoAdmissionCount] = useState(0);
     const [matricNumberCount, setMatricNumberCount] = useState(0);
     const [approvedStudents, setApprovedStudents] = useState(0);
+    const [clearanceCount, setClearanceCount] = useState(0);
     const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
     const [search, setSearch] = useState("");
     const [studyCent, setStudyCent] = useState("");
@@ -59,8 +64,18 @@ export const Admin_dashboard = () => {
         }
     };
 
+    const fetchClearances = async () => {
+        try {
+            const response = await axios.get(`${API_ENDPOINTS.CLEARANCES}`);
+            setClearanceCount(response.data?.data?.length || 0);
+        } catch (error) {
+            console.error("Error fetching clearance count:", error);
+        }
+    };
+
     useEffect(() => {
         fetchData();
+        fetchClearances();
     }, []);
 
     useEffect(() => {
@@ -154,9 +169,9 @@ export const Admin_dashboard = () => {
 
     return (
         <div style={styles.container}>
-            <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} md={8}>
-                    <Card bordered={false} style={styles.card}>
+            <Row gutter={[12, 12]}>
+                <Col xs={12} sm={12} md={6} lg={6}>
+                    <Card bordered={false} size="small" bodyStyle={styles.kpiCard} style={styles.card}>
                         <Statistic
                             title="New Applications"
                             value={noAdmissionCount}
@@ -173,14 +188,14 @@ export const Admin_dashboard = () => {
                                 },
                             }}
                         >
-                            <Button type="primary" ghost onClick={() => navigate('/admin/view-applications')}>
+                            <Button type="primary" ghost size="small" onClick={() => navigate('/admin/view-applications')}>
                                 View List
                             </Button>
                         </ConfigProvider>
                     </Card>
                 </Col>
-                <Col xs={24} sm={12} md={8}>
-                    <Card bordered={false} style={styles.card}>
+                <Col xs={12} sm={12} md={6} lg={6}>
+                    <Card bordered={false} size="small" bodyStyle={styles.kpiCard} style={styles.card}>
                         <Statistic
                             title="Students Statistics"
                             value={matricNumberCount}
@@ -197,14 +212,14 @@ export const Admin_dashboard = () => {
                                 },
                             }}
                         >
-                            <Button icon={<EyeFilled />} onClick={() => navigate('/admin/student-stats')} type="primary">
+                            <Button icon={<EyeFilled />} size="small" onClick={() => navigate('/admin/student-stats')} type="primary">
                                 View
                             </Button>
                         </ConfigProvider>
                     </Card>
                 </Col>
-                <Col xs={24} sm={12} md={8}>
-                    <Card bordered={false} style={styles.card}>
+                <Col xs={12} sm={12} md={6} lg={6}>
+                    <Card bordered={false} size="small" bodyStyle={styles.kpiCard} style={styles.card}>
                         <Statistic
                             title="Approved Students"
                             value={approvedStudents}
@@ -221,8 +236,32 @@ export const Admin_dashboard = () => {
                                 },
                             }}
                         >
-                            <Button type="primary" ghost onClick={() => navigate('/admin/view-approved')}>
+                            <Button type="primary" ghost size="small" onClick={() => navigate('/admin/view-approved')}>
                                 View List
+                            </Button>
+                        </ConfigProvider>
+                    </Card>
+                </Col>
+                <Col xs={12} sm={12} md={6} lg={6}>
+                    <Card bordered={false} size="small" bodyStyle={styles.kpiCard} style={styles.card}>
+                        <Statistic
+                            title="Clearance Requests"
+                            value={clearanceCount}
+                            valueStyle={{ color: '#3f8600' }}
+                            prefix={<FileTextOutlined />}
+                        />
+                        <ConfigProvider
+                            theme={{
+                                token: {
+                                    colorPrimary: '#028f64',
+                                    borderRadius: 2,
+                                    margin: '20px',
+                                    colorBgContainer: '#f6ffed',
+                                },
+                            }}
+                        >
+                            <Button type="primary" ghost size="small" onClick={() => navigate('/admin/clearance')}>
+                                View
                             </Button>
                         </ConfigProvider>
                     </Card>
@@ -265,6 +304,12 @@ export const Admin_dashboard = () => {
                             <Option value="Katcha">Katcha</Option>
                             <Option value="Rijau">Rijau</Option>
                             <Option value="Kontogora">Kontogora</Option>
+                            <Option value="Bida">Bida</Option>
+                            <Option value="Patigi">Patigi</Option>
+                            <Option value="Pandogari">Pandogari</Option>
+                            <Option value="Agaie">Agaie</Option>
+
+
                         </Select>
                     </div>
                     <Spin spinning={loading}>

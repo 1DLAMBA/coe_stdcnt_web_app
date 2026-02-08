@@ -89,7 +89,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const Registration = () => {
-  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [step, setStep] = useState('step1')
   const [selectedSchool, setSelectedSchool] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -469,15 +469,14 @@ const Registration = () => {
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div className="header">
-          <span style={{ margin: 'auto', display: 'flex' }}>
-
-
+          <span style={{ margin: 'auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '8px' }}>
             <img
               src={logo}
               alt="College Logo"
               className="form-logo"
+              style={{ maxWidth: '100px', height: 'auto' }}
             />
-            <Title level={3} className="form-title">
+            <Title level={3} className="form-title" style={{ margin: 0, fontSize: 'clamp(14px, 4vw, 20px)', textAlign: 'center' }}>
               Niger State College of Education, Minna
             </Title>
           </span>
@@ -510,7 +509,7 @@ const Registration = () => {
               </ConfigProvider>
             </div>
             {step === 'step1' && (
-              <div style={{ padding: '1% 2%' }}>
+              <div style={{ padding: '16px' }}>
                 <ConfigProvider
                   theme={{
                     token: {
@@ -550,64 +549,69 @@ const Registration = () => {
                       },
                     ]}
                     style={{ marginBottom: '2%' }}
+                    responsive={true}
                   />
                 </ConfigProvider>
-                <Row gutter={[16, 16]} style={{ justifyContent: 'space-between' }}>
-                  <div style={{ width: '50%', margin: 'auto', display: 'flex', flexWrap:'wrap' }}>
-
-                    <div
-                      style={{
-                        border: "1px dashed #d9d9d9",
-                        padding: 20,
-                        borderRadius: 10,
-                        background: "#f5f5f5",
-                        marginBottom: 20,
-                      }}
-                    >
-                      {imageUrl ? (
-                        <div style={{ width: '100px', height: 'auto' }}>
-
-                          <img
-                            src={imageUrl}
-                            alt="passport"
-                            style={{ width: "100%", height: 'auto', borderRadius: 10 }}
-                          />
-                        </div>
-                      ) : (
-                        <div style={{ width: '100px', height: '100px', display: 'flex' }}>
-
-                          <UserOutlined style={{ fontSize: 48, color: "#999", margin: 'auto' }} />
-                        </div>
-                      )}
-                    </div>
-                    <Upload
-                      name="passport"
-                      listType="picture"
-                      showUploadList={false}
-                      beforeUpload={beforeUpload}
-                      {...props(setUploadedAL1, 'passport')}
-                      accept="image/*"
-                    >
-                      <ConfigProvider
-                        theme={{
-                          token: {
-                            colorPrimary: '#028f64',
-                            borderRadius: 2,
-                            margin: '20px',
-                            colorBgContainer: '#f6ffed',
-                          },
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} sm={24} md={12} lg={10}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                      <div
+                        style={{
+                          border: "1px dashed #d9d9d9",
+                          padding: 20,
+                          borderRadius: 10,
+                          background: "#f5f5f5",
+                          width: '100%',
+                          maxWidth: '200px',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
                         }}
                       >
-                        <Button 
-                          icon={uploading ? <LoadingOutlined /> : <UploadOutlined />} 
-                          disabled={uploading}
+                        {imageUrl ? (
+                          <div style={{ width: '100%', maxWidth: '150px', height: 'auto' }}>
+                            <img
+                              src={imageUrl}
+                              alt="passport"
+                              style={{ width: "100%", height: 'auto', borderRadius: 10 }}
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ width: '100px', height: '100px', display: 'flex' }}>
+                            <UserOutlined style={{ fontSize: 48, color: "#999", margin: 'auto' }} />
+                          </div>
+                        )}
+                      </div>
+                      <Upload
+                        name="passport"
+                        listType="picture"
+                        showUploadList={false}
+                        beforeUpload={beforeUpload}
+                        {...props(setUploadedAL1, 'passport')}
+                        accept="image/*"
+                      >
+                        <ConfigProvider
+                          theme={{
+                            token: {
+                              colorPrimary: '#028f64',
+                              borderRadius: 2,
+                              margin: '20px',
+                              colorBgContainer: '#f6ffed',
+                            },
+                          }}
                         >
-                          {uploading ? 'Uploading...' : 'Upload Passport'}
-                        </Button>
-                      </ConfigProvider>
-                    </Upload>
-                  </div>
-                  <Col xs={24} md={12}>
+                          <Button 
+                            icon={uploading ? <LoadingOutlined /> : <UploadOutlined />} 
+                            disabled={uploading}
+                            style={{ width: '100%', maxWidth: '200px' }}
+                          >
+                            {uploading ? 'Uploading...' : 'Upload Passport'}
+                          </Button>
+                        </ConfigProvider>
+                      </Upload>
+                    </div>
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={14}>
                     <Form.Item
                       label="Surname"
                       name="surname"
@@ -663,45 +667,49 @@ const Registration = () => {
                 </Row>
 
                 <Row gutter={[16, 16]}>
-                <Form.Item
+                  <Col xs={24} sm={24} md={12} lg={8}>
+                    <Form.Item
                       label="State Of Origin"
                       name="state_of_origin"
                       rules={[{ required: true, message: 'Please enter your State Of Origin' }]}
                     >
-                  <Select
-                    style={{ width: 300, marginBottom: 16 }}
-                    placeholder="Select State"
-                    onChange={handleStateChange}
-                    loading={loadingStates}
-                  >
-                    {states?.map((state) => (
-                      <Option key={state} value={state}>
-                        {state}
-                      </Option>
-                    ))}
-                  </Select>
-                  </Form.Item>
+                      <Select
+                        style={{ width: '100%' }}
+                        placeholder="Select State"
+                        onChange={handleStateChange}
+                        loading={loadingStates}
+                      >
+                        {states?.map((state) => (
+                          <Option key={state} value={state}>
+                            {state}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
 
                   {/* LGA Select */}
-                  <Form.Item
+                  <Col xs={24} sm={24} md={12} lg={8}>
+                    <Form.Item
                       label="Local Government"
                       name="local_government"
                       rules={[{ required: true, message: 'Please enter your Local Government area' }]}
                     >
-                  <Select
-                    style={{ width: 300 }}
-                    placeholder={selectedState ? "Select LGA" : "Please select a state first"}
-                    disabled={!selectedState}
-                    loading={loadingLGAs}
-                  >
-                    {lgas?.map((lga) => (
-                      <Option key={lga} value={lga}>
-                        {lga}
-                      </Option>
-                    ))}
-                  </Select>
-                  </Form.Item>
-                  <Col xs={12} md={8}>
+                      <Select
+                        style={{ width: '100%' }}
+                        placeholder={selectedState ? "Select LGA" : "Please select a state first"}
+                        disabled={!selectedState}
+                        loading={loadingLGAs}
+                      >
+                        {lgas?.map((lga) => (
+                          <Option key={lga} value={lga}>
+                            {lga}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={24} md={12} lg={8}>
                     <Form.Item
                       label="Ethnic Group"
                       name="ethnic_group"
@@ -713,7 +721,7 @@ const Registration = () => {
                 </Row>
 
                 <Row gutter={[16, 16]}>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
 
                     <Form.Item
                       label="Religion"
@@ -723,7 +731,7 @@ const Registration = () => {
                       <Input placeholder="Enter your religion" />
                     </Form.Item>
                   </Col>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
 
                     <Form.Item
                       label="Phone Number"
@@ -733,7 +741,7 @@ const Registration = () => {
                       <Input placeholder="Enter your phone number" />
                     </Form.Item>
                   </Col>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
 
                     <Form.Item
                       label="Email"
@@ -746,7 +754,7 @@ const Registration = () => {
                 </Row>
 
                 <Row gutter={[16, 16]}>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
                     <Form.Item
                       label="Name of Father"
                       name="name_of_father"
@@ -755,7 +763,7 @@ const Registration = () => {
                       <Input placeholder="Enter your Father's name" />
                     </Form.Item>
                   </Col>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
                     <Form.Item
                       label="Father's State of Origin"
                       name="father_state_of_origin"
@@ -764,7 +772,7 @@ const Registration = () => {
                       <Input placeholder="Enter your Father's State of Origin" />
                     </Form.Item>
                   </Col>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
                     <Form.Item
                       label="Father's Place of Birth"
                       name="father_place_of_birth"
@@ -798,7 +806,7 @@ const Registration = () => {
 
                 </Row>
                 <Row gutter={[16, 16]}>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
 
 
                     <Form.Item
@@ -809,7 +817,7 @@ const Registration = () => {
                       <Input placeholder="Enter your Occupation" />
                     </Form.Item>
                   </Col>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
 
 
                     <Form.Item
@@ -820,7 +828,7 @@ const Registration = () => {
                       <Input placeholder="Enter your Working Experience" />
                     </Form.Item>
                   </Col>
-                  <Col xs={12} md={8}>
+                  <Col xs={24} sm={24} md={8}>
 
 
                     <Form.Item
@@ -829,7 +837,7 @@ const Registration = () => {
                       rules={[{ required: true, message: "Please enter your Centre Location" }]}
                     >
                       <Select placeholder="Select Location">
-                        {["suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", "Kagara", "Salka", "Kontogora", "Gawu", "Doko", "Katcha"].map(
+                        {["suleja", "Rijau", "Gulu", "New Bussa", "Mokwa", "Kagara", "Salka", "Kontogora", "Gawu", "Doko", "Katcha","Bida","Patigi", "Pandogari", "Agaie"].map(
                           (month) => (
                             <Option key={month} value={month}>
                               {month}
@@ -845,7 +853,7 @@ const Registration = () => {
               </div>
             )}
             {step === 'step2' && (
-              <div style={{ padding: '1% 2%' }}>
+              <div style={{ padding: '16px' }}>
                 <ConfigProvider
                   theme={{
                     token: {
@@ -885,20 +893,19 @@ const Registration = () => {
                       },
                     ]}
                     style={{ marginBottom: '2%' }}
+                    responsive={true}
                   />
                 </ConfigProvider>
 
-                <div style={{ padding: "20px" }}>
-                  <h2>School and Course Selection</h2>
+                <div style={{ padding: "16px" }}>
+                  <h2 style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>School and Course Selection</h2>
 
                   {/* School Dropdown */}
 
-                  <h4>School Attended</h4>
-                  <h5>Primary</h5>
+                  <h4 style={{ fontSize: 'clamp(16px, 3vw, 20px)', marginTop: '16px' }}>School Attended</h4>
+                  <h5 style={{ fontSize: 'clamp(14px, 2.5vw, 18px)' }}>Primary</h5>
                   <Row gutter={[16, 16]}>
-
-                    <b>1</b>
-                    <Col xs={12} md={8}>
+                    <Col xs={24} sm={24} md={8}>
                       <Form.Item
                         label="School Name"
                         name="p_school_name_1"
@@ -907,7 +914,7 @@ const Registration = () => {
                         <Input placeholder="Enter School name" />
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="From"
                         name="p_school_from_1"
@@ -917,7 +924,7 @@ const Registration = () => {
 
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="To"
                         name="p_school_to_1"
@@ -929,9 +936,7 @@ const Registration = () => {
                     </Col>
                   </Row>
                   <Row gutter={[16, 16]}>
-
-                    <b>2</b>
-                    <Col xs={12} md={8}>
+                    <Col xs={24} sm={24} md={8}>
                       <Form.Item
                         label="School Name"
                         name="p_school_name_2"
@@ -940,7 +945,7 @@ const Registration = () => {
                         <Input placeholder="Enter School name" />
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="From"
                         name="p_school_from_2"
@@ -949,7 +954,7 @@ const Registration = () => {
 
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="To"
                         name="p_school_to_2"
@@ -961,11 +966,9 @@ const Registration = () => {
                   </Row>
 
 
-                  <h5>Secondary</h5>
+                  <h5 style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', marginTop: '16px' }}>Secondary</h5>
                   <Row gutter={[16, 16]}>
-
-                    <b>1</b>
-                    <Col xs={12} md={8}>
+                    <Col xs={24} sm={24} md={8}>
                       <Form.Item
                         label="School Name"
                         name="s_school_name_1"
@@ -974,7 +977,7 @@ const Registration = () => {
                         <Input placeholder="Enter School name" />
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="From"
                         name="s_school_from_1"
@@ -983,7 +986,7 @@ const Registration = () => {
                         <DatePicker style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="To"
                         name="s_school_to_1"
@@ -994,9 +997,7 @@ const Registration = () => {
                     </Col>
                   </Row>
                   <Row gutter={[16, 16]}>
-
-                    <b>2</b>
-                    <Col xs={12} md={8}>
+                    <Col xs={24} sm={24} md={8}>
                       <Form.Item
                         label="School Name"
                         name="s_school_name_2"
@@ -1005,7 +1006,7 @@ const Registration = () => {
                         <Input placeholder="Enter School name" />
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="From"
                         name="s_school_from_2"
@@ -1013,7 +1014,7 @@ const Registration = () => {
                         <DatePicker style={{ width: '100%' }} />
                       </Form.Item>
                     </Col>
-                    <Col xs={12} md={6}>
+                    <Col xs={24} sm={12} md={8}>
                       <Form.Item
                         label="To"
                         name="s_school_to_2"
@@ -1023,13 +1024,11 @@ const Registration = () => {
                     </Col>
                   </Row>
 
-                  <div className="choice">
-                    <div>
-
-                      <h5>First Choice</h5>
-                      <div className="choice-sub">
-
-                        <div style={{ marginBottom: "20px", marginRight: '1%' }}>
+                  <div className="choice" style={{ flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ width: '100%' }}>
+                      <h5 style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', marginBottom: '16px' }}>First Choice</h5>
+                      <div className="choice-sub" style={{ flexDirection: 'column', width: '100%' }}>
+                        <div style={{ marginBottom: "20px", width: '100%' }}>
                           <Form.Item
                             label="Select School"
                             name="first_school"
@@ -1053,7 +1052,7 @@ const Registration = () => {
                         </div>
 
                         {/* Course Dropdown */}
-                        <div style={{ marginBottom: "20px" }}>
+                        <div style={{ marginBottom: "20px", width: '100%' }}>
                           <Form.Item
                             label="Select Course"
                             name="first_course"
@@ -1082,12 +1081,10 @@ const Registration = () => {
                       </div>
                     </div>
 
-                    <div>
-
-                      <h5>Second Choice</h5>
-                      <div className="choice-sub">
-
-                        <div style={{ marginBottom: "20px", marginRight: '1%' }}>
+                    <div style={{ width: '100%' }}>
+                      <h5 style={{ fontSize: 'clamp(14px, 2.5vw, 18px)', marginBottom: '16px' }}>Second Choice</h5>
+                      <div className="choice-sub" style={{ flexDirection: 'column', width: '100%' }}>
+                        <div style={{ marginBottom: "20px", width: '100%' }}>
                           <Form.Item
                             label="Select School"
                             name="second_school"
@@ -1111,7 +1108,7 @@ const Registration = () => {
                         </div>
 
                         {/* Course Dropdown */}
-                        <div style={{ marginBottom: "20px" }}>
+                        <div style={{ marginBottom: "20px", width: '100%' }}>
                           <Form.Item
                             label="Select Course"
                             name="second_course"
@@ -1159,7 +1156,7 @@ const Registration = () => {
             {step === 'step3' && (
               <>
 
-                <div style={{ padding: "30px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+                <div style={{ padding: "16px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
                   <ConfigProvider
                     theme={{
                       token: {
@@ -1199,6 +1196,7 @@ const Registration = () => {
                         },
                       ]}
                       style={{ marginBottom: '2%' }}
+                      responsive={true}
                     />
                   </ConfigProvider>
                   <Card
@@ -1207,14 +1205,15 @@ const Registration = () => {
                       margin: "0 auto",
                       borderRadius: "10px",
                       boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                      padding: "16px",
                     }}
                   >
-                    <h2 style={{ textAlign: "center", color: "#028f64", marginBottom: "20px" }}>
+                    <h2 style={{ textAlign: "center", color: "#028f64", marginBottom: "20px", fontSize: 'clamp(18px, 4vw, 24px)' }}>
                       Examination Details Form
                     </h2>
 
-                    <Row gutter={24}>
-                      <Col xs={12} md={8}>
+                    <Row gutter={[16, 16]}>
+                      <Col xs={24} sm={24} md={12} lg={6}>
                         <Form.Item
                           label="Examination Type"
                           name="exam_type"
@@ -1229,7 +1228,7 @@ const Registration = () => {
                           </Select>
                         </Form.Item>
                       </Col>
-                      <Col xs={12} md={8}>
+                      <Col xs={24} sm={24} md={12} lg={6}>
                         <Form.Item
                           label="Examination Number"
                           name="exam_number"
@@ -1238,7 +1237,7 @@ const Registration = () => {
                           <Input placeholder="Enter Examination Number" />
                         </Form.Item>
                       </Col>
-                      <Col xs={12} md={8}>
+                      <Col xs={24} sm={24} md={12} lg={6}>
                         <Form.Item
                           label="Examination Month"
                           name="exam_month"
@@ -1255,7 +1254,7 @@ const Registration = () => {
                           </Select>
                         </Form.Item>
                       </Col>
-                      <Col xs={12} md={8}>
+                      <Col xs={24} sm={24} md={12} lg={6}>
                         <Form.Item
                           label="Examination Year"
                           name="exam_year"
@@ -1266,7 +1265,7 @@ const Registration = () => {
                       </Col>
 
                     </Row>
-                    <Upload {...props(setUploadedAL1, 'olevel')} style={{ marginBlock: '2%' }}>
+                    <Upload {...props(setUploadedAL1, 'olevel')} style={{ marginBlock: '2%', width: '100%' }}>
                       <ConfigProvider
                         theme={{
                           token: {
@@ -1280,11 +1279,11 @@ const Registration = () => {
                           },
                         }}
                       >
-                        <Button ghost type="primary" className=" btn-block outline " style={{ marginBottom: '5%' }} icon={<CloudUploadOutlined />}>Click to Upload O Level </Button>
+                        <Button ghost type="primary" className=" btn-block outline " style={{ marginBottom: '5%', width: '100%' }} icon={<CloudUploadOutlined />}>Click to Upload O Level </Button>
                       </ConfigProvider>
                     </Upload>
 
-                    <Upload {...props(setUploadedAL1, 'nin')} style={{ marginBlock: '2%' }}>
+                    <Upload {...props(setUploadedAL1, 'nin')} style={{ marginBlock: '2%', width: '100%' }}>
                       <ConfigProvider
                         theme={{
                           token: {
@@ -1298,15 +1297,15 @@ const Registration = () => {
                           },
                         }}
                       >
-                        <Button ghost type="primary" className=" btn-block outline " style={{ marginBottom: '5%' }} icon={<FileFilled />}>Click to Upload NIN Slip </Button>
+                        <Button ghost type="primary" className=" btn-block outline " style={{ marginBottom: '5%', width: '100%' }} icon={<FileFilled />}>Click to Upload NIN Slip </Button>
                       </ConfigProvider>
                     </Upload>
 
 
                     <div style={{ margin: '1%' }}></div>
                     {[...Array(9)].map((_, index) => (
-                      <Row gutter={24} key={index}>
-                        <Col span={12}>
+                      <Row gutter={[16, 16]} key={index}>
+                        <Col xs={24} sm={24} md={12}>
                           <Form.Item
                             label={`Subject ${index + 1}`}
                             name={`subject_${index + 1}`}
@@ -1321,7 +1320,7 @@ const Registration = () => {
                             </Select>
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={24} md={12}>
                           <Form.Item
                             label={`Grade ${index + 1}`}
                             name={`grade_${index + 1}`}
@@ -1346,7 +1345,7 @@ const Registration = () => {
             )}
 
             {step === 'step4' && (
-              <div style={{ padding: '1% 2%' }}>
+              <div style={{ padding: '16px' }}>
 
                 <ConfigProvider
                   theme={{
@@ -1387,29 +1386,32 @@ const Registration = () => {
                       },
                     ]}
                     style={{ marginBottom: '2%' }}
+                    responsive={true}
                   />
-                </ConfigProvider> <div style={{ display: "flex", justifyContent: "center", padding: "2rem" }}>
+                </ConfigProvider> 
+                <div style={{ display: "flex", justifyContent: "center", padding: "16px" }}>
                   <Card
                     style={{
-                      width: 400,
+                      width: '100%',
+                      maxWidth: 500,
                       borderRadius: 10,
                       boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
                       textAlign: "center",
                     }}
-                    title={<Title level={4}>Complete Your Application</Title>}
+                    title={<Title level={4} style={{ fontSize: 'clamp(16px, 3vw, 20px)' }}>Complete Your Application</Title>}
                   >
-                    <Text style={{ fontSize: "16px" }}>
+                    <Text style={{ fontSize: "clamp(14px, 2.5vw, 16px)" }}>
                       To submit your application, you need to pay the application fee.
                     </Text>
                     <Divider />
                     <div style={{ margin: "0.5rem 0" }}>
-                      <Text type="warning"><WarningOutlined /> Please Ensure to review your submissions before proceeding to pay</Text><br />
-                      <Text strong style={{ fontSize: "18px", color: "#028f64" }}>
+                      <Text type="warning" style={{ fontSize: "clamp(12px, 2vw, 14px)" }}><WarningOutlined /> Please Ensure to review your submissions before proceeding to pay</Text><br />
+                      <Text strong style={{ fontSize: "clamp(16px, 3vw, 18px)", color: "#028f64" }}>
                         Fee Amount: ₦4,000
                       </Text>
                     </div>
                     
-                    <PaystackButton className='btn btn-green' {...componentProps} />
+                    <PaystackButton className='btn btn-green' {...componentProps} style={{ width: '100%' }} />
                      
 
                     <Divider />
@@ -1420,40 +1422,40 @@ const Registration = () => {
                 </div>
               </div>
             )}
-            <div style={{ display: 'flex', padding: '2%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <Button color='danger' onClick={stepback} style={{ flex: '1', minWidth: '120px' }}>
+                  Back
+                </Button>
+                <ConfigProvider
+                  theme={{
+                    token: {
+                      // Seed Token
+                      colorPrimary: '#028f64',
+                      borderRadius: 2,
 
-
-              <Button color='danger' onClick={stepback}>
-                Back
-              </Button> &nbsp;
-              <ConfigProvider
-                theme={{
-                  token: {
-                    // Seed Token
-                    colorPrimary: '#028f64',
-                    borderRadius: 2,
-
-                    // Alias Token
-                    colorText: 'white',
-                    colorBgContainer: '#f6ffed',
-                  },
-                }}
-              >
-                <Button
-                  // type="primary"
-                  htmlType="submit"
-                  block
-                  style={{
-                    backgroundColor: "#028f64",
-                    borderColor: "#028f64",
-                    padding: "10px 40px",
-                    color: 'white',
-                    width: 'max-content'
+                      // Alias Token
+                      colorText: 'white',
+                      colorBgContainer: '#f6ffed',
+                    },
                   }}
                 >
-                  Proceed
-                </Button>
-              </ConfigProvider>
+                  <Button
+                    // type="primary"
+                    htmlType="submit"
+                    style={{
+                      backgroundColor: "#028f64",
+                      borderColor: "#028f64",
+                      padding: "10px 40px",
+                      color: 'white',
+                      flex: '1',
+                      minWidth: '120px'
+                    }}
+                  >
+                    Proceed
+                  </Button>
+                </ConfigProvider>
+              </div>
             </div>
           </div>
 
