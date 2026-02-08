@@ -54,6 +54,9 @@ const Dashboard = () => {
   function routeExamCard() {
     navigate(`/dashboard/${id}/exam-card`);
   }
+  function routeClearance() {
+    navigate(`/dashboard/${id}/clearance`);
+  }
 
 
   useEffect(() => {
@@ -193,6 +196,20 @@ const Dashboard = () => {
           }}
         > 
           <FileTextOutlined style={{ marginRight: '8px' }} /> Exam Card
+        </Button>
+        <Button
+          block
+          type="text"
+          onClick={routeClearance}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            padding: '8px 12px',
+            height: 'auto'
+          }}
+        >
+          <FileTextOutlined style={{ marginRight: '8px' }} /> Clearance
         </Button>
 
         <div style={{ borderTop: '1px solid #e8e8e8', margin: '4px 0' }} />

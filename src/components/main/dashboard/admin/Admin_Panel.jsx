@@ -30,6 +30,9 @@ const Admin_Panel = () => {
     function routeViewApproved() {
       navigate('/admin/view-approved');
     }
+  function routeClearance() {
+    navigate('/admin/clearance');
+  }
     function routeViewSingleApproved() {
       navigate('/admin/view-approved/single/:id');
     }
@@ -57,7 +60,7 @@ const Admin_Panel = () => {
           console.error("Error fetching user data:", error);
         }
       };
-  
+
       if (userId) {
         fetchUser(); // Call the async function to fetch data
       }
@@ -100,6 +103,14 @@ const Admin_Panel = () => {
               style={{ textAlign: 'left', height: '40px' }}
             >
               View Approved
+            </Button>
+            <Button 
+              icon={<FileTextOutlined />} 
+              block 
+              onClick={routeClearance}
+              style={{ textAlign: 'left', height: '40px' }}
+            >
+              Clearance Requests
             </Button>
             {/* <Button 
               icon={<DashboardOutlined />} 
@@ -175,8 +186,6 @@ const Admin_Panel = () => {
               className="profile-pic"
             /> */}
             <h1 style={{ fontFamily: "'Ubuntu', serif" }} >ADMIN PANEL</h1>
-           
-            
   
   
           </div>

@@ -15,8 +15,7 @@ const { Title, Text } = Typography;
 const ApplicationCheck = () => {
   const [applicationNumber, setApplicationNumber] = useState('');
   const navigate = useNavigate();
-  // const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
-  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
+  const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const amount = 300000;
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");

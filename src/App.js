@@ -25,6 +25,8 @@ import View_student from './components/main/dashboard/admin/admin-pages/View_stu
 import Exam_Card from './components/main/dashboard/documents/exam_card';
 import { useEffect } from 'react';
 import { StudentList } from './components/main/dashboard/student/StudentList';
+import Student_Clearance from './components/main/dashboard/Student_Clearance';
+import Admin_Clearance from './components/main/dashboard/admin/Admin_Clearance';
 
 function App() {
 
@@ -46,6 +48,7 @@ function App() {
           <Route path='/admin/add-applications' element={<Add_Applications />} />
           <Route path='/admin/single-application/:id' element={<Single_Application />} />
           <Route path='/admin/view-student/:id' element={<View_student />} />
+          <Route path='/admin/clearance' element={<Admin_Clearance />} />
 
         </Route>
         <Route path="/registration" element={<Registration />} />
@@ -62,6 +65,7 @@ function App() {
           <Route path='/dashboard/:id/exam-card' element={<Exam_Card />} />
           <Route path='/dashboard/:id/acceptance-receipt' element={<Acceptance_Receipt />} />
           <Route path='/dashboard/:id/fees-receipt' element={<Fees_Receipt />} />
+          <Route path='/dashboard/:id/clearance' element={<Student_Clearance />} />
         </Route>
         <Route path="student" element={<StudentList />} />
       </Routes>

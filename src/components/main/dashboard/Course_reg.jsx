@@ -42,8 +42,7 @@ const Course_reg = () => {
   const [spinning, setSpinning] = useState(false);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  const publicKey = "pk_live_a0e748b1c573eab4ee5c659fe004596ecd25a232";
-  // const publicKey = "pk_test_3fbb14acfe497c070f67293c2f7f6bcb1b9228a9";
+  const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [applicationNumber, setApplicationNumber] = useState('');
   const amount = 4000000;
   const amount60 = 2400000;
