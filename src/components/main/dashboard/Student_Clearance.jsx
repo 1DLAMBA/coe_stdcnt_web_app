@@ -5,9 +5,12 @@ import { FileTextOutlined, HomeFilled } from "@ant-design/icons";
 import { PaystackButton } from "react-paystack";
 import axios from "axios";
 import API_ENDPOINTS from "../../../Endpoints/environment";
+import { compressPdf } from "../../../utils/compressPdf";
 import "./BioData.css";
 
 const { Title, Text } = Typography;
+
+const MAX_PDF_SIZE_KB = 5120;
 
 const CLEARANCE_AMOUNT = 8731;
 
@@ -18,6 +21,7 @@ const Student_Clearance = () => {
   const [departments, setDepartments] = useState([]);
   const [feesReceipt, setFeesReceipt] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
 
   const activeRequest = useMemo(() => clearanceRequests?.[0], [clearanceRequests]);
   const hasPaid = personalDetail?.has_paid == 1;
@@ -86,9 +90,39 @@ const Student_Clearance = () => {
 
     try {
       setLoading(true);
+      let fileToUpload = feesReceipt;
+
+      if (feesReceipt.size / 1024 > MAX_PDF_SIZE_KB) {
+        setCompressing(true);
+        message.loading({ content: "Compressing PDF...", key: "compress" });
+        try {
+          fileToUpload = await compressPdf(feesReceipt);
+          if (fileToUpload.size / 1024 > MAX_PDF_SIZE_KB) {
+            message.error({
+              content: "File still too large after compression. Try an online PDF compressor.",
+              key: "compress",
+            });
+            setLoading(false);
+            setCompressing(false);
+            return;
+          }
+          message.success({ content: "PDF compressed successfully", key: "compress" });
+        } catch (err) {
+          console.error("Compression failed:", err);
+          message.error({
+            content: err?.message || "Failed to compress PDF. Try a smaller file or use an online compressor.",
+            key: "compress",
+          });
+          setLoading(false);
+          setCompressing(false);
+          return;
+        }
+        setCompressing(false);
+      }
+
       const formData = new FormData();
       formData.append("personal_detail_id", id);
-      formData.append("fees_receipt", feesReceipt);
+      formData.append("fees_receipt", fileToUpload);
 
       await axios.post(API_ENDPOINTS.CLEARANCES, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -167,7 +201,7 @@ const Student_Clearance = () => {
           itemRender={itemRender}
           items={breadcrumbItems}
         />
-        <Spin spinning={loading} fullscreen />
+        <Spin spinning={loading || compressing} fullscreen tip={compressing ? "Compressing PDF..." : undefined} />
         <div
           style={{
             padding: "1rem 2%",
@@ -252,6 +286,9 @@ const Student_Clearance = () => {
                 <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                   <div>
                     <Text strong>School Fees Receipt (PDF)</Text>
+                    <Text type="secondary" style={{ display: "block", fontSize: "12px", marginTop: "4px" }}>
+                      Max 5MB. Larger files will be compressed automatically.
+                    </Text>
                     <input
                       type="file"
                       accept="application/pdf"
@@ -272,7 +309,7 @@ const Student_Clearance = () => {
                     size="large"
                     style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
                     onClick={handleSubmit}
-                    disabled={!isEligible}
+                    disabled={!isEligible || compressing}
                     loading={loading}
                   >
                     Submit Clearance Request

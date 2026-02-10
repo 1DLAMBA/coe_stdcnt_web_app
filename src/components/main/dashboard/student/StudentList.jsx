@@ -310,7 +310,8 @@ export const StudentList = () => {
             setLocalPassword(e.target.value);
         }, []);
 
-        // Initialize form values
+        // Initialize form values when center or password changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- selectedCenter/centerPassword from parent; effect intentionally syncs form when they change
         React.useEffect(() => {
             form.setFieldsValue({
                 center: selectedCenter,
