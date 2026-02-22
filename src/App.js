@@ -27,6 +27,7 @@ import { useEffect } from 'react';
 import { StudentList } from './components/main/dashboard/student/StudentList';
 import Student_Clearance from './components/main/dashboard/Student_Clearance';
 import Admin_Clearance from './components/main/dashboard/admin/Admin_Clearance';
+import PaymentRecovery from './components/main/PaymentRecovery';
 
 function App() {
 
@@ -53,6 +54,7 @@ function App() {
         </Route>
         <Route path="/registration" element={<Registration />} />
         <Route path='/registration/:id/success' element={<Reg_Success />} />
+        <Route path='/payment-recovery' element={<PaymentRecovery />} />
 
 
 

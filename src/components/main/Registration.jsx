@@ -208,6 +208,7 @@ const Registration = () => {
     if (step === 'step1') {
       setFirstStep(values)
       setEmail(values.email)
+      sessionStorage.setItem('reg_step1', JSON.stringify(values));
       console.log('First Form Values:', firstStep);
       setStep('step2')
       next()
@@ -215,6 +216,7 @@ const Registration = () => {
 
     } else if (step === 'step2') {
       setSecondStep(values);
+      sessionStorage.setItem('reg_step2', JSON.stringify(values));
       console.log('second Form Values:', secondStep);
       console.log('First Form Values:', firstStep);
       next()
@@ -222,6 +224,7 @@ const Registration = () => {
       setStep('step3')
     } else if(step==='step3') {
       setThirdStep(values)
+      sessionStorage.setItem('reg_step3', JSON.stringify(values));
       userCheck();
     }
   };
@@ -1416,8 +1419,8 @@ const Registration = () => {
                      
 
                     <Divider />
-                    <Button type="link" style={{ color: "#028f64" }}>
-                      Need help with payment?
+                    <Button type="link" style={{ color: "#028f64" }} onClick={() => navigate('/payment-recovery')}>
+                      Already paid? Recover your registration here
                     </Button>
                   </Card>
                 </div>

@@ -303,6 +303,13 @@ const ApplicationCheck = () => {
               Register Now
             </Button>
             <Button
+              icon={<CreditCardFilled />}
+              onClick={() => navigate('/payment-recovery')}
+              block
+            >
+              Verify / Recover Payment
+            </Button>
+            <Button
               icon={<UserOutlined />}
               onClick={() => setIsModalVisible(true)}
               block
@@ -310,17 +317,6 @@ const ApplicationCheck = () => {
             >
               Admin Portal
             </Button>
-            {view === 'acceptance' && (
-
-            <Button
-              icon={<UserOutlined />}
-              onClick={() => setView('verification')}
-              block
-              className="admin-button"
-            >
-              Payment Verification
-            </Button>
-            )}
           </Space>
         </div>
       </div>
