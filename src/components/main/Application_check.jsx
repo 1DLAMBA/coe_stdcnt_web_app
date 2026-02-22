@@ -31,17 +31,17 @@ const ApplicationCheck = () => {
       id: applicationNumber.id,
       pay_type: "acceptance_fees",
     },
-    split: {
-      type: "flat",
-      subaccounts: [
-        // Daniel Alamba
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 41000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 200000 },
-
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
-      ]
-    },
+    ...(API_ENDPOINTS.ENABLE_SPLITS && {
+      split: {
+        type: "flat",
+        subaccounts: [
+          // Daniel Alamba
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 41000 },
+          // COE ACCOUNT
+          { subaccount: "ACCT_aan2ehxiej239du", share: 200000 },
+        ],
+      },
+    }),
     publicKey,
     text: "Pay Now",
     onSuccess: async (reference) => {
@@ -50,35 +50,21 @@ const ApplicationCheck = () => {
         application_reference: reference.reference,
         email: email,
         application_date: paidOn.toISOString().split('T')[0],
-
       };
 
-
-
-      // Store temporary data in localStorage
-      localStorage.setItem('UserData', JSON.stringify(formData)); // Ensure the data is stored as JSON
+      localStorage.setItem('UserData', JSON.stringify(formData));
       localStorage.setItem('app_number', applicationNumber);
 
       try {
-       
-          // Navigate to the dashboard
-        window.location.href = await `/dashboard/${applicationNumber.id}/acceptance-receipt`;       
+        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${applicationNumber.id}`, {
+          application_reference: reference.reference,
+          application_date: paidOn.toISOString().split('T')[0],
+        });
       } catch (error) {
-        console.error("Error sending user data:", error);
-        alert("An error occurred while processing your payment. Please try again.");
-      }finally {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${applicationNumber.id}`);
-        console.log(response);
-        if (response.data) {
-          message.loading("redirecting to fees receipt");
-          window.location.href = await `/dashboard/${applicationNumber.id}/fees-receipt`;
-
-
-        }
-          // window.location.href = await `/dashboard/${applicationNumber.id}/fees-receipt`;
-
-        // setLoading(false);
+        console.error("Fallback update failed, webhook will handle it:", error);
       }
+
+      window.location.href = `/dashboard/${applicationNumber.id}/acceptance-receipt`;
     },
     onClose: () => alert("Wait! Don't leave :("),
   };

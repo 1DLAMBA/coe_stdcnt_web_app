@@ -99,49 +99,36 @@ const Course_reg = () => {
       // regNumber
     },
     publicKey,
-    split: {
-      type: "flat",
-      subaccounts: [
-        //Bantigi Oasis
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 68500 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
-        //CENTER ACCOUNT 
-        { subaccount: centerAccount, share: 1730000 },
-      ]
-    },
+    ...(API_ENDPOINTS.ENABLE_SPLITS && {
+      split: {
+        type: "flat",
+        subaccounts: [
+          //Bantigi Oasis
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 68500 },
+          // COE ACCOUNT
+          { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
+          //CENTER ACCOUNT
+          { subaccount: centerAccount, share: 1730000 },
+        ],
+      },
+    }),
     text: "Pay Complete Fees Now",
     onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         couse_fee_date: reference.reference,
-
         course_fee_reference: paidOn.toISOString().split('T')[0],
         course_paid: true,
-        has_paid: true
-
+        has_paid: true,
       };
-      localStorage.setItem('UserData', formData)
-      localStorage.setItem('app_number', applicationNumber)
+      localStorage.setItem('UserData', JSON.stringify(formData));
+      localStorage.setItem('app_number', applicationNumber);
       try {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log(response);
-        window.location.href = await `/dashboard/${id}/fees-receipt`;
+        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, formData);
       } catch (error) {
-        console.error("Error updating personal details:", error);
-        message.error("Failed to update personal details");
-      } finally {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log(response);
-        if (response.data) {
-          message.loading("redirecting to fees receipt");
-          window.location.href = await `/dashboard/${id}/fees-receipt`;
-
-
-        }
-        setLoading(false);
+        console.error("Fallback update failed, webhook will handle it:", error);
       }
-
+      window.location.href = `/dashboard/${id}/fees-receipt`;
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
@@ -155,48 +142,35 @@ const Course_reg = () => {
       // regNumber
     },
     publicKey,
-    split: {
-      type: "flat",
-      subaccounts: [
-        // Daniel ALAMBA
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 61500 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 1201000 },
-        //CENTER ACCOUNT 
-        { subaccount: centerAccount, share: 1026000 },
-      ]
-    },
+    ...(API_ENDPOINTS.ENABLE_SPLITS && {
+      split: {
+        type: "flat",
+        subaccounts: [
+          // Daniel ALAMBA
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 61500 },
+          // COE ACCOUNT
+          { subaccount: "ACCT_aan2ehxiej239du", share: 1201000 },
+          //CENTER ACCOUNT
+          { subaccount: centerAccount, share: 1026000 },
+        ],
+      },
+    }),
     text: "Pay 60% Now",
     onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         couse_fee_date: reference.reference,
-
         course_fee_reference: paidOn.toISOString().split('T')[0],
-        has_paid: true
-
+        has_paid: true,
       };
-      localStorage.setItem('UserData', formData)
-      localStorage.setItem('app_number', applicationNumber)
+      localStorage.setItem('UserData', JSON.stringify(formData));
+      localStorage.setItem('app_number', applicationNumber);
       try {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log(response);
-        window.location.href = await `/dashboard/${id}/fees-receipt`;
+        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, formData);
       } catch (error) {
-        console.error("Error updating personal details:", error);
-        message.error("Failed to update personal details");
-      } finally {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log(response);
-        if (response.data) {
-          message.loading("redirecting to fees receipt");
-          window.location.href = await `/dashboard/${id}/fees-receipt`;
-
-
-        }
-        setLoading(false);
+        console.error("Fallback update failed, webhook will handle it:", error);
       }
-
+      window.location.href = `/dashboard/${id}/fees-receipt`;
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
@@ -210,47 +184,35 @@ const Course_reg = () => {
       // regNumber
     },
     publicKey,
-    split: {
-      type: "flat",
-      subaccounts: [
-        //DANIEL ALAMBA
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 40000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
-        //CENTER ACCOUNT 
-        { subaccount: centerAccount, share: 666000 },
-      ]
-    },
+    ...(API_ENDPOINTS.ENABLE_SPLITS && {
+      split: {
+        type: "flat",
+        subaccounts: [
+          //DANIEL ALAMBA
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 40000 },
+          // COE ACCOUNT
+          { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
+          //CENTER ACCOUNT
+          { subaccount: centerAccount, share: 666000 },
+        ],
+      },
+    }),
     text: "Pay Now",
     onSuccess: async (reference) => {
       const paidOn = new Date();
       const formData = {
         couse_fee_date: reference.reference,
-
         course_fee_reference: paidOn.toISOString().split('T')[0],
-        course_paid: true
-
+        course_paid: true,
       };
-      localStorage.setItem('UserData', formData)
-      localStorage.setItem('app_number', applicationNumber)
+      localStorage.setItem('UserData', JSON.stringify(formData));
+      localStorage.setItem('app_number', applicationNumber);
       try {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log(response);
-        window.location.href = await `/dashboard/${id}/fees-receipt`;
+        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, formData);
       } catch (error) {
-        console.error("Error updating personal details:", error);
-        message.error("Failed to update personal details");
-      } finally {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        console.log(response);
-        if (response.data) {
-          message.loading("redirecting to fees receipt");
-          window.location.href = await `/dashboard/${id}/fees-receipt`;
-
-
-        }
-        setLoading(false);
+        console.error("Fallback update failed, webhook will handle it:", error);
       }
+      window.location.href = `/dashboard/${id}/fees-receipt`;
     },
     onClose: () => alert("Wait! Don't leave :("),
   };

@@ -279,18 +279,19 @@ const Registration = () => {
     amount,
     metadata: {
       phone: firstStep.phone_number,
+      pay_type: "registration_fees",
     },
-    split:{
-      type: "flat",
-      subaccounts: [
-        // DANIEL ALAMBA
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
-
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
-      ]
-    },
+    ...(API_ENDPOINTS.ENABLE_SPLITS && {
+      split: {
+        type: "flat",
+        subaccounts: [
+          // DANIEL ALAMBA
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
+          // COE ACCOUNT
+          { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
+        ],
+      },
+    }),
     publicKey,
     text: "Pay Now",
     onSuccess: async (reference) => {
