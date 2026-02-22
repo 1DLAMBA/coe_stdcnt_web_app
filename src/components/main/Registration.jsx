@@ -88,7 +88,7 @@ const schoolsData = {
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const Registration = () => {
+const Registration = ({ recoveredReference = null }) => {
   const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [step, setStep] = useState('step1')
   const [selectedSchool, setSelectedSchool] = useState("");
@@ -225,7 +225,11 @@ const Registration = () => {
     } else if(step==='step3') {
       setThirdStep(values)
       sessionStorage.setItem('reg_step3', JSON.stringify(values));
-      userCheck();
+      if (recoveredReference) {
+        sendDetails({ reference: recoveredReference }, values);
+      } else {
+        userCheck();
+      }
     }
   };
 
@@ -303,15 +307,14 @@ const Registration = () => {
     onClose: () => alert("Wait! Don't leave :("),
   };
 
-  const sendDetails = async (reference) => {
+  const sendDetails = async (reference, thirdStepValues) => {
+    const resolvedThird = thirdStepValues || thirdStep;
     try {
-      // console.log(values)
       const adjustedDOB = firstStep.date_of_birth.format('YYYY-MM-DD');
-      const year = new Date().getFullYear();
 
       const personalFormData = {
         ...firstStep,
-        application_number: `${thirdStep.exam_year + thirdStep.exam_number}`,
+        application_number: `${resolvedThird.exam_year + resolvedThird.exam_number}`,
         date_of_birth: adjustedDOB,
         application_reference: reference.reference,
         passport: passport, olevel1: uploadedOl1,
@@ -349,8 +352,8 @@ const Registration = () => {
       const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, schoolFormData);
       console.log(schoolResponse);
 
-      console.log('Third Form Values:', thirdStep);
-      const educationFormData = await { ...thirdStep, application_number: personalResponse.data.id }
+      console.log('Third Form Values:', resolvedThird);
+      const educationFormData = await { ...resolvedThird, application_number: personalResponse.data.id }
       const finalResponse = await axios.post(`${API_ENDPOINTS.EDUCATIONALS_APPLICATION}`, educationFormData)
       console.log(finalResponse);
       if (finalResponse) {
@@ -359,7 +362,7 @@ const Registration = () => {
         // localStorage.setItem("id", response.data.data.id);
 
         // Navigate to the dashboard
-        navigate(`${personalResponse.data.id}/success`)
+        navigate(`/registration/${personalResponse.data.id}/success`)
       } else {
         console.error("No ID returned in the response.");
         alert("Payment successful, but we couldn't process your data. Please contact support.");
@@ -1348,7 +1351,7 @@ const Registration = () => {
               </>
             )}
 
-            {step === 'step4' && (
+            {step === 'step4' && !recoveredReference && (
               <div style={{ padding: '16px' }}>
 
                 <ConfigProvider
