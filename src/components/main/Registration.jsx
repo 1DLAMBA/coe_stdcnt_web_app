@@ -88,7 +88,7 @@ const schoolsData = {
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const Registration = () => {
+const Registration = ({ recoveredReference = null }) => {
   const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [step, setStep] = useState('step1')
   const [selectedSchool, setSelectedSchool] = useState("");
@@ -208,6 +208,7 @@ const Registration = () => {
     if (step === 'step1') {
       setFirstStep(values)
       setEmail(values.email)
+      sessionStorage.setItem('reg_step1', JSON.stringify(values));
       console.log('First Form Values:', firstStep);
       setStep('step2')
       next()
@@ -215,6 +216,7 @@ const Registration = () => {
 
     } else if (step === 'step2') {
       setSecondStep(values);
+      sessionStorage.setItem('reg_step2', JSON.stringify(values));
       console.log('second Form Values:', secondStep);
       console.log('First Form Values:', firstStep);
       next()
@@ -222,7 +224,12 @@ const Registration = () => {
       setStep('step3')
     } else if(step==='step3') {
       setThirdStep(values)
-      userCheck();
+      sessionStorage.setItem('reg_step3', JSON.stringify(values));
+      if (recoveredReference) {
+        sendDetails({ reference: recoveredReference }, values);
+      } else {
+        userCheck();
+      }
     }
   };
 
@@ -279,18 +286,19 @@ const Registration = () => {
     amount,
     metadata: {
       phone: firstStep.phone_number,
+      pay_type: "registration_fees",
     },
-    split:{
-      type: "flat",
-      subaccounts: [
-        // DANIEL ALAMBA
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
-
-        // { subaccount: "ACCT_32iz48sbi1fshex", share: 50000 },
-      ]
-    },
+    ...(API_ENDPOINTS.ENABLE_SPLITS && {
+      split: {
+        type: "flat",
+        subaccounts: [
+          // DANIEL ALAMBA
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
+          // COE ACCOUNT
+          { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
+        ],
+      },
+    }),
     publicKey,
     text: "Pay Now",
     onSuccess: async (reference) => {
@@ -299,15 +307,14 @@ const Registration = () => {
     onClose: () => alert("Wait! Don't leave :("),
   };
 
-  const sendDetails = async (reference) => {
+  const sendDetails = async (reference, thirdStepValues) => {
+    const resolvedThird = thirdStepValues || thirdStep;
     try {
-      // console.log(values)
       const adjustedDOB = firstStep.date_of_birth.format('YYYY-MM-DD');
-      const year = new Date().getFullYear();
 
       const personalFormData = {
         ...firstStep,
-        application_number: `${thirdStep.exam_year + thirdStep.exam_number}`,
+        application_number: `${resolvedThird.exam_year + resolvedThird.exam_number}`,
         date_of_birth: adjustedDOB,
         application_reference: reference.reference,
         passport: passport, olevel1: uploadedOl1,
@@ -345,8 +352,8 @@ const Registration = () => {
       const schoolResponse = await axios.post(API_ENDPOINTS.SCHOOL_DETAILS, schoolFormData);
       console.log(schoolResponse);
 
-      console.log('Third Form Values:', thirdStep);
-      const educationFormData = await { ...thirdStep, application_number: personalResponse.data.id }
+      console.log('Third Form Values:', resolvedThird);
+      const educationFormData = await { ...resolvedThird, application_number: personalResponse.data.id }
       const finalResponse = await axios.post(`${API_ENDPOINTS.EDUCATIONALS_APPLICATION}`, educationFormData)
       console.log(finalResponse);
       if (finalResponse) {
@@ -355,7 +362,7 @@ const Registration = () => {
         // localStorage.setItem("id", response.data.data.id);
 
         // Navigate to the dashboard
-        navigate(`${personalResponse.data.id}/success`)
+        navigate(`/registration/${personalResponse.data.id}/success`)
       } else {
         console.error("No ID returned in the response.");
         alert("Payment successful, but we couldn't process your data. Please contact support.");
@@ -1344,7 +1351,7 @@ const Registration = () => {
               </>
             )}
 
-            {step === 'step4' && (
+            {step === 'step4' && !recoveredReference && (
               <div style={{ padding: '16px' }}>
 
                 <ConfigProvider
@@ -1415,8 +1422,8 @@ const Registration = () => {
                      
 
                     <Divider />
-                    <Button type="link" style={{ color: "#028f64" }}>
-                      Need help with payment?
+                    <Button type="link" style={{ color: "#028f64" }} onClick={() => navigate('/payment-recovery')}>
+                      Already paid? Recover your registration here
                     </Button>
                   </Card>
                 </div>

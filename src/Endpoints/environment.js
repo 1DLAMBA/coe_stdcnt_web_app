@@ -1,10 +1,12 @@
 // Use env vars for production (e.g. Vercel); fallback for local dev
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api';
 const PAYSTACK_PUBLIC_KEY = process.env.REACT_APP_PAYSTACK_PUBLIC_KEY || '';
+const ENABLE_SPLITS = process.env.REACT_APP_ENABLE_SPLITS === 'true';
 
 const API_ENDPOINTS = {
     API_BASE_URL: `${API_BASE_URL}`,
     PAYSTACK_PUBLIC_KEY,
+    ENABLE_SPLITS,
     IMAGE: `${API_BASE_URL}/file/get`,
     STUDENT_CHECK: `${API_BASE_URL}/student_check`,
     UPLOAD: `${API_BASE_URL}/upload`,
