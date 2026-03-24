@@ -108,9 +108,9 @@ const Course_reg = () => {
           //Bantigi Oasis
           { subaccount: "ACCT_1hli5sgrrcfuas9", share: 68500 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 1906200 },
           //CENTER ACCOUNT
-          { subaccount: centerAccount, share: 1730000 },
+          { subaccount: centerAccount, share: 1906200 },
         ],
       },
     }),
