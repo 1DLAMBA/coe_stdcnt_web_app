@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import {
   message,
-  Button, Input, Spin, Table, Typography, ConfigProvider, Popover, Dropdown, Space, Breadcrumb, Select, Form,
+  Button, Input, Spin, Table, Typography, ConfigProvider, Popover, Popconfirm, Dropdown, Space, Breadcrumb, Select, Form,
   Flex, Divider, Row, Col
 
 } from 'antd';
@@ -40,6 +40,8 @@ const Course_reg = () => {
     { course: "", semester: "", course_type: "" }
   ]);
   const [spinning, setSpinning] = useState(false);
+  const [deletingAllCourses, setDeletingAllCourses] = useState(false);
+  const [deletingCourseId, setDeletingCourseId] = useState(null);
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
@@ -106,9 +108,9 @@ const Course_reg = () => {
           //Bantigi Oasis
           { subaccount: "ACCT_1hli5sgrrcfuas9", share: 68500 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 2082500 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 1906200 },
           //CENTER ACCOUNT
-          { subaccount: centerAccount, share: 1730000 },
+          { subaccount: centerAccount, share: 1906200 },
         ],
       },
     }),
@@ -149,9 +151,9 @@ const Course_reg = () => {
           // Daniel ALAMBA
           { subaccount: "ACCT_1hli5sgrrcfuas9", share: 61500 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 1201000 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 1113500 },
           //CENTER ACCOUNT
-          { subaccount: centerAccount, share: 1026000 },
+          { subaccount: centerAccount, share: 1113500 },
         ],
       },
     }),
@@ -191,9 +193,9 @@ const Course_reg = () => {
           //DANIEL ALAMBA
           { subaccount: "ACCT_1hli5sgrrcfuas9", share: 40000 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 814000 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 740000 },
           //CENTER ACCOUNT
-          { subaccount: centerAccount, share: 666000 },
+          { subaccount: centerAccount, share: 740000 },
         ],
       },
     }),
@@ -273,6 +275,58 @@ const Course_reg = () => {
     const updatedData = [...courseSemesterData];
     updatedData[index].course_type = value;
     setCourseSemesterData(updatedData);
+  };
+
+  const splitAndSetCourses = (allCourses = []) => {
+    setUserCourses(allCourses);
+    setUser1stCourses(allCourses.filter((course) => course.semester === "1st"));
+    setUser2ndCourses(allCourses.filter((course) => course.semester === "2nd"));
+  };
+
+  const handleDeleteCourse = async (courseId) => {
+    if (!courseId) return;
+
+    setDeletingCourseId(courseId);
+    try {
+      await axios.delete(`${API_ENDPOINTS.API_BASE_URL}/courses/${courseId}`);
+      const updatedCourses = userCourses.filter((course) => course.id !== courseId);
+      splitAndSetCourses(updatedCourses);
+      if (updatedCourses.length === 0) {
+        setDisabled(false);
+      }
+      message.success('Course deleted successfully');
+    } catch (error) {
+      console.error("Error deleting course:", error.response?.data || error);
+      message.error(error.response?.data?.message || 'Failed to delete course');
+    } finally {
+      setDeletingCourseId(null);
+    }
+  };
+
+  const handleDeleteAllCourses = async () => {
+    if (!user?.id) {
+      message.error('Unable to resolve application ID');
+      return;
+    }
+
+    setDeletingAllCourses(true);
+    try {
+      await axios.delete(`${API_ENDPOINTS.API_BASE_URL}/courses/application/${user.id}`);
+      splitAndSetCourses([]);
+      setDisabled(false);
+      message.success('All registered courses deleted successfully');
+    } catch (error) {
+      if (error.response?.status === 404) {
+        splitAndSetCourses([]);
+        setDisabled(false);
+        message.info('No registered courses to delete');
+      } else {
+        console.error("Error deleting all courses:", error.response?.data || error);
+        message.error(error.response?.data?.message || 'Failed to delete registered courses');
+      }
+    } finally {
+      setDeletingAllCourses(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -424,9 +478,8 @@ const Course_reg = () => {
 
       const courses = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${user.data.id}`);
       console.log("USER COURSES", courses);
-      setUserCourses(courses.data);
+      splitAndSetCourses(courses.data || []);
       if (courses.data) {
-
         setDisabled(false);
       }
       form.setFieldsValue({
@@ -435,19 +488,9 @@ const Course_reg = () => {
         session: courses.data[0]?.session,
         level_of_course: courses.data[0]?.level_of_course,
       });
-      const toBeFiltered = courses.data;
-      const filteredCourses = toBeFiltered.filter(
-        (course) => course.semester === "1st"
-      );
-      const filtered2ndCourses = toBeFiltered.filter(
-        (course) => course.semester === "2nd"
-      );
-
       if (user.data.course_paid) {
         setView(false);
       }
-      setUser1stCourses(filteredCourses);
-      setUser2ndCourses(filtered2ndCourses);
 
       if (courses) {
         setView(false);
@@ -508,19 +551,32 @@ const Course_reg = () => {
       dataIndex: 'session',
       key: 'session',
     },
-    // {
-    //   title: 'DELETE',
-    //   key: 'delete',
-    //   render: (_, record) => (
-    //     <Button
-    //       type="primary"
-    //       danger
-    //       onClick={() => handleDelete(record.code)}
-    //     >
-    //       DELETE
-    //     </Button>
-    //   ),
-    // },
+    {
+      title: 'ACTION',
+      key: 'action',
+      render: (_, record) => (
+        <Popconfirm
+          title="Delete this course?"
+          description="This action cannot be undone."
+          onConfirm={() => handleDeleteCourse(record.id)}
+          okText="Delete"
+          cancelText="Cancel"
+          okButtonProps={{
+            danger: true,
+            loading: deletingCourseId === record.id,
+          }}
+        >
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            disabled={!record.id}
+          >
+            Delete
+          </Button>
+        </Popconfirm>
+      ),
+    },
   ];
 
   return (
@@ -797,8 +853,25 @@ const Course_reg = () => {
         )}
 
 
-        <div style={{ backgroundColor: '#028f64', color: 'white', padding: '10px', borderRadius: '8px', fontWeight: 'bold', marginBottom: '10px' }}>
-          Registered Courses
+        <div style={{ backgroundColor: '#028f64', color: 'white', padding: '10px', borderRadius: '8px', fontWeight: 'bold', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <span>Registered Courses</span>
+          <Popconfirm
+            title="Delete all registered courses?"
+            description="This will remove every registered course for this application."
+            onConfirm={handleDeleteAllCourses}
+            okText="Delete All"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true, loading: deletingAllCourses }}
+          >
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              loading={deletingAllCourses}
+              disabled={deletingAllCourses || userCourses.length === 0}
+            >
+              Delete All Registered Courses
+            </Button>
+          </Popconfirm>
         </div>
         <div className="responsive-tables-container">
 
@@ -806,7 +879,7 @@ const Course_reg = () => {
           <Table
             columns={columns}
             dataSource={user1stCourses}
-            rowKey="code"
+            rowKey={(record) => record.id ?? record.code}
             title={() => 'First Semester'}
             pagination={false}
             bordered
@@ -824,7 +897,7 @@ const Course_reg = () => {
             columns={columns}
             dataSource={user2ndCourses}
             title={() => 'Second Semester'}
-            rowKey="code"
+            rowKey={(record) => record.id ?? record.code}
             pagination={false}
             bordered
             style={{
