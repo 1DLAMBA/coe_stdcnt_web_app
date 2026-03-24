@@ -106,9 +106,9 @@ const Course_reg = () => {
         type: "flat",
         subaccounts: [
           //Bantigi Oasis
-          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 68500 },
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 74700 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 1906200 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 1900000 },
           //CENTER ACCOUNT
           { subaccount: centerAccount, share: 1906200 },
         ],
@@ -149,9 +149,9 @@ const Course_reg = () => {
         type: "flat",
         subaccounts: [
           // Daniel ALAMBA
-          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 61500 },
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 65000 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 1113500 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 1110000 },
           //CENTER ACCOUNT
           { subaccount: centerAccount, share: 1113500 },
         ],
@@ -191,9 +191,9 @@ const Course_reg = () => {
         type: "flat",
         subaccounts: [
           //DANIEL ALAMBA
-          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 40000 },
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 43000 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 740000 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 738500 },
           //CENTER ACCOUNT
           { subaccount: centerAccount, share: 740000 },
         ],
