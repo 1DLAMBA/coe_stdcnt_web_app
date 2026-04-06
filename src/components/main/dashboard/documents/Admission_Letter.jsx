@@ -172,11 +172,11 @@ const Admission_Letter = () => {
 
 
                     </div>
-                    <Title level={3} style={{ textAlign: "center", color: "#333" }}>Offer of Provisional Admission for 2024/2025</Title>
+                    <Title level={3} style={{ textAlign: "center", color: "#333" }}>Offer of Provisional Admission for 2025/2026</Title>
                     <Paragraph>
                         Hello, <b>{application.surname + ' ' + application.other_names}</b> <br />
                         After due consideration of your recent application seeking admission into this college,
-                        we are pleased to inform you that you have been offered provisional admission for the academic session of 2024/2025
+                        we are pleased to inform you that you have been offered provisional admission for the academic session of 2025/2026
                         for Nigeria Certificate in Education(NCE) in the department of <b> {application.course}</b> with Matric Number <b>{application.matric_number}</b>.
                     </Paragraph>
                     <Paragraph>You are expected to report to the college with the following documents for registration:</Paragraph>
