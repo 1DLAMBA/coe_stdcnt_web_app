@@ -178,7 +178,7 @@ const Acceptance_Receipt = () => {
                     <Text strong>Student Name:</Text> {application.surname + ' ' + application.other_names}<br/>
                     <Text strong>Matric Number:</Text> {application.matric_number}<br/>
                     <Text strong>Department:</Text> {application.course}<br/>
-                    <Text strong>Academic Session:</Text> 2024/2025
+                    <Text strong>Academic Session:</Text> 2025/2026
                 </Paragraph>
                 <Divider />
                 <table style={{ width: '100%', borderCollapse: 'collapse', margin: '20px 0' }}>
