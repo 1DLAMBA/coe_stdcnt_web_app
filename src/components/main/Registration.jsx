@@ -293,9 +293,9 @@ const Registration = ({ recoveredReference = null }) => {
         type: "flat",
         subaccounts: [
           // DANIEL ALAMBA
-          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 30000 },
+          { subaccount: "ACCT_1hli5sgrrcfuas9", share: 40000 },
           // COE ACCOUNT
-          { subaccount: "ACCT_aan2ehxiej239du", share: 325000 },
+          { subaccount: "ACCT_aan2ehxiej239du", share: 310000 },
         ],
       },
     }),
