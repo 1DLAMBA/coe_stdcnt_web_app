@@ -23,6 +23,8 @@ const EXPECTED_AMOUNTS = {
 
 const SCHOOL_FEE_TYPES = ['complete_school_fees', 'partial_school_fees', 'school_fees_completion'];
 
+const ALLOWED_FEE_SESSIONS = ['2024/2025', '2025/2026'];
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const PaymentRecovery = () => {
@@ -96,7 +98,9 @@ const PaymentRecovery = () => {
       if (pay_type === 'acceptance_fees') {
         await handleAcceptanceFeeRecovery(studentId, values.reference);
       } else if (SCHOOL_FEE_TYPES.includes(pay_type)) {
-        await handleSchoolFeeRecovery(studentId, pay_type);
+        const rawFeeSession = txData.metadata?.fee_session;
+        const feeSession = ALLOWED_FEE_SESSIONS.includes(rawFeeSession) ? rawFeeSession : null;
+        await handleSchoolFeeRecovery(studentId, pay_type, feeSession);
       }
 
     } catch (err) {
@@ -125,7 +129,7 @@ const PaymentRecovery = () => {
 
   // ── School fee recovery ───────────────────────────────────────────────────
 
-  const handleSchoolFeeRecovery = async (studentId, payType) => {
+  const handleSchoolFeeRecovery = async (studentId, payType, feeSession = null) => {
     try {
       const updateData = {};
       if (payType === 'complete_school_fees') {
@@ -134,7 +138,11 @@ const PaymentRecovery = () => {
       } else if (payType === 'partial_school_fees') {
         updateData.has_paid = true;
       } else if (payType === 'school_fees_completion') {
+        updateData.has_paid = true;
         updateData.course_paid = true;
+      }
+      if (feeSession) {
+        updateData.fee_academic_session = feeSession;
       }
       await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${studentId}`, updateData);
       setResolvedId(studentId);
