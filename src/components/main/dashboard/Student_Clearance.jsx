@@ -1,47 +1,78 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button, Card, Divider, Tag, Typography, Alert, message, Spin, ConfigProvider, Breadcrumb, Space } from "antd";
-import { FileTextOutlined, HomeFilled } from "@ant-design/icons";
+import { DownloadOutlined, FileTextOutlined, HomeFilled, PrinterOutlined } from "@ant-design/icons";
 import { PaystackButton } from "react-paystack";
 import axios from "axios";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import API_ENDPOINTS from "../../../Endpoints/environment";
 import { compressPdf } from "../../../utils/compressPdf";
+import {
+  mergeFeeFlags,
+  buildPrimaryFeeSyncBody,
+} from "../../../utils/schoolFeesFlags";
+import ClearanceAcknowledgementSlip from "./ClearanceAcknowledgementSlip";
 import "./BioData.css";
 
 const { Title, Text } = Typography;
 
 const MAX_PDF_SIZE_KB = 5120;
 
-const CLEARANCE_AMOUNT = 8731;
+const CLEARANCE_AMOUNT = 8500;
 
 const Student_Clearance = () => {
   const { id } = useParams();
   const [personalDetail, setPersonalDetail] = useState(null);
+  const [backupPersonal, setBackupPersonal] = useState(null);
   const [clearanceRequests, setClearanceRequests] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [feesReceipt, setFeesReceipt] = useState(null);
   const [loading, setLoading] = useState(false);
   const [compressing, setCompressing] = useState(false);
+  const [bio, setBio] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+  const slipRef = useRef(null);
 
   const activeRequest = useMemo(() => clearanceRequests?.[0], [clearanceRequests]);
-  const hasPaid = personalDetail?.has_paid == 1;
-  const coursePaid = personalDetail?.course_paid == 1;
-  const isEligible = hasPaid && coursePaid;
+
+  const merged = useMemo(
+    () => mergeFeeFlags(personalDetail, backupPersonal),
+    [personalDetail, backupPersonal]
+  );
+
+  const { coursePaidAny } = merged;
+  const canRequestClearance = coursePaidAny;
+
   const hasOpenRequest = activeRequest && activeRequest.status !== "rejected";
   const isRejected = activeRequest?.status === "rejected";
 
-  const fetchPersonalDetail = async () => {
+  const fetchPersonalDetail = useCallback(async () => {
     setLoading(true);
+    const backupUrl = API_ENDPOINTS.PERSONAL_DETAILS_BACKUP;
+    const primaryUrl = `${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`;
+
+    const primaryPromise = axios.get(primaryUrl);
+    const backupPromise = backupUrl
+      ? axios.get(`${backupUrl}/${id}`).catch((err) => {
+          console.warn("Backup personal-details unavailable:", err?.message || err);
+          return null;
+        })
+      : Promise.resolve(null);
+
     try {
-      const personalResponse = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-      setPersonalDetail(personalResponse.data);
+      const [primaryRes, backupRes] = await Promise.all([primaryPromise, backupPromise]);
+      setPersonalDetail(primaryRes.data);
+      setBackupPersonal(backupRes && backupRes.data != null ? backupRes.data : null);
     } catch (error) {
       console.error("Error loading clearance data:", error);
       message.error("Unable to load clearance details.");
-    } finally {
-      setLoading(false);
+      setPersonalDetail(null);
+      setBackupPersonal(null);
     }
-  };
+
+    setLoading(false);
+  }, [id]);
 
   const fetchClearanceData = async () => {
     try {
@@ -58,10 +89,57 @@ const Student_Clearance = () => {
     }
   };
 
+  const fetchBio = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_ENDPOINTS.BIO_REGISTRATION}/${id}`);
+      setBio(response.data || null);
+    } catch (error) {
+      console.warn("Bio registration unavailable:", error?.message || error);
+      setBio(null);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchPersonalDetail();
     fetchClearanceData();
-  }, [id]);
+    fetchBio();
+  }, [id, fetchPersonalDetail, fetchBio]);
+
+  const handleDownloadSlip = useCallback(async () => {
+    if (!slipRef.current) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(slipRef.current, {
+        scale: 1.25,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/jpeg", 0.78);
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
+      const ratio = canvas.width / canvas.height;
+      let imgWidth = maxWidth;
+      let imgHeight = imgWidth / ratio;
+      if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = imgHeight * ratio;
+      }
+      const offsetX = (pageWidth - imgWidth) / 2;
+      pdf.addImage(imgData, "JPEG", offsetX, margin, imgWidth, imgHeight, undefined, "FAST");
+      const matric = (activeRequest?.matric_number || "slip").replace(/[^A-Za-z0-9_-]+/g, "_");
+      pdf.save(`clearance-ack-${matric}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate slip PDF:", error);
+      message.error("Could not generate the slip. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }, [activeRequest?.matric_number]);
 
   const breadcrumbItems = [
     { path: `/dashboard/${id}`, title: <HomeFilled /> },
@@ -78,13 +156,8 @@ const Student_Clearance = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isEligible) {
-      message.error("You must complete school fees before requesting clearance.");
-      return;
-    }
-
-    if (!feesReceipt) {
-      message.error("Please upload your school fees receipt (PDF).");
+    if (!canRequestClearance) {
+      message.error("You must complete course fees before requesting clearance.");
       return;
     }
 
@@ -92,7 +165,7 @@ const Student_Clearance = () => {
       setLoading(true);
       let fileToUpload = feesReceipt;
 
-      if (feesReceipt.size / 1024 > MAX_PDF_SIZE_KB) {
+      if (feesReceipt && feesReceipt.size / 1024 > MAX_PDF_SIZE_KB) {
         setCompressing(true);
         message.loading({ content: "Compressing PDF...", key: "compress" });
         try {
@@ -120,9 +193,23 @@ const Student_Clearance = () => {
         setCompressing(false);
       }
 
+      const syncBody = buildPrimaryFeeSyncBody(personalDetail, merged);
+      if (Object.keys(syncBody).length > 0) {
+        try {
+          await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, syncBody);
+        } catch (err) {
+          console.error("Primary fee sync failed:", err);
+          message.error(err.response?.data?.message || "Could not sync fee status. Try again or contact support.");
+          setLoading(false);
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append("personal_detail_id", id);
-      formData.append("fees_receipt", fileToUpload);
+      if (fileToUpload) {
+        formData.append("fees_receipt", fileToUpload);
+      }
 
       await axios.post(API_ENDPOINTS.CLEARANCES, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -149,14 +236,12 @@ const Student_Clearance = () => {
       pay_type: "clearance_acceptance",
       clearance_request_id: activeRequest?.id,
     },
-    split:{
+    split: {
       type: "flat",
-      // Daniel ALAMBA
       subaccounts: [
         { subaccount: "ACCT_1hli5sgrrcfuas9", share: 63000 },
-        // COE ACCOUNT
-        { subaccount: "ACCT_aan2ehxiej239du", share: 680000 },
-            ]
+        { subaccount: "ACCT_aan2ehxiej239du", share: 650000 },
+      ],
     },
     text: `Pay ₦${CLEARANCE_AMOUNT} Clearance Fee`,
     onSuccess: async (reference) => {
@@ -185,6 +270,12 @@ const Student_Clearance = () => {
   }
 
   const themeConfig = { token: { colorPrimary: "#028f64" } };
+
+  const feeAlertDescription = canRequestClearance
+    ? "Your course fee status is satisfied. Upload your receipt and submit below."
+    : "Your course fees are incomplete. Complete them on the Course Registration page before requesting clearance.";
+
+  const showFeeWarning = personalDetail && !canRequestClearance;
 
   return (
     <ConfigProvider theme={themeConfig}>
@@ -237,12 +328,12 @@ const Student_Clearance = () => {
             Submit your clearance request and track approvals from departments.
           </Text>
 
-          {personalDetail && (personalDetail?.has_paid != 1 || personalDetail?.course_paid != 1) && (
+          {showFeeWarning && (
             <Alert
-              type="warning"
+              type={canRequestClearance ? "info" : "warning"}
               showIcon
-              message="School fees incomplete"
-              description="You must complete both application and course fees before requesting clearance."
+              message={canRequestClearance ? "School fees — ready to submit" : "School fees incomplete"}
+              description={feeAlertDescription}
               style={{ marginBottom: "1.5rem" }}
             />
           )}
@@ -285,9 +376,9 @@ const Student_Clearance = () => {
                 )}
                 <Space direction="vertical" size="middle" style={{ width: "100%" }}>
                   <div>
-                    <Text strong>School Fees Receipt (PDF)</Text>
+                    <Text strong>School Fees Receipt (PDF) <Text type="secondary">(optional)</Text></Text>
                     <Text type="secondary" style={{ display: "block", fontSize: "12px", marginTop: "4px" }}>
-                      Max 5MB. Larger files will be compressed automatically.
+                      Optional. Max 5MB. Larger files will be compressed automatically.
                     </Text>
                     <input
                       type="file"
@@ -309,7 +400,7 @@ const Student_Clearance = () => {
                     size="large"
                     style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
                     onClick={handleSubmit}
-                    disabled={!isEligible || compressing}
+                    disabled={!canRequestClearance || compressing}
                     loading={loading}
                   >
                     Submit Clearance Request
@@ -329,7 +420,7 @@ const Student_Clearance = () => {
                   type="success"
                   showIcon
                   message="Payment completed"
-                  description="You can now print your clearance acceptance letter."
+                  description="You can now download or print your clearance acknowledgement slip."
                   style={{ marginBottom: "1rem" }}
                 />
               ) : (
@@ -339,38 +430,31 @@ const Student_Clearance = () => {
               {activeRequest.acceptance_paid && (
                 <>
                   <Divider />
-                  <div
-                    style={{
-                      background: "#fafafa",
-                      padding: "1.5rem",
-                      border: "1px solid #f0f0f0",
-                      borderRadius: "8px",
-                    }}
-                  >
-                    <Title level={4} style={{ textAlign: "center" }}>
-                      Clearance Acceptance Letter
-                    </Title>
-                    <Text>
-                      This is to certify that{" "}
-                      <strong>
-                        {personalDetail?.surname} {personalDetail?.other_names}
-                      </strong>{" "}
-                      with matric number <strong>{activeRequest.matric_number}</strong> has satisfied all clearance
-                      requirements and has paid the clearance acceptance fee.
-                    </Text>
-                    <Divider />
-                    <Text>
-                      Date: <strong>{new Date().toLocaleDateString()}</strong>
-                    </Text>
+                  <ClearanceAcknowledgementSlip
+                    ref={slipRef}
+                    personalDetail={personalDetail}
+                    activeRequest={activeRequest}
+                    bio={bio}
+                  />
+                  <div className="gc-slip-actions">
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<DownloadOutlined />}
+                      style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
+                      onClick={handleDownloadSlip}
+                      loading={downloading}
+                    >
+                      Download Slip (PDF)
+                    </Button>
+                    <Button
+                      size="large"
+                      icon={<PrinterOutlined />}
+                      onClick={() => window.print()}
+                    >
+                      Print
+                    </Button>
                   </div>
-                  <Button
-                    type="primary"
-                    size="large"
-                    style={{ marginTop: "1rem", backgroundColor: "#028f64", borderColor: "#028f64" }}
-                    onClick={() => window.print()}
-                  >
-                    Print Clearance Acceptance Letter
-                  </Button>
                 </>
               )}
             </Card>

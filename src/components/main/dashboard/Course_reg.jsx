@@ -13,9 +13,14 @@ import { studyCenters } from "./data";
 import { Card } from 'antd';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../Endpoints/environment';
+import { isPaidFlag } from '../../../utils/schoolFeesFlags';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+
+const FEE_ACADEMIC_SESSIONS = ['2024/2025', '2025/2026'];
+const LAST_SESSION = '2024/2025';
+const CURRENT_SESSION = '2025/2026';
 
 const Course_reg = () => {
   const [courses, setCourses] = useState([""]); // Start with one empty course field
@@ -46,6 +51,9 @@ const Course_reg = () => {
   const navigate = useNavigate();
   const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [applicationNumber, setApplicationNumber] = useState('');
+  const [feePaymentSession, setFeePaymentSession] = useState('');
+  const [backupUser, setBackupUser] = useState(null);
+  const isFeeSessionValid = FEE_ACADEMIC_SESSIONS.includes(feePaymentSession);
   const amount = 4000000;
   const amount60 = 2400000;
   const amount40 = 1600000;
@@ -95,9 +103,11 @@ const Course_reg = () => {
   const componentProps = {
     email,
     amount,
+    disabled: !isFeeSessionValid,
     metadata: {
       id: id,
       pay_type: "complete_school_fees",
+      fee_session: feePaymentSession,
       // regNumber
     },
     publicKey,
@@ -122,6 +132,7 @@ const Course_reg = () => {
         course_fee_reference: paidOn.toISOString().split('T')[0],
         course_paid: true,
         has_paid: true,
+        ...(isFeeSessionValid && { fee_academic_session: feePaymentSession }),
       };
       localStorage.setItem('UserData', JSON.stringify(formData));
       localStorage.setItem('app_number', applicationNumber);
@@ -138,9 +149,11 @@ const Course_reg = () => {
   const component60Props = {
     email,
     amount: 2400000,
+    disabled: !isFeeSessionValid,
     metadata: {
       id: id,
       pay_type: "partial_school_fees",
+      fee_session: feePaymentSession,
       // regNumber
     },
     publicKey,
@@ -164,6 +177,7 @@ const Course_reg = () => {
         couse_fee_date: reference.reference,
         course_fee_reference: paidOn.toISOString().split('T')[0],
         has_paid: true,
+        ...(isFeeSessionValid && { fee_academic_session: feePaymentSession }),
       };
       localStorage.setItem('UserData', JSON.stringify(formData));
       localStorage.setItem('app_number', applicationNumber);
@@ -180,9 +194,11 @@ const Course_reg = () => {
   const component40Props = {
     email,
     amount: 1600000,
+    disabled: !isFeeSessionValid,
     metadata: {
       id: id,
       pay_type: "school_fees_completion",
+      fee_session: feePaymentSession,
       // regNumber
     },
     publicKey,
@@ -205,7 +221,9 @@ const Course_reg = () => {
       const formData = {
         couse_fee_date: reference.reference,
         course_fee_reference: paidOn.toISOString().split('T')[0],
+        has_paid: true,
         course_paid: true,
+        ...(isFeeSessionValid && { fee_academic_session: feePaymentSession }),
       };
       localStorage.setItem('UserData', JSON.stringify(formData));
       localStorage.setItem('app_number', applicationNumber);
@@ -441,11 +459,72 @@ const Course_reg = () => {
       setAvailableCourses(response.data || []);
       console.log('COURSES fetched', response);
 
-      const user = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
+      const backupUrl = API_ENDPOINTS.PERSONAL_DETAILS_BACKUP;
+      const backupPromise = backupUrl
+        ? axios.get(`${backupUrl}/${id}`).then((r) => r?.data || null).catch(() => null)
+        : Promise.resolve(null);
+
+      const [user, backupRes] = await Promise.all([
+        axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`),
+        backupPromise,
+      ]);
       console.log('USER fetched', user);
+      console.log('BACKUP USER fetched', backupRes);
 
       handleCenterChange(user.data.desired_study_cent);
       setUser(user.data);
+      setBackupUser(backupRes || null);
+
+      const isNewByMatric =
+        typeof user.data.matric_number === 'string' &&
+        user.data.matric_number.includes('/26/');
+      const backupHasRecord =
+        !isNewByMatric &&
+        backupRes != null &&
+        typeof backupRes === 'object' &&
+        (backupRes.id != null || backupRes.application_number != null);
+      const backupCourseFullyPaid = !isNewByMatric && isPaidFlag(backupRes?.course_paid);
+
+      const primaryFee = user.data.fee_academic_session;
+      const lastPaidByPrimary =
+        isPaidFlag(user.data.course_paid) &&
+        primaryFee === LAST_SESSION;
+      const currentPaidByPrimary =
+        isPaidFlag(user.data.course_paid) &&
+        primaryFee === CURRENT_SESSION;
+      const legacyPrimaryFull =
+        isPaidFlag(user.data.course_paid) &&
+        !primaryFee;
+      const legacyCountsAsLast =
+        legacyPrimaryFull &&
+        backupHasRecord &&
+        !isPaidFlag(backupRes?.has_paid) &&
+        !backupCourseFullyPaid;
+      const legacyCountsAsCurrent =
+        legacyPrimaryFull && (!backupHasRecord || backupCourseFullyPaid);
+
+      const lastSessionPaid =
+        lastPaidByPrimary || backupCourseFullyPaid || legacyCountsAsLast;
+      const currentSessionPaid = currentPaidByPrimary || legacyCountsAsCurrent;
+
+      const sessionAlreadyPaid = (s) =>
+        (s === LAST_SESSION && lastSessionPaid) ||
+        (s === CURRENT_SESSION && currentSessionPaid);
+
+      const tagValid =
+        FEE_ACADEMIC_SESSIONS.includes(primaryFee) && !sessionAlreadyPaid(primaryFee);
+      const firstUnpaid =
+        !lastSessionPaid && backupHasRecord && !backupCourseFullyPaid
+          ? LAST_SESSION
+          : !currentSessionPaid
+            ? CURRENT_SESSION
+            : '';
+
+      if (isNewByMatric) {
+        setFeePaymentSession(!currentSessionPaid ? CURRENT_SESSION : '');
+      } else {
+        setFeePaymentSession(tagValid ? primaryFee : firstUnpaid);
+      }
 
       // Move the center account logic here
       if (user.data.desired_study_cent) {
@@ -579,6 +658,82 @@ const Course_reg = () => {
     },
   ];
 
+  const isNewByMatric =
+    typeof user?.matric_number === 'string' &&
+    user.matric_number.includes('/26/');
+  const backupHasRecord =
+    !isNewByMatric &&
+    backupUser != null &&
+    typeof backupUser === 'object' &&
+    (backupUser.id != null || backupUser.application_number != null);
+  const backupCourseFullyPaid = !isNewByMatric && isPaidFlag(backupUser?.course_paid);
+  const backupAnyPaymentFlag =
+    !isNewByMatric &&
+    (isPaidFlag(backupUser?.has_paid) || isPaidFlag(backupUser?.course_paid));
+
+  const primaryFeeSession = user?.fee_academic_session;
+  const lastSessionPaidByPrimary =
+    isPaidFlag(user?.course_paid) &&
+    primaryFeeSession === LAST_SESSION;
+  const currentSessionPaidByPrimary =
+    isPaidFlag(user?.course_paid) &&
+    primaryFeeSession === CURRENT_SESSION;
+  const currentSessionPartial =
+    isPaidFlag(user?.has_paid) &&
+    !isPaidFlag(user?.course_paid) &&
+    primaryFeeSession === CURRENT_SESSION;
+  const forcedLastSessionCompletion =
+    isPaidFlag(user?.has_paid) &&
+    !isPaidFlag(user?.course_paid) &&
+    primaryFeeSession === LAST_SESSION;
+
+  const legacyPrimaryFull =
+    isPaidFlag(user?.course_paid) && !primaryFeeSession;
+  const legacyPrimaryPartial =
+    isPaidFlag(user?.has_paid) && !isPaidFlag(user?.course_paid) && !primaryFeeSession;
+
+  const backupLastSessionPartial =
+    backupHasRecord && isPaidFlag(backupUser?.has_paid) && !backupCourseFullyPaid;
+
+  const legacyCountsAsLast =
+    legacyPrimaryFull && backupHasRecord && !backupAnyPaymentFlag;
+  const legacyCountsAsCurrent =
+    legacyPrimaryFull && (!backupHasRecord || backupCourseFullyPaid);
+
+  const lastSessionPaid =
+    lastSessionPaidByPrimary || backupCourseFullyPaid || legacyCountsAsLast;
+  const currentSessionPaid = currentSessionPaidByPrimary || legacyCountsAsCurrent;
+
+  const partial40Active = forcedLastSessionCompletion || currentSessionPartial || legacyPrimaryPartial;
+  const partial40Session = forcedLastSessionCompletion
+    ? LAST_SESSION
+    : currentSessionPartial
+      ? CURRENT_SESSION
+      : null;
+
+  const needsLastSessionPayment = backupHasRecord && !lastSessionPaid;
+  const needsCurrentSessionPayment = !currentSessionPaid;
+  const allRequiredPaid = !needsLastSessionPayment && currentSessionPaid;
+  const showCourseReg = allRequiredPaid && !partial40Active;
+
+  const branchBPActive =
+    !partial40Active && backupLastSessionPartial && !lastSessionPaid;
+
+  let feesCardLockedTo = null;
+  if (!partial40Active && !branchBPActive && !allRequiredPaid) {
+    if (needsLastSessionPayment) {
+      feesCardLockedTo = LAST_SESSION;
+    } else if (backupHasRecord && needsCurrentSessionPayment) {
+      feesCardLockedTo = CURRENT_SESSION;
+    } else if (!backupHasRecord && needsCurrentSessionPayment) {
+      feesCardLockedTo = null;
+    }
+  }
+
+  const sessionOptionDisabled = (s) =>
+    (s === LAST_SESSION && (lastSessionPaid || isNewByMatric)) ||
+    (s === CURRENT_SESSION && currentSessionPaid);
+
   return (
 
     <>
@@ -592,81 +747,263 @@ const Course_reg = () => {
 
         <div style={{ textAlign: 'center', margin: '20px' }}>
         </div>
-        {user.has_paid != 1 ? (
-          <>
-            <div className='' style={{ margin: '2% auto' }}>
-              <Card
-                bordered={false}
+        {(partial40Active || branchBPActive) && (
+          <div style={{ maxWidth: 560, margin: '24px auto', padding: '0 16px', width: '100%' }}>
+            <Card
+              bordered={false}
+              styles={{ body: { padding: 0 } }}
+              style={{
+                borderRadius: 16,
+                overflow: 'hidden',
+                boxShadow: '0 10px 30px rgba(2, 143, 100, 0.12), 0 2px 6px rgba(0,0,0,0.04)',
+              }}
+            >
+              <div
                 style={{
-                  maxWidth: 600,
-                  borderRadius: 8,
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fff',
-                  padding: '16px',
+                  background: 'linear-gradient(135deg, #028f64 0%, #06a87a 100%)',
+                  padding: '20px 24px',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
                 }}
               >
-                <Space direction="vertical" size="small">
+                <div
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255,255,255,0.18)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <BookFilled style={{ fontSize: 22, color: '#fff' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={{ color: '#fff', fontSize: 18, fontWeight: 600, display: 'block', lineHeight: 1.2 }}>
+                    Complete Fees Payment
+                  </Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 12 }}>
+                    {branchBPActive ? 'Carry-over from previous system' : 'Outstanding 40% balance'}
+                  </Text>
+                </div>
+                <span
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.18)',
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {branchBPActive
+                    ? LAST_SESSION
+                    : (partial40Session || feePaymentSession || 'Select session')}
+                </span>
+              </div>
 
-                  <Space>
+              <div style={{ padding: '20px 24px 24px' }}>
+                <div
+                  style={{
+                    background: '#f6fbf8',
+                    border: '1px solid #d6efe2',
+                    borderRadius: 10,
+                    padding: '14px 16px',
+                    marginBottom: 18,
+                  }}
+                >
+                  <Text type="secondary" style={{ display: 'block', fontSize: 12, marginBottom: 2 }}>
+                    Amount due
+                  </Text>
+                  <Text strong style={{ color: '#028f64', fontSize: 24, lineHeight: 1.1 }}>
+                    ₦16,000
+                  </Text>
+                </div>
 
+                <Text type="secondary" style={{ display: 'block', marginBottom: 18, lineHeight: 1.6 }}>
+                  {branchBPActive ? (
+                    <>You have an outstanding 40% balance from your <strong>{LAST_SESSION}</strong> session in the previous system. Complete it below to unlock current-session fees.</>
+                  ) : partial40Session ? (
+                    <>Completing the outstanding 40% balance for the <strong>{partial40Session}</strong> session.</>
+                  ) : (
+                    <>You have an outstanding 40% balance. Select the academic session this payment belongs to and pay below.</>
+                  )}
+                </Text>
 
-                    <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
-                    <Title level={4} style={{ margin: 0, color: '#000' }}>
-                      Registration Fees payment
-                    </Title>
-                  </Space>
-                  <Popover content={content} trigger="click">
+                <div style={{ marginBottom: 18 }}>
+                  <Text strong style={{ display: 'block', marginBottom: 8, fontSize: 13 }}>
+                    Academic Session
+                  </Text>
+                  <Select
+                    placeholder="Select academic session"
+                    value={branchBPActive ? LAST_SESSION : (feePaymentSession || undefined)}
+                    onChange={setFeePaymentSession}
+                    style={{ width: '100%' }}
+                    disabled={branchBPActive || !!partial40Session}
+                    size="large"
+                    suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
+                  >
+                    {FEE_ACADEMIC_SESSIONS.map((s) => (
+                      <Option
+                        key={s}
+                        value={s}
+                        disabled={branchBPActive ? s !== LAST_SESSION : sessionOptionDisabled(s)}
+                      >
+                        {s}
+                      </Option>
+                    ))}
+                  </Select>
+                  {!branchBPActive && !isFeeSessionValid && (
+                    <Text type="secondary" style={{ display: 'block', marginTop: 6, fontSize: 12 }}>
+                      Choose an academic session to enable payment.
+                    </Text>
+                  )}
+                </div>
 
+                <PaystackButton
+                  style={{ width: '100%', margin: '1%' }}
+                  className='btn btn-green'
+                  {...component40Props}
+                />
+                <Text type="secondary" style={{ display: 'block', marginTop: 10, fontSize: 12, textAlign: 'center' }}>
+                  Secured by Paystack · Payment is recorded on the main system.
+                </Text>
+              </div>
+            </Card>
+          </div>
+        )}
 
-                    <Button style={{ textAlign: 'start' }} block className='btn btn-green' variant="outlined">
-                      Select Payment option
-                    </Button>
-                  </Popover>
+        {!partial40Active && !branchBPActive && feesCardLockedTo && (
+          <div className='' style={{ margin: '2% auto' }}>
+            <Card
+              bordered={false}
+              style={{
+                maxWidth: 600,
+                margin: '0 auto',
+                borderRadius: 8,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                backgroundColor: '#fff',
+                padding: '16px',
+              }}
+            >
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Space>
+                  <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
+                  <Title level={4} style={{ margin: 0, color: '#000' }}>
+                    School Fees Payment
+                  </Title>
                 </Space>
 
-                {/* <Space direction="vertical" size="small">
-                  {user.has_paid && !user.course_paid ? (<>
+                {feesCardLockedTo === LAST_SESSION ? (
+                  <Text type="secondary">
+                    Your <strong>{LAST_SESSION}</strong> session fees from the previous system are outstanding. Complete them before course registration is unlocked.
+                  </Text>
+                ) : (
+                  <Text type="secondary">
+                    Pay your <strong>{CURRENT_SESSION}</strong> session school fees to unlock course registration.
+                  </Text>
+                )}
 
-                  </>) : !user.has_paid && !user.course_paid ? (<>
+                <div style={{ width: '100%' }}>
+                  <Text strong style={{ display: 'block', marginBottom: 6 }}>
+                    Academic Session
+                  </Text>
+                  <Select
+                    value={feePaymentSession || undefined}
+                    onChange={setFeePaymentSession}
+                    style={{ width: '100%' }}
+                    suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
+                  >
+                    {FEE_ACADEMIC_SESSIONS.map((s) => (
+                      <Option key={s} value={s} disabled={s !== feesCardLockedTo || sessionOptionDisabled(s)}>{s}</Option>
+                    ))}
+                  </Select>
+                </div>
 
-                  </>) : (<></>)}
-                </Space> */}
-              </Card>
+                <Popover content={content} trigger="click">
+                  <Button
+                    style={{ textAlign: 'start' }}
+                    block
+                    className='btn btn-green'
+                    variant="outlined"
+                    disabled={!isFeeSessionValid}
+                  >
+                    Select Payment option
+                  </Button>
+                </Popover>
+              </Space>
+            </Card>
+          </div>
+        )}
 
-            </div>
-          </>
-        ) : (
+        {!partial40Active && !feesCardLockedTo && !backupHasRecord && needsCurrentSessionPayment && (
+          <div className='' style={{ margin: '2% auto' }}>
+            <Card
+              bordered={false}
+              style={{
+                maxWidth: 600,
+                margin: '0 auto',
+                borderRadius: 8,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                backgroundColor: '#fff',
+                padding: '16px',
+              }}
+            >
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Space>
+                  <BookOutlined style={{ fontSize: '24px', color: '#000' }} />
+                  <Title level={4} style={{ margin: 0, color: '#000' }}>
+                    Registration Fees payment
+                  </Title>
+                </Space>
 
-          <>
-            <div style={{ maxWidth: "500px", margin: "auto", padding: "20px" }}>
+                <Text type="secondary">Pay your school fees to unlock course registration.</Text>
 
-              <>
-                <>
-                  <div>
+                <div style={{ width: '100%' }}>
+                  <Text strong style={{ display: 'block', marginBottom: 6 }}>
+                    Academic Session
+                  </Text>
+                  <Select
+                    placeholder="Select academic session"
+                    value={feePaymentSession || undefined}
+                    onChange={setFeePaymentSession}
+                    style={{ width: '100%' }}
+                    suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
+                  >
+                    {FEE_ACADEMIC_SESSIONS.map((s) => (
+                      <Option key={s} value={s} disabled={sessionOptionDisabled(s)}>{s}</Option>
+                    ))}
+                  </Select>
+                  {!isFeeSessionValid && (
+                    <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
+                      Choose an academic session to enable payment.
+                    </Text>
+                  )}
+                </div>
 
-                    <ConfigProvider >
-                      {user?.course_paid == 1 ? (
-                        <>
+                <Popover content={content} trigger="click">
+                  <Button
+                    style={{ textAlign: 'start' }}
+                    block
+                    className='btn btn-green'
+                    variant="outlined"
+                    disabled={!isFeeSessionValid}
+                  >
+                    Select Payment option
+                  </Button>
+                </Popover>
+              </Space>
+            </Card>
+          </div>
+        )}
 
-                        </>) : (<>
-                          <Space align="center" direction='horizontal' style={{ display: 'flex', justifyContent: 'space-between', border: 'solid 1px green', margin: '1%', padding: '1%', borderRadius: '8px', backgroundColor: 'white' }}>
-                            <BookFilled style={{ fontSize: '28px', color: 'green' }} />
-                            <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 600 }}>
-                              Complete  Fees Payment
-                            </Title>
-
-                            <PaystackButton
-                              style={{ width: '100%', margin: '1%' }} className='btn btn-green'
-                              {...component40Props}
-                            />
-                          </Space>
-                        </>)}
-
-
-
-                    </ConfigProvider>
-                  </div>
-
+        {showCourseReg && (
+          <div style={{ maxWidth: "500px", margin: "auto", padding: "20px" }}>
                   <div className="registration-container" style={{ padding: '24px', background: '#fff', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
                     <Space direction="vertical" size="large" style={{ width: '100%' }}>
 
@@ -719,6 +1056,7 @@ const Course_reg = () => {
                                 suffixIcon={<CalendarOutlined style={{ color: '#bfbfbf' }} />}
                               >
                                 <Option value="" disabled>Select a session</Option>
+                                <Option value="2024/2025">2024/2025</Option>
                                 <Option value="2025/2026">2025/2026</Option>
                               </Select>
                             </Form.Item>
@@ -844,12 +1182,7 @@ const Course_reg = () => {
                       </Form>
                     </Space>
                   </div>
-                </>
-              </>
-              {/* )} */}
-
-            </div>
-          </>
+          </div>
         )}
 
 
