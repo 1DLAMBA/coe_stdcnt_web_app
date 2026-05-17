@@ -1,7 +1,7 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 
 import coverPhoto from '../../../../assets/backgrround.jpg';
-import { BarsOutlined, PhoneOutlined, MailOutlined, UserOutlined, BookFilled, DashboardOutlined, TeamOutlined, CheckCircleOutlined, FileTextOutlined } from '@ant-design/icons';
+import { BarsOutlined, PhoneOutlined, MailOutlined, UserOutlined, BookFilled, DashboardOutlined, TeamOutlined, CheckCircleOutlined, FileTextOutlined, UserAddOutlined } from '@ant-design/icons';
 import logo from '../../../../assets/logo2.png';
 import profilePic from '../../../../assets/pro-pic.png';
 import { PaystackButton } from "react-paystack";
@@ -33,6 +33,9 @@ const Admin_Panel = () => {
   function routeClearance() {
     navigate('/admin/clearance');
   }
+    function routeAddStudents() {
+      navigate('/admin/add-students');
+    }
     function routeViewSingleApproved() {
       navigate('/admin/view-approved/single/:id');
     }
@@ -111,6 +114,14 @@ const Admin_Panel = () => {
               style={{ textAlign: 'left', height: '40px' }}
             >
               Clearance Requests
+            </Button>
+            <Button
+              icon={<UserAddOutlined />}
+              block
+              onClick={routeAddStudents}
+              style={{ textAlign: 'left', height: '40px' }}
+            >
+              Add Students
             </Button>
             {/* <Button 
               icon={<DashboardOutlined />} 

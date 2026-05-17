@@ -115,12 +115,18 @@ const ApplicationCheck = () => {
           setApplicationNumber(response.data.user)
           setEmail(response.data.user.email)
           setView("acceptance"); // Show acceptance fee prompt
+        } else if (response.data.message === "pending") {
+          // Pending admission: backend now returns 200 with a user payload
+          // (was 425 previously). Keep the existing pending view.
+          message.warning("Student admission is pending.");
+          setView("pending");
         }
       } else if (response.status === 425) {
-        // Pending status
+        // Legacy path: older backends still return 425 for pending. Keep
+        // handling it for backward compatibility while clients deploy.
         hide();
         message.warning("Student admission is pending.");
-        setView("pending"); // Set the view to show a pending status
+        setView("pending");
       }
     } catch (error) {
       hide();
