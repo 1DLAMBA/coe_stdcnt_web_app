@@ -38,6 +38,10 @@ const API_ENDPOINTS = {
     VERIFY_PAYSTACK: `${API_BASE_URL}/verify-paystack`,
     CLEARANCES: `${API_BASE_URL}/clearances`,
     CLEARANCE_DEPARTMENTS: `${API_BASE_URL}/clearance-departments`,
+    ADMIN_MINIMAL_STUDENTS: `${API_BASE_URL}/admin/minimal-students`,
+    ADMIN_MINIMAL_STUDENTS_CHECK: `${API_BASE_URL}/admin/minimal-students/check-matric`,
+    IMPORT_SAMPLE_CSV: `${API_BASE_URL}/import/sample-csv`,
+    IMPORT_STUDENTS: `${API_BASE_URL}/import`,
 };
 
 export default API_ENDPOINTS;

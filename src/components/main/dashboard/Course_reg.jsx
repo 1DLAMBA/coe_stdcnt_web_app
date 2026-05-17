@@ -250,6 +250,8 @@ const Course_reg = () => {
 
 
 
+  const allowPartial60 = feePaymentSession !== LAST_SESSION;
+
   const content = (
     <div>
       <ConfigProvider
@@ -266,11 +268,13 @@ const Course_reg = () => {
         }}
       >
         <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
-        <br />
-        <br />
-
-        <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...component60Props} />
-
+        {allowPartial60 && (
+          <>
+            <br />
+            <br />
+            <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...component60Props} />
+          </>
+        )}
       </ConfigProvider>
     </div>
   );

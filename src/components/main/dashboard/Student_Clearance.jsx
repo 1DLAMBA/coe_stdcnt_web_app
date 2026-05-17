@@ -19,7 +19,7 @@ const { Title, Text } = Typography;
 
 const MAX_PDF_SIZE_KB = 5120;
 
-const CLEARANCE_AMOUNT = 8500;
+const CLEARANCE_AMOUNT = 8731;
 
 const Student_Clearance = () => {
   const { id } = useParams();
@@ -239,8 +239,8 @@ const Student_Clearance = () => {
     split: {
       type: "flat",
       subaccounts: [
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 63000 },
-        { subaccount: "ACCT_aan2ehxiej239du", share: 650000 },
+        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 57700 },
+        { subaccount: "ACCT_aan2ehxiej239du", share: 687700 },
       ],
     },
     text: `Pay ₦${CLEARANCE_AMOUNT} Clearance Fee`,

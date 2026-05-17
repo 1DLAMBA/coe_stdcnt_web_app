@@ -122,8 +122,12 @@ export const Admin_dashboard = () => {
     const columns = [
         {
             title: "Name",
-            dataIndex: "other_names",
-            key: "other_names",
+            key: "full_name",
+            render: (_, record) => {
+                const surname = record.surname || "";
+                const otherNames = record.other_names || "";
+                return `${surname} ${otherNames}`.trim();
+            },
         },
         {
             title: "Application/ Matric Number",

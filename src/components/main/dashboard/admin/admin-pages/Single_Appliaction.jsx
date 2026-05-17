@@ -194,29 +194,36 @@ const Single_Application = () => {
   } = data;
 
   const onFinish = async (values) => {
-    setButtonDisabled(true)
+    setButtonDisabled(true);
     const formData = {
       new_school: values.first_school,
-      new_course: values.first_course
-    }
-    console.log(formData);
-    const courseChange= await axios.put(`${API_ENDPOINTS.SCHOOL_DETAILS}/${id}`, formData);
-    console.log(courseChange);
-    if(courseChange){
-      setIsModalVisible(false)
-      setButtonDisabled(false)
+      new_course: values.first_course,
+    };
+    try {
+      await axios.put(`${API_ENDPOINTS.SCHOOL_DETAILS}/${id}`, formData);
+      message.success("Course updated successfully");
+      setIsModalVisible(false);
       setLoading(true);
-    }else{
-      setButtonDisabled(false)
-      
+      await getData();
+    } catch (error) {
+      console.error("Error updating course:", error);
+      const apiMessage = error?.response?.data?.message;
+      message.error(apiMessage || "Failed to update course");
+    } finally {
+      setButtonDisabled(false);
     }
-    getData();
-    setButtonDisabled(false)
+  };
 
+  const openChangeCourseModal = () => {
+    // Seed the school/course state from the stored record so the dropdowns
+    // start aligned with what is currently saved for the student.
+    setSelectedSchool(studentDetails?.first_school || "");
+    setSelectedCourse(studentDetails?.first_course || "");
+    setIsModalVisible(true);
+  };
 
-  }
   const handleSchoolChange = (value) => {
-    setSelectedSchool(value); // Update the state when a school is selected
+    setSelectedSchool(value);
   };
   const handleOk = () => {
 
@@ -334,7 +341,7 @@ const Single_Application = () => {
                 </Button>
                 <Button
                   type="primary"
-                  onClick={() => setIsModalVisible(true)}
+                  onClick={openChangeCourseModal}
                   style={{
                     backgroundColor: "tan",
                     borderColor: "tan",

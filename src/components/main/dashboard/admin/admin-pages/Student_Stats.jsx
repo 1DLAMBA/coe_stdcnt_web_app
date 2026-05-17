@@ -70,6 +70,18 @@ const schoolsData = {
         "Business Education (Double Major)",
     ],
 };
+
+// Reverse-lookup helper: given a course, return the school that contains it
+// in schoolsData. Used when a student has no student_details row and we need
+// to seed the modal from personal_details.course alone.
+const findSchoolForCourse = (course) => {
+    if (!course) return "";
+    for (const [schoolName, courses] of Object.entries(schoolsData)) {
+        if (courses.includes(course)) return schoolName;
+    }
+    return "";
+};
+
 const styles = {
     container: {
         paddingLeft: '5%',
@@ -641,16 +653,41 @@ export const Student_Stats = () => {
                 application_number: searchNumber,
             });
             console.log(response.data);
-            if (response.data.student_detail || response.data.user.student_detail) {
-                setstudent_details(response.data.student_detail || response.data.user.student_detail);
-                const surname = response.data?.surname || response.data.user?.surname;
-                const otherNames = response.data?.other_names || response.data.user?.other_names;
-                const fullName = surname + " " + otherNames;
-                setStudentName(fullName);
-                setSelectedSchool(response.data?.student_detail?.first_school || response.data.user?.student_detail?.first_school);
-                setSelectedCourse(response.data?.student_detail?.first_course || response.data.user?.student_detail?.first_course);
+            // Backend returns one of three 200 shapes:
+            //   - admitted with matric: response.data is the PersonalDetail
+            //   - acceptance / pending : { message, user: PersonalDetail }
+            // Unwrap to a single personal-detail object before reading fields
+            // so the search succeeds regardless of admission state.
+            const root = response.data || {};
+            const personal = root.user || root;
+            const studentDetail = personal?.student_detail;
+
+            if (personal?.id) {
+                // Prefer the dedicated student_detail row; otherwise fall back
+                // to personal_details.course (the source of truth for imported
+                // students) and reverse-derive the school via schoolsData.
+                const derivedSchool = studentDetail?.first_school
+                    || findSchoolForCourse(personal.course);
+                const derivedCourse = studentDetail?.first_course
+                    || personal.course
+                    || "";
+
+                setstudent_details(
+                    studentDetail || {
+                        first_school: derivedSchool,
+                        first_course: derivedCourse,
+                    }
+                );
+                const surname = personal.surname || "";
+                const otherNames = personal.other_names || "";
+                setStudentName(`${surname} ${otherNames}`.trim());
+                setSelectedSchool("");
+                setSelectedCourse("");
+                setStudent_id(personal.id);
                 setButtonDisabled(false);
-                setStudent_id(response.data?.id || response.data.user?.id);
+                if (root.message === "pending") {
+                    message.info("Student admission is still pending");
+                }
             } else {
                 message.error("Student not found");
                 setstudent_details(null);
@@ -658,7 +695,12 @@ export const Student_Stats = () => {
             }
         } catch (error) {
             console.error("Error checking student:", error);
-            message.error("Error checking student details");
+            const apiMessage = error?.response?.data?.message;
+            if (error?.response?.status === 404) {
+                message.error("Student not found");
+            } else {
+                message.error(apiMessage || "Error checking student details");
+            }
             setstudent_details(null);
             setButtonDisabled(true);
         } finally {
@@ -667,7 +709,7 @@ export const Student_Stats = () => {
     };
 
     const handleSubmit = async (values) => {
-        if (!selectedSchool || !selectedCourse) {
+        if (!values.first_school || !values.first_course) {
             message.error("Please select both school and course");
             return;
         }
@@ -680,7 +722,12 @@ export const Student_Stats = () => {
             const courseChange = await axios.put(`${API_ENDPOINTS.SCHOOL_DETAILS}/${student_id}`, formData);
             console.log(courseChange);
             if (courseChange) {
-                message.success("Course updated successfully");
+                const newMatric = courseChange?.data?.personal_detail?.matric_number;
+                message.success(
+                    newMatric
+                        ? `Course updated successfully. New matric: ${newMatric}`
+                        : "Course updated successfully"
+                );
                 // Reset all states
                 setIsModalVisible(false);
                 setstudent_details(null);
@@ -699,7 +746,8 @@ export const Student_Stats = () => {
             }
         } catch (error) {
             console.error("Error updating course:", error);
-            message.error("Error updating course");
+            const apiMessage = error?.response?.data?.message;
+            message.error(apiMessage || "Error updating course");
             setButtonDisabled(false);
             setLoading(false);
         }
@@ -905,6 +953,7 @@ export const Student_Stats = () => {
                     setSearchNumber("");
                     setSelectedSchool("");
                     setSelectedCourse("");
+                    setStudentName("");
                     setButtonDisabled(true);
                     setLoading(false);
                 }}
@@ -926,14 +975,15 @@ export const Student_Stats = () => {
                                     placeholder="Enter application of new student"
                                     value={searchNumber}
                                     onChange={(e) => setSearchNumber(e.target.value)}
-                                    disabled={loading}
+                                    disabled={loading || !!student_details}
                                 />
                             </Form.Item>
                             <Button
                                 type="primary"
                                 onClick={handleSearchStudent}
                                 loading={loading}
-                                style={{ 
+                                disabled={!!student_details}
+                                style={{
                                     marginBottom: "20px",
                                     borderColor: "#028f64",
                                     color: "#028f64",
@@ -971,8 +1021,11 @@ export const Student_Stats = () => {
                                     >
                                         <Select
                                             placeholder="-- Select a School --"
-                                            value={selectedSchool}
-                                            onChange={(value) => setSelectedSchool(value)}
+                                            value={selectedSchool || undefined}
+                                            onChange={(value) => {
+                                                setSelectedSchool(value || "");
+                                                setSelectedCourse("");
+                                            }}
                                             allowClear
                                         >
                                             {Object.keys(schoolsData).map((school, index) => (
@@ -998,8 +1051,8 @@ export const Student_Stats = () => {
                                         <Select
                                             placeholder="-- Select a Course --"
                                             allowClear
-                                            value={selectedCourse}
-                                            onChange={(value) => setSelectedCourse(value)}
+                                            value={selectedCourse || undefined}
+                                            onChange={(value) => setSelectedCourse(value || "")}
                                             disabled={!selectedSchool}
                                         >
                                             {selectedSchool &&
