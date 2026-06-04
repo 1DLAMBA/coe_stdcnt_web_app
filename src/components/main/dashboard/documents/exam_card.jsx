@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   message,
   Button,
   Spin,
   Typography,
-  Space,
-  Card,
   Row,
   Col,
   Divider,
@@ -19,21 +17,25 @@ import {
   UserOutlined,
   BookOutlined,
   EnvironmentOutlined,
-  PrinterOutlined,
   FileTextOutlined,
-  HomeFilled
+  HomeFilled,
+  DownloadOutlined
 } from '@ant-design/icons';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../../Endpoints/environment';
 import './exam_card.css';
 import logo from '../../../../assets/logo2.png';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const ExamCard = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [downloading, setDownloading] = useState(false);
+  const examCardRef = useRef(null);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -61,14 +63,66 @@ const ExamCard = () => {
     fetchData();
   }, [id]);
 
-  const handlePrint = () => {
+  const ensureCoursePaid = useCallback(() => {
     if (!user?.course_paid) {
-      message.error('You need to pay for your courses before printing the exam card');
+      message.error('You need to pay for your courses before downloading the exam card');
       navigate(`/dashboard/${id}/course_reg`);
-      return;
+      return false;
     }
-      window.print();
-  };
+    return true;
+  }, [user?.course_paid, id, navigate]);
+
+  const handleDownloadPdf = useCallback(async () => {
+    if (!ensureCoursePaid()) return;
+    if (!examCardRef.current) return;
+
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(examCardRef.current, {
+        scale: 1.25,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.78);
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      // ~40% total padding (20% each side) so the card sits compact and centered on the page
+      const paddingRatio = 0.2;
+      const maxWidth = pageWidth * (1 - paddingRatio * 2);
+      const maxHeight = pageHeight * (1 - paddingRatio * 2);
+      const ratio = canvas.width / canvas.height;
+      let imgWidth = maxWidth;
+      let imgHeight = imgWidth / ratio;
+      if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = imgHeight * ratio;
+      }
+      const offsetX = (pageWidth - imgWidth) / 2;
+      const offsetY = (pageHeight - imgHeight) / 2;
+      const boxPadding = 4;
+      pdf.setDrawColor(217, 217, 217);
+      pdf.setLineWidth(0.4);
+      pdf.roundedRect(
+        offsetX - boxPadding,
+        offsetY - boxPadding,
+        imgWidth + boxPadding * 2,
+        imgHeight + boxPadding * 2,
+        2,
+        2,
+        'S'
+      );
+      pdf.addImage(imgData, 'JPEG', offsetX, offsetY, imgWidth, imgHeight, undefined, 'FAST');
+      const matric = (user?.matric_number || 'exam-card').replace(/[^A-Za-z0-9_-]+/g, '_');
+      pdf.save(`exam-card-${matric}.pdf`);
+    } catch (error) {
+      console.error('Failed to generate exam card PDF:', error);
+      message.error('Could not generate the exam card PDF. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  }, [ensureCoursePaid, user?.matric_number]);
 
   const columns = [
     {
@@ -81,8 +135,8 @@ const ExamCard = () => {
       dataIndex: 'course_type',
       key: 'course_type',
       render: (text) => (
-        <Tag color={text === 'core' ? 'blue' : 'green'}>
-          {text.toUpperCase()}
+        <Tag className="exam-card-tag" color={text === 'core' ? 'blue' : 'green'}>
+          {text?.toUpperCase()}
         </Tag>
       ),
     },
@@ -138,67 +192,69 @@ const ExamCard = () => {
       <div className="print-button-container">
         <Button
           type="primary"
-          icon={<PrinterOutlined />}
-          onClick={handlePrint}
+          icon={<DownloadOutlined />}
+          onClick={handleDownloadPdf}
+          loading={downloading}
           className="print-button"
           style={{ backgroundColor: '#028f64', borderColor: '#028f64' }}
         >
-          Print Exam Card
+          Download PDF
         </Button>
       </div>
 
-      <div className="exam-card">
+      <div className="exam-card" ref={examCardRef}>
         <div className="exam-card-header">
           <img src={logo} alt="School Logo" className="school-logo" />
-          <Title level={2} className="school-name">College of Education</Title>
-          <Title level={3}>Examination Card</Title>
+          <p className="exam-card-institution">College of Education</p>
+          <p className="exam-card-subtitle">Examination Card</p>
         </div>
 
-        <Divider />
+        <Divider className="exam-card-divider" />
 
         <div className="student-info">
-          <Row gutter={[24, 24]}>
-            <Col span={24} style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <Row gutter={[8, 6]}>
+            <Col span={24} className="exam-card-photo-col">
               <Avatar
-                size={120}
+                size={52}
                 src={user?.passport ? `${API_ENDPOINTS.API_BASE_URL}/file/get/${user.passport}` : undefined}
-                icon={!user?.passport && <UserOutlined style={{ fontSize: '60px' }} />}
+                icon={!user?.passport && <UserOutlined />}
                 className="profile-pic"
                 style={{ backgroundColor: '#028f64' }}
               />
             </Col>
             <Col span={12}>
-              <Space direction="vertical">
-                <Text strong><UserOutlined /> Full Name:</Text>
-                <Text>{user?.surname} {user?.other_names}</Text>
-              </Space>
+              <div className="exam-card-field">
+                <Text className="exam-card-label" strong><UserOutlined /> Full Name</Text>
+                <Text className="exam-card-value">{user?.surname} {user?.other_names}</Text>
+              </div>
             </Col>
             <Col span={12}>
-              <Space direction="vertical">
-                <Text strong><FileTextOutlined /> Matric Number:</Text>
-                <Text>{user?.matric_number}</Text>
-              </Space>
+              <div className="exam-card-field">
+                <Text className="exam-card-label" strong><FileTextOutlined /> Matric No.</Text>
+                <Text className="exam-card-value">{user?.matric_number}</Text>
+              </div>
             </Col>
             <Col span={12}>
-              <Space direction="vertical">
-                <Text strong><BookOutlined /> Course:</Text>
-                <Text>{user?.course}</Text>
-              </Space>
+              <div className="exam-card-field">
+                <Text className="exam-card-label" strong><BookOutlined /> Course</Text>
+                <Text className="exam-card-value">{user?.course}</Text>
+              </div>
             </Col>
             <Col span={12}>
-              <Space direction="vertical">
-                <Text strong><EnvironmentOutlined /> Study Center:</Text>
-                <Text>{user?.desired_study_cent}</Text>
-              </Space>
+              <div className="exam-card-field">
+                <Text className="exam-card-label" strong><EnvironmentOutlined /> Study Center</Text>
+                <Text className="exam-card-value">{user?.desired_study_cent}</Text>
+              </div>
             </Col>
           </Row>
         </div>
 
-        <Divider />
+        <Divider className="exam-card-divider" />
 
         <div className="courses-section">
-          <Title level={4}>Registered Courses</Title>
+          <p className="exam-card-section-title">Registered Courses</p>
           <Table
+            className="exam-card-table"
             columns={columns}
             dataSource={courses}
             rowKey="id"
@@ -211,12 +267,12 @@ const ExamCard = () => {
         <div className="exam-card-footer">
           <div className="signature-section">
             <div className="signature-box">
-              <Text>Student's Signature</Text>
-              <div className="signature-line"></div>
+              <Text className="exam-card-signature-label">Student&apos;s Signature</Text>
+              <div className="signature-line" />
             </div>
             <div className="signature-box">
-              <Text>Examination Officer's Signature</Text>
-              <div className="signature-line"></div>
+              <Text className="exam-card-signature-label">Examination Officer&apos;s Signature</Text>
+              <div className="signature-line" />
             </div>
           </div>
         </div>
