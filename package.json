@@ -10,6 +10,7 @@
     "antd": "^5.21.6",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
+    "cypress": "^15.15.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.0",
     "moment": "^2.30.1",
@@ -27,6 +28,7 @@
     "build:prod": "CI=false env-cmd -f environments/.env.production react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "cy:open": "cypress open",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
