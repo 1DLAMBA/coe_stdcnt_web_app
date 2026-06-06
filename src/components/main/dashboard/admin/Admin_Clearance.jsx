@@ -18,7 +18,16 @@ import {
 } from "antd";
 import axios from "axios";
 import API_ENDPOINTS from "../../../../Endpoints/environment";
-import { isPaidFlag, mergeFeeFlags, fetchBackupPersonalByIds } from "../../../../utils/schoolFeesFlags";
+import {
+  backupHasRecord,
+  canRequestClearance,
+  isFullyPaid,
+  isNewIntakeByMatric,
+  isPaidFlag,
+  LAST_FEE_SESSION,
+  CURRENT_FEE_SESSION,
+  fetchBackupPersonalByIds,
+} from "../../../../utils/schoolFeesFlags";
 import "./admin-pages/styles/application.css";
 
 const { Title, Text } = Typography;
@@ -213,31 +222,37 @@ const Admin_Clearance = () => {
         key: "fees_status",
         render: (_, record) => {
           const backup = backupByPersonalId[record.personal_detail_id];
-          const merged = mergeFeeFlags(record.student, backup);
-          const primaryComplete =
-            isPaidFlag(record.student?.has_paid) && isPaidFlag(record.student?.course_paid);
+          const student = record.student;
+          const isNew = isNewIntakeByMatric(student?.matric_number);
+          const hasBackup = backupHasRecord(backup) && !isNew;
+          const backupFull = hasBackup && isFullyPaid(backup);
+          const primaryFull = isFullyPaid(student);
+          const eligible = canRequestClearance(student, backup, isNew);
 
-          let label = "Incomplete";
-          let color = "red";
-          if (merged.hasPaidAny && merged.coursePaidAny) {
-            label = "Complete (merged)";
-            color = "green";
-          } else if (merged.coursePaidAny && !merged.hasPaidAny) {
-            label = "Course paid only";
-            color = "orange";
-          } else if (merged.hasPaidAny && !merged.coursePaidAny) {
-            label = "Partial (reg. paid)";
-            color = "orange";
-          }
+          const backupLabel = !hasBackup
+            ? "—"
+            : backupFull
+              ? "Complete"
+              : isPaidFlag(backup?.has_paid)
+                ? "Partial"
+                : "Unpaid";
+          const primaryLabel = primaryFull
+            ? "Complete"
+            : isPaidFlag(student?.has_paid)
+              ? "Partial"
+              : "Unpaid";
 
           return (
             <Space direction="vertical" size={0}>
-              <Tag color={color}>{label}</Tag>
-              {!primaryComplete && merged.hasPaidAny && merged.coursePaidAny && (
-                <Text type="secondary" style={{ fontSize: "12px" }}>
-                  Primary DB may lag until student submits clearance
-                </Text>
-              )}
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                {LAST_FEE_SESSION} (backup): <Tag>{backupLabel}</Tag>
+              </Text>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                {CURRENT_FEE_SESSION} (primary): <Tag>{primaryLabel}</Tag>
+              </Text>
+              <Tag color={eligible ? "green" : "red"}>
+                Clearance: {eligible ? "Eligible" : "Blocked"}
+              </Tag>
             </Space>
           );
         },

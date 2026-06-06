@@ -9,8 +9,9 @@ import jsPDF from "jspdf";
 import API_ENDPOINTS from "../../../Endpoints/environment";
 import { compressPdf } from "../../../utils/compressPdf";
 import {
-  mergeFeeFlags,
-  buildPrimaryFeeSyncBody,
+  canRequestClearance as isClearanceEligible,
+  getClearanceBlockReason,
+  isNewIntakeByMatric,
 } from "../../../utils/schoolFeesFlags";
 import ClearanceAcknowledgementSlip from "./ClearanceAcknowledgementSlip";
 import "./BioData.css";
@@ -36,13 +37,20 @@ const Student_Clearance = () => {
 
   const activeRequest = useMemo(() => clearanceRequests?.[0], [clearanceRequests]);
 
-  const merged = useMemo(
-    () => mergeFeeFlags(personalDetail, backupPersonal),
-    [personalDetail, backupPersonal]
+  const isNewByMatric = useMemo(
+    () => isNewIntakeByMatric(personalDetail?.matric_number),
+    [personalDetail?.matric_number]
   );
 
-  const { coursePaidAny } = merged;
-  const canRequestClearance = coursePaidAny;
+  const clearanceEligible = useMemo(
+    () => isClearanceEligible(personalDetail, backupPersonal, isNewByMatric),
+    [personalDetail, backupPersonal, isNewByMatric]
+  );
+
+  const clearanceBlockReason = useMemo(
+    () => getClearanceBlockReason(personalDetail, backupPersonal, isNewByMatric),
+    [personalDetail, backupPersonal, isNewByMatric]
+  );
 
   const hasOpenRequest = activeRequest && activeRequest.status !== "rejected";
   const isRejected = activeRequest?.status === "rejected";
@@ -156,8 +164,8 @@ const Student_Clearance = () => {
   };
 
   const handleSubmit = async () => {
-    if (!canRequestClearance) {
-      message.error("You must complete course fees before requesting clearance.");
+    if (!clearanceEligible) {
+      message.error(clearanceBlockReason || "You must complete school fees before requesting clearance.");
       return;
     }
 
@@ -191,18 +199,6 @@ const Student_Clearance = () => {
           return;
         }
         setCompressing(false);
-      }
-
-      const syncBody = buildPrimaryFeeSyncBody(personalDetail, merged);
-      if (Object.keys(syncBody).length > 0) {
-        try {
-          await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, syncBody);
-        } catch (err) {
-          console.error("Primary fee sync failed:", err);
-          message.error(err.response?.data?.message || "Could not sync fee status. Try again or contact support.");
-          setLoading(false);
-          return;
-        }
       }
 
       const formData = new FormData();
@@ -271,11 +267,12 @@ const Student_Clearance = () => {
 
   const themeConfig = { token: { colorPrimary: "#028f64" } };
 
-  const feeAlertDescription = canRequestClearance
-    ? "Your course fee status is satisfied. Upload your receipt and submit below."
-    : "Your course fees are incomplete. Complete them on the Course Registration page before requesting clearance.";
+  const feeAlertDescription = clearanceEligible
+    ? "Your school fee status is satisfied for clearance. Upload your receipt and submit below."
+    : clearanceBlockReason ||
+      "Complete outstanding school fees on Course Registration before requesting clearance.";
 
-  const showFeeWarning = personalDetail && !canRequestClearance;
+  const showFeeWarning = personalDetail && !clearanceEligible;
 
   return (
     <ConfigProvider theme={themeConfig}>
@@ -330,9 +327,18 @@ const Student_Clearance = () => {
 
           {showFeeWarning && (
             <Alert
-              type={canRequestClearance ? "info" : "warning"}
+              type="warning"
               showIcon
-              message={canRequestClearance ? "School fees — ready to submit" : "School fees incomplete"}
+              message="School fees incomplete"
+              description={feeAlertDescription}
+              style={{ marginBottom: "1.5rem" }}
+            />
+          )}
+          {personalDetail && clearanceEligible && !hasOpenRequest && (
+            <Alert
+              type="info"
+              showIcon
+              message="School fees — ready to submit"
               description={feeAlertDescription}
               style={{ marginBottom: "1.5rem" }}
             />
@@ -400,7 +406,7 @@ const Student_Clearance = () => {
                     size="large"
                     style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
                     onClick={handleSubmit}
-                    disabled={!canRequestClearance || compressing}
+                    disabled={!clearanceEligible || compressing}
                     loading={loading}
                   >
                     Submit Clearance Request

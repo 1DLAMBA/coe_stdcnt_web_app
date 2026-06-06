@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   message,
@@ -11,7 +11,8 @@ import {
   Table,
   Tag,
   Avatar,
-  Breadcrumb
+  Breadcrumb,
+  Alert,
 } from 'antd';
 import {
   UserOutlined,
@@ -25,6 +26,11 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../../Endpoints/environment';
+import {
+  canDownloadExamCard,
+  getExamCardBlockReason,
+  isNewIntakeByMatric,
+} from '../../../../utils/schoolFeesFlags';
 import './exam_card.css';
 import logo from '../../../../assets/logo2.png';
 
@@ -33,6 +39,7 @@ const { Text } = Typography;
 const ExamCard = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [backupUser, setBackupUser] = useState(null);
   const [courses, setCourses] = useState([]);
   const [downloading, setDownloading] = useState(false);
   const examCardRef = useRef(null);
@@ -42,16 +49,20 @@ const ExamCard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch user data
-        const userResponse = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        const userData = userResponse.data;
+        const backupUrl = API_ENDPOINTS.PERSONAL_DETAILS_BACKUP;
+        const backupPromise = backupUrl
+          ? axios.get(`${backupUrl}/${id}`).then((r) => r?.data || null).catch(() => null)
+          : Promise.resolve(null);
 
-        // Fetch user's courses
-        const coursesResponse = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${id}`);
-        const coursesData = coursesResponse.data;
+        const [userResponse, coursesResponse, backupRes] = await Promise.all([
+          axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`),
+          axios.get(`${API_ENDPOINTS.API_BASE_URL}/courses/${id}`),
+          backupPromise,
+        ]);
 
-        setUser(userData);
-        setCourses(coursesData);
+        setUser(userResponse.data);
+        setBackupUser(backupRes || null);
+        setCourses(coursesResponse.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -63,17 +74,32 @@ const ExamCard = () => {
     fetchData();
   }, [id]);
 
-  const ensureCoursePaid = useCallback(() => {
-    if (!user?.course_paid) {
-      message.error('You need to pay for your courses before downloading the exam card');
+  const isNewByMatric = useMemo(
+    () => isNewIntakeByMatric(user?.matric_number),
+    [user?.matric_number]
+  );
+
+  const examCardAllowed = useMemo(
+    () => canDownloadExamCard(user, backupUser, isNewByMatric),
+    [user, backupUser, isNewByMatric]
+  );
+
+  const examCardBlockReason = useMemo(
+    () => getExamCardBlockReason(user, backupUser, isNewByMatric),
+    [user, backupUser, isNewByMatric]
+  );
+
+  const ensureCanDownloadExamCard = useCallback(() => {
+    if (!examCardAllowed) {
+      message.error(examCardBlockReason || 'Complete outstanding school fees before downloading the exam card.');
       navigate(`/dashboard/${id}/course_reg`);
       return false;
     }
     return true;
-  }, [user?.course_paid, id, navigate]);
+  }, [examCardAllowed, examCardBlockReason, id, navigate]);
 
   const handleDownloadPdf = useCallback(async () => {
-    if (!ensureCoursePaid()) return;
+    if (!ensureCanDownloadExamCard()) return;
     if (!examCardRef.current) return;
 
     setDownloading(true);
@@ -122,7 +148,7 @@ const ExamCard = () => {
     } finally {
       setDownloading(false);
     }
-  }, [ensureCoursePaid, user?.matric_number]);
+  }, [ensureCanDownloadExamCard, user?.matric_number]);
 
   const columns = [
     {
@@ -189,12 +215,28 @@ const ExamCard = () => {
       <Breadcrumb style={{  marginTop: '1%', marginBottom: '1%', marginRight: '1%', backgroundColor: 'white', width: '82.5%', color: 'white', borderRadius: '15px', padding: '0.5%' }} itemRender={itemRender} items={items} />
     <div className="exam-card-container">
 
+      {!examCardAllowed && examCardBlockReason && (
+        <Alert
+          type="warning"
+          showIcon
+          message="Exam card download unavailable"
+          description={
+            <>
+              {examCardBlockReason}{' '}
+              <Link to={`/dashboard/${id}/course_reg`}>Go to Course Registration</Link>
+            </>
+          }
+          style={{ marginBottom: 16, maxWidth: 560 }}
+        />
+      )}
+
       <div className="print-button-container">
         <Button
           type="primary"
           icon={<DownloadOutlined />}
           onClick={handleDownloadPdf}
           loading={downloading}
+          disabled={!examCardAllowed}
           className="print-button"
           style={{ backgroundColor: '#028f64', borderColor: '#028f64' }}
         >
