@@ -13,14 +13,21 @@ import { studyCenters } from "./data";
 import { Card } from 'antd';
 import axios from 'axios';
 import API_ENDPOINTS from '../../../Endpoints/environment';
-import { isPaidFlag } from '../../../utils/schoolFeesFlags';
+import {
+  FEE_ACADEMIC_SESSIONS,
+  LAST_FEE_SESSION as LAST_SESSION,
+  CURRENT_FEE_SESSION as CURRENT_SESSION,
+  computeCourseRegFeeState,
+  allowPartial60ForSession,
+  isNewIntakeByMatric,
+} from '../../../utils/schoolFeesFlags';
+import {
+  isLastSessionFeeOnBackup,
+  syncBackupSchoolFeesAfterPayment,
+} from '../../../services/schoolFeesService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-
-const FEE_ACADEMIC_SESSIONS = ['2024/2025', '2025/2026'];
-const LAST_SESSION = '2024/2025';
-const CURRENT_SESSION = '2025/2026';
 
 const Course_reg = () => {
   const [courses, setCourses] = useState([""]); // Start with one empty course field
@@ -62,6 +69,34 @@ const Course_reg = () => {
   const { id } = useParams();
   const [centerAccount, setCenterAccount] = useState('');
 
+  const isNewByMatric = isNewIntakeByMatric(user?.matric_number);
+  const feeState = computeCourseRegFeeState(user, backupUser, isNewByMatric);
+  const {
+    lastSessionPaid,
+    currentSessionPaid,
+    branchBPActive,
+    partial40Active,
+    partial40Session,
+    feesCardLockedTo,
+    showCourseReg,
+    hasBackup,
+  } = feeState;
+
+  const paystackFeeSession =
+    partial40Active && partial40Session ? partial40Session : feePaymentSession;
+  const isPaystackFeeSessionValid = FEE_ACADEMIC_SESSIONS.includes(paystackFeeSession);
+
+  useEffect(() => {
+    if (!user || typeof user !== "object" || !user.id) return;
+    const isNew = isNewIntakeByMatric(user.matric_number);
+    const state = computeCourseRegFeeState(user, backupUser, isNew);
+    if (state.partial40Session) {
+      setFeePaymentSession(state.partial40Session);
+    } else if (state.firstUnpaidSession) {
+      setFeePaymentSession(state.firstUnpaidSession);
+    }
+  }, [user, backupUser]);
+
   const itemLink = [
     {
       key: '1',
@@ -100,6 +135,60 @@ const Course_reg = () => {
       <Link to={`/${paths.join("/")}`}>{currentRoute.title}</Link>
     );
   }
+
+  const handleSchoolFeePaySuccess = async (reference, payType, formData) => {
+    const paidOn = new Date();
+    const session = isPaystackFeeSessionValid
+      ? paystackFeeSession
+      : isFeeSessionValid
+        ? feePaymentSession
+        : null;
+    const lastSessionOnBackup = isLastSessionFeeOnBackup(session, backupUser);
+
+    if (lastSessionOnBackup) {
+      try {
+        await syncBackupSchoolFeesAfterPayment(
+          id,
+          payType,
+          session,
+          reference.reference
+        );
+      } catch (error) {
+        console.error('Backup fee update failed:', error);
+      }
+      localStorage.setItem('app_number', applicationNumber);
+      const sessionQs = `?session=${encodeURIComponent(session)}`;
+      window.location.href = `/dashboard/${id}/fees-receipt${sessionQs}`;
+      return;
+    }
+
+    const payload = {
+      couse_fee_date: reference.reference,
+      course_fee_reference: paidOn.toISOString().split('T')[0],
+      ...formData,
+      ...(session && { fee_academic_session: session }),
+    };
+    localStorage.setItem('UserData', JSON.stringify(payload));
+    localStorage.setItem('app_number', applicationNumber);
+    try {
+      await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, payload);
+    } catch (error) {
+      console.error('Primary fee update failed:', error);
+    }
+    if (session === LAST_SESSION) {
+      await syncBackupSchoolFeesAfterPayment(
+        id,
+        payType,
+        session,
+        reference.reference
+      );
+    }
+    const sessionQs = session
+      ? `?session=${encodeURIComponent(session)}`
+      : '';
+    window.location.href = `/dashboard/${id}/fees-receipt${sessionQs}`;
+  };
+
   const componentProps = {
     email,
     amount,
@@ -125,24 +214,11 @@ const Course_reg = () => {
       },
     }),
     text: "Pay Complete Fees Now",
-    onSuccess: async (reference) => {
-      const paidOn = new Date();
-      const formData = {
-        couse_fee_date: reference.reference,
-        course_fee_reference: paidOn.toISOString().split('T')[0],
+    onSuccess: (reference) =>
+      handleSchoolFeePaySuccess(reference, 'complete_school_fees', {
         course_paid: true,
         has_paid: true,
-        ...(isFeeSessionValid && { fee_academic_session: feePaymentSession }),
-      };
-      localStorage.setItem('UserData', JSON.stringify(formData));
-      localStorage.setItem('app_number', applicationNumber);
-      try {
-        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, formData);
-      } catch (error) {
-        console.error("Fallback update failed, webhook will handle it:", error);
-      }
-      window.location.href = `/dashboard/${id}/fees-receipt`;
-    },
+      }),
     onClose: () => alert("Wait! Don't leave :("),
   };
 
@@ -171,34 +247,21 @@ const Course_reg = () => {
       },
     }),
     text: "Pay 60% Now",
-    onSuccess: async (reference) => {
-      const paidOn = new Date();
-      const formData = {
-        couse_fee_date: reference.reference,
-        course_fee_reference: paidOn.toISOString().split('T')[0],
+    onSuccess: (reference) =>
+      handleSchoolFeePaySuccess(reference, 'partial_school_fees', {
         has_paid: true,
-        ...(isFeeSessionValid && { fee_academic_session: feePaymentSession }),
-      };
-      localStorage.setItem('UserData', JSON.stringify(formData));
-      localStorage.setItem('app_number', applicationNumber);
-      try {
-        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, formData);
-      } catch (error) {
-        console.error("Fallback update failed, webhook will handle it:", error);
-      }
-      window.location.href = `/dashboard/${id}/fees-receipt`;
-    },
+      }),
     onClose: () => alert("Wait! Don't leave :("),
   };
 
   const component40Props = {
     email,
     amount: 1600000,
-    disabled: !isFeeSessionValid,
+    disabled: !isPaystackFeeSessionValid,
     metadata: {
       id: id,
       pay_type: "school_fees_completion",
-      fee_session: feePaymentSession,
+      fee_session: paystackFeeSession,
       // regNumber
     },
     publicKey,
@@ -216,24 +279,11 @@ const Course_reg = () => {
       },
     }),
     text: "Pay Now",
-    onSuccess: async (reference) => {
-      const paidOn = new Date();
-      const formData = {
-        couse_fee_date: reference.reference,
-        course_fee_reference: paidOn.toISOString().split('T')[0],
+    onSuccess: (reference) =>
+      handleSchoolFeePaySuccess(reference, 'school_fees_completion', {
         has_paid: true,
         course_paid: true,
-        ...(isFeeSessionValid && { fee_academic_session: feePaymentSession }),
-      };
-      localStorage.setItem('UserData', JSON.stringify(formData));
-      localStorage.setItem('app_number', applicationNumber);
-      try {
-        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, formData);
-      } catch (error) {
-        console.error("Fallback update failed, webhook will handle it:", error);
-      }
-      window.location.href = `/dashboard/${id}/fees-receipt`;
-    },
+      }),
     onClose: () => alert("Wait! Don't leave :("),
   };
 
@@ -250,20 +300,17 @@ const Course_reg = () => {
 
 
 
-  const allowPartial60 = feePaymentSession !== LAST_SESSION;
+  const allowPartial60 = allowPartial60ForSession(feePaymentSession);
 
-  const content = (
+  const paymentPopoverContent = (
     <div>
       <ConfigProvider
         theme={{
           token: {
-            // Seed Token
             colorPrimary: 'green',
             borderRadius: 2,
             textAlign: 'start',
-            // Alias Token
             colorBgContainer: '#f6ffed',
-
           },
         }}
       >
@@ -275,6 +322,24 @@ const Course_reg = () => {
             <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...component60Props} />
           </>
         )}
+      </ConfigProvider>
+    </div>
+  );
+
+  /** Old session locked card: full payment only (no 60% split). */
+  const lastSessionFullPayOnlyContent = (
+    <div>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: 'green',
+            borderRadius: 2,
+            textAlign: 'start',
+            colorBgContainer: '#f6ffed',
+          },
+        }}
+      >
+        <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
       </ConfigProvider>
     </div>
   );
@@ -479,56 +544,13 @@ const Course_reg = () => {
       setUser(user.data);
       setBackupUser(backupRes || null);
 
-      const isNewByMatric =
-        typeof user.data.matric_number === 'string' &&
-        user.data.matric_number.includes('/26/');
-      const backupHasRecord =
-        !isNewByMatric &&
-        backupRes != null &&
-        typeof backupRes === 'object' &&
-        (backupRes.id != null || backupRes.application_number != null);
-      const backupCourseFullyPaid = !isNewByMatric && isPaidFlag(backupRes?.course_paid);
-
-      const primaryFee = user.data.fee_academic_session;
-      const lastPaidByPrimary =
-        isPaidFlag(user.data.course_paid) &&
-        primaryFee === LAST_SESSION;
-      const currentPaidByPrimary =
-        isPaidFlag(user.data.course_paid) &&
-        primaryFee === CURRENT_SESSION;
-      const legacyPrimaryFull =
-        isPaidFlag(user.data.course_paid) &&
-        !primaryFee;
-      const legacyCountsAsLast =
-        legacyPrimaryFull &&
-        backupHasRecord &&
-        !isPaidFlag(backupRes?.has_paid) &&
-        !backupCourseFullyPaid;
-      const legacyCountsAsCurrent =
-        legacyPrimaryFull && (!backupHasRecord || backupCourseFullyPaid);
-
-      const lastSessionPaid =
-        lastPaidByPrimary || backupCourseFullyPaid || legacyCountsAsLast;
-      const currentSessionPaid = currentPaidByPrimary || legacyCountsAsCurrent;
-
-      const sessionAlreadyPaid = (s) =>
-        (s === LAST_SESSION && lastSessionPaid) ||
-        (s === CURRENT_SESSION && currentSessionPaid);
-
-      const tagValid =
-        FEE_ACADEMIC_SESSIONS.includes(primaryFee) && !sessionAlreadyPaid(primaryFee);
-      const firstUnpaid =
-        !lastSessionPaid && backupHasRecord && !backupCourseFullyPaid
-          ? LAST_SESSION
-          : !currentSessionPaid
-            ? CURRENT_SESSION
-            : '';
-
-      if (isNewByMatric) {
-        setFeePaymentSession(!currentSessionPaid ? CURRENT_SESSION : '');
-      } else {
-        setFeePaymentSession(tagValid ? primaryFee : firstUnpaid);
-      }
+      const isNewByMatric = isNewIntakeByMatric(user.data.matric_number);
+      const feeState = computeCourseRegFeeState(
+        user.data,
+        backupRes,
+        isNewByMatric
+      );
+      setFeePaymentSession(feeState.firstUnpaidSession || '');
 
       // Move the center account logic here
       if (user.data.desired_study_cent) {
@@ -661,78 +683,6 @@ const Course_reg = () => {
       ),
     },
   ];
-
-  const isNewByMatric =
-    typeof user?.matric_number === 'string' &&
-    user.matric_number.includes('/26/');
-  const backupHasRecord =
-    !isNewByMatric &&
-    backupUser != null &&
-    typeof backupUser === 'object' &&
-    (backupUser.id != null || backupUser.application_number != null);
-  const backupCourseFullyPaid = !isNewByMatric && isPaidFlag(backupUser?.course_paid);
-  const backupAnyPaymentFlag =
-    !isNewByMatric &&
-    (isPaidFlag(backupUser?.has_paid) || isPaidFlag(backupUser?.course_paid));
-
-  const primaryFeeSession = user?.fee_academic_session;
-  const lastSessionPaidByPrimary =
-    isPaidFlag(user?.course_paid) &&
-    primaryFeeSession === LAST_SESSION;
-  const currentSessionPaidByPrimary =
-    isPaidFlag(user?.course_paid) &&
-    primaryFeeSession === CURRENT_SESSION;
-  const currentSessionPartial =
-    isPaidFlag(user?.has_paid) &&
-    !isPaidFlag(user?.course_paid) &&
-    primaryFeeSession === CURRENT_SESSION;
-  const forcedLastSessionCompletion =
-    isPaidFlag(user?.has_paid) &&
-    !isPaidFlag(user?.course_paid) &&
-    primaryFeeSession === LAST_SESSION;
-
-  const legacyPrimaryFull =
-    isPaidFlag(user?.course_paid) && !primaryFeeSession;
-  const legacyPrimaryPartial =
-    isPaidFlag(user?.has_paid) && !isPaidFlag(user?.course_paid) && !primaryFeeSession;
-
-  const backupLastSessionPartial =
-    backupHasRecord && isPaidFlag(backupUser?.has_paid) && !backupCourseFullyPaid;
-
-  const legacyCountsAsLast =
-    legacyPrimaryFull && backupHasRecord && !backupAnyPaymentFlag;
-  const legacyCountsAsCurrent =
-    legacyPrimaryFull && (!backupHasRecord || backupCourseFullyPaid);
-
-  const lastSessionPaid =
-    lastSessionPaidByPrimary || backupCourseFullyPaid || legacyCountsAsLast;
-  const currentSessionPaid = currentSessionPaidByPrimary || legacyCountsAsCurrent;
-
-  const partial40Active = forcedLastSessionCompletion || currentSessionPartial || legacyPrimaryPartial;
-  const partial40Session = forcedLastSessionCompletion
-    ? LAST_SESSION
-    : currentSessionPartial
-      ? CURRENT_SESSION
-      : null;
-
-  const needsLastSessionPayment = backupHasRecord && !lastSessionPaid;
-  const needsCurrentSessionPayment = !currentSessionPaid;
-  const allRequiredPaid = !needsLastSessionPayment && currentSessionPaid;
-  const showCourseReg = allRequiredPaid && !partial40Active;
-
-  const branchBPActive =
-    !partial40Active && backupLastSessionPartial && !lastSessionPaid;
-
-  let feesCardLockedTo = null;
-  if (!partial40Active && !branchBPActive && !allRequiredPaid) {
-    if (needsLastSessionPayment) {
-      feesCardLockedTo = LAST_SESSION;
-    } else if (backupHasRecord && needsCurrentSessionPayment) {
-      feesCardLockedTo = CURRENT_SESSION;
-    } else if (!backupHasRecord && needsCurrentSessionPayment) {
-      feesCardLockedTo = null;
-    }
-  }
 
   const sessionOptionDisabled = (s) =>
     (s === LAST_SESSION && (lastSessionPaid || isNewByMatric)) ||
@@ -929,7 +879,14 @@ const Course_reg = () => {
                   </Select>
                 </div>
 
-                <Popover content={content} trigger="click">
+                <Popover
+                  content={
+                    feesCardLockedTo === LAST_SESSION
+                      ? lastSessionFullPayOnlyContent
+                      : paymentPopoverContent
+                  }
+                  trigger="click"
+                >
                   <Button
                     style={{ textAlign: 'start' }}
                     block
@@ -945,7 +902,7 @@ const Course_reg = () => {
           </div>
         )}
 
-        {!partial40Active && !feesCardLockedTo && !backupHasRecord && needsCurrentSessionPayment && (
+        {!partial40Active && !feesCardLockedTo && !hasBackup && feeState.needsCurrentSessionPayment && (
           <div className='' style={{ margin: '2% auto' }}>
             <Card
               bordered={false}
@@ -990,7 +947,7 @@ const Course_reg = () => {
                   )}
                 </div>
 
-                <Popover content={content} trigger="click">
+                <Popover content={paymentPopoverContent} trigger="click">
                   <Button
                     style={{ textAlign: 'start' }}
                     block

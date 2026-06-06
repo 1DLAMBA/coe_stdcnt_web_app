@@ -7,6 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logo from '../../assets/logo2.png';
 import API_ENDPOINTS from '../../Endpoints/environment';
+import {
+  isLastSessionFeeOnBackup,
+  syncBackupSchoolFeesAfterPayment,
+} from '../../services/schoolFeesService';
 import Registration from './Registration';
 
 const { Title, Text } = Typography;
@@ -100,7 +104,7 @@ const PaymentRecovery = () => {
       } else if (SCHOOL_FEE_TYPES.includes(pay_type)) {
         const rawFeeSession = txData.metadata?.fee_session;
         const feeSession = ALLOWED_FEE_SESSIONS.includes(rawFeeSession) ? rawFeeSession : null;
-        await handleSchoolFeeRecovery(studentId, pay_type, feeSession);
+        await handleSchoolFeeRecovery(studentId, pay_type, feeSession, values.reference);
       }
 
     } catch (err) {
@@ -129,22 +133,40 @@ const PaymentRecovery = () => {
 
   // ── School fee recovery ───────────────────────────────────────────────────
 
-  const handleSchoolFeeRecovery = async (studentId, payType, feeSession = null) => {
+  const handleSchoolFeeRecovery = async (studentId, payType, feeSession = null, reference = null) => {
     try {
-      const updateData = {};
-      if (payType === 'complete_school_fees') {
-        updateData.has_paid = true;
-        updateData.course_paid = true;
-      } else if (payType === 'partial_school_fees') {
-        updateData.has_paid = true;
-      } else if (payType === 'school_fees_completion') {
-        updateData.has_paid = true;
-        updateData.course_paid = true;
+      let backup = null;
+      const backupBase = API_ENDPOINTS.PERSONAL_DETAILS_BACKUP;
+      if (backupBase) {
+        try {
+          const res = await axios.get(`${backupBase}/${studentId}`);
+          backup = res.data;
+        } catch {
+          backup = null;
+        }
       }
-      if (feeSession) {
-        updateData.fee_academic_session = feeSession;
+
+      if (isLastSessionFeeOnBackup(feeSession, backup) && reference) {
+        await syncBackupSchoolFeesAfterPayment(studentId, payType, feeSession, reference);
+      } else {
+        const updateData = {};
+        if (payType === 'complete_school_fees') {
+          updateData.has_paid = true;
+          updateData.course_paid = true;
+        } else if (payType === 'partial_school_fees') {
+          updateData.has_paid = true;
+        } else if (payType === 'school_fees_completion') {
+          updateData.has_paid = true;
+          updateData.course_paid = true;
+        }
+        if (feeSession) {
+          updateData.fee_academic_session = feeSession;
+        }
+        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${studentId}`, updateData);
+        if (feeSession && reference) {
+          await syncBackupSchoolFeesAfterPayment(studentId, payType, feeSession, reference);
+        }
       }
-      await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${studentId}`, updateData);
       setResolvedId(studentId);
       setResolvedMsg('Your school fees payment has been verified and your account has been updated.');
       setView('auto_resolved');

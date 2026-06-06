@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext } from 'react';
+import React, { useEffect, useMemo, useState, createContext, useContext } from 'react';
 import './Dashboard.css';
 import coverPhoto from '../../assets/backgrround.jpg';
 import {
@@ -8,17 +8,19 @@ import {
   LogoutOutlined,
   HeatMapOutlined,
   EnvironmentFilled,
-  MenuOutlined
+  MenuOutlined,
+  CameraOutlined,
 } from '@ant-design/icons';
 import logo from '../../assets/logo2.png';
 import profilePic from '../../assets/pro-pic.png';
 import { PaystackButton } from "react-paystack";
 import { Routes, useNavigate } from 'react-router-dom';
 import { Outlet, useParams } from 'react-router-dom';
-import { Button, Popover, Skeleton, Space, ConfigProvider, Avatar, Flex, Tag } from 'antd';
+import { Button, Popover, Skeleton, Space, ConfigProvider, Avatar, Flex, Tag, Upload, message } from 'antd';
 import axios from 'axios';
 import BioData from './dashboard/Bio_data';
 import API_ENDPOINTS from '../../Endpoints/environment';
+import { canViewSchoolFeesReceipt, isNewIntakeByMatric } from '../../utils/schoolFeesFlags';
 
 
 
@@ -27,8 +29,60 @@ const Dashboard = () => {
   const { id } = useParams();
   const [user, setUser] = useState('' || null);
   const [application, setApplication] = useState('');
+  const [backupPersonal, setBackupPersonal] = useState(null);
   const userId = localStorage.getItem('id')
   const [loader, setLoader] = useState(true);
+  const [uploading, setUploading] = useState(false);
+
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG files!');
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Image must be smaller than 2MB!');
+    }
+    return isJpgOrPng && isLt2M;
+  };
+
+  const handlePassportUpload = async (info) => {
+    const { status } = info.file;
+    if (status === 'uploading') {
+      setUploading(true);
+      message.loading('Uploading profile photo...', 0);
+    } else if (status === 'done') {
+      setUploading(false);
+      message.destroy();
+      const fileName = info.file.response?.data;
+      if (!fileName) {
+        message.error('Upload succeeded but no file reference was returned.');
+        return;
+      }
+      try {
+        await axios.put(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`, { passport: fileName });
+        setApplication((prev) => ({ ...prev, passport: fileName }));
+        message.success('Profile photo updated successfully.');
+      } catch (error) {
+        console.error('Error saving profile photo:', error);
+        message.error('Photo uploaded but failed to save. Please try again.');
+      }
+    } else if (status === 'error') {
+      setUploading(false);
+      message.destroy();
+      message.error(`${info.file.name} upload failed.`);
+    }
+  };
+
+  const isNewByMatric = useMemo(
+    () => isNewIntakeByMatric(application?.matric_number),
+    [application?.matric_number]
+  );
+
+  const canViewReceipt = useMemo(
+    () => canViewSchoolFeesReceipt(application, backupPersonal, isNewByMatric),
+    [application, backupPersonal, isNewByMatric]
+  );
 
 
   function routeBio() {
@@ -62,29 +116,42 @@ const Dashboard = () => {
   useEffect(() => {
     // console.log('check')
     const fetchUser = async () => {
-      // console.log('check')
       try {
-        const response = await axios.get(`${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`);
-        const responseBio = await axios.get(`${API_ENDPOINTS.BIO_REGISTRATION}/${id}`);
-        setApplication(response.data); // Assuming the API returns user data in `response.data`
-        // const responseBio = await axios.get(`http://127.0.0.1:8000/api/bio-data/${id}`);
-        // if(responseBio){
-        //   setUser(responseBio.data.data[0])
+        const primaryUrl = `${API_ENDPOINTS.PERSONAL_DETAILS}/${id}`;
+        const backupUrl = API_ENDPOINTS.PERSONAL_DETAILS_BACKUP;
 
-        //   console.log(responseBio.data.data);
-        // }
-        setUser(responseBio.data)
-        if (!response.data.matric_number) {
+        const primaryPromise = axios.get(primaryUrl);
+        const bioPromise = axios.get(`${API_ENDPOINTS.BIO_REGISTRATION}/${id}`);
+        const backupPromise = backupUrl
+          ? axios.get(`${backupUrl}/${id}`).catch((err) => {
+              console.warn('Backup personal-details unavailable:', err?.message || err);
+              return null;
+            })
+          : Promise.resolve(null);
+
+        const [response, responseBio, backupRes] = await Promise.all([
+          primaryPromise,
+          bioPromise,
+          backupPromise,
+        ]);
+
+        const primaryData = response.data;
+        setApplication(primaryData);
+        setUser(responseBio.data);
+
+        const skipBackup = isNewIntakeByMatric(primaryData?.matric_number);
+        setBackupPersonal(
+          backupRes && backupRes.data != null && !skipBackup ? backupRes.data : null
+        );
+
+        if (!primaryData.matric_number) {
           navigate('/');
-
         }
 
-
-        console.log('Data', response.data.data);
         setLoader(false);
-
       } catch (error) {
         console.error("Error fetching user data:", error);
+        setBackupPersonal(null);
       }
     };
 
@@ -170,7 +237,7 @@ const Dashboard = () => {
         <Button
           block
           type="text"
-          disabled={application?.has_paid == 0}
+          disabled={!canViewReceipt}
           onClick={routeSchoolFees}
           style={{
             display: 'flex',
@@ -296,13 +363,28 @@ const Dashboard = () => {
       <div className='content'>
         <div className="user-card">
 
-          <Avatar
-            size={140}
-            src={application?.passport ? `${API_ENDPOINTS.API_BASE_URL}/file/get/${application.passport}` : undefined}
-            icon={!application?.passport && <UserOutlined style={{ fontSize: '70px' }} />}
-            className="profile-pic"
-            style={{ backgroundColor: '#028f64' }}
-          />
+          <Upload
+            name="file"
+            showUploadList={false}
+            accept="image/jpeg,image/png"
+            action={API_ENDPOINTS.UPLOAD}
+            beforeUpload={beforeUpload}
+            onChange={handlePassportUpload}
+            disabled={uploading || loader}
+          >
+            <div className="profile-pic-wrapper">
+              <Avatar
+                size={140}
+                src={application?.passport ? `${API_ENDPOINTS.IMAGE}/${application.passport}` : undefined}
+                icon={!application?.passport && <UserOutlined style={{ fontSize: '70px' }} />}
+                className="profile-pic"
+                style={{ backgroundColor: '#028f64' }}
+              />
+              <span className="profile-pic-overlay">
+                <CameraOutlined />
+              </span>
+            </div>
+          </Upload>
 
           {loader ? (<>
 

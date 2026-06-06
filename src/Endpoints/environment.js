@@ -18,6 +18,15 @@ const PERSONAL_DETAILS_BACKUP = BACKUP_API_BASE_URL
   ? `${BACKUP_API_BASE_URL}/personal-details`
   : '';
 
+if (
+  process.env.NODE_ENV === "production" &&
+  !BACKUP_API_BASE_URL
+) {
+  console.warn(
+    "[COE] REACT_APP_BACKUP_API_BASE_URL is not set. Clearance and exam card cannot verify 2024/2025 fees on the backup API."
+  );
+}
+
 const API_ENDPOINTS = {
     API_BASE_URL: `${API_BASE_URL}`,
     BACKUP_API_BASE_URL: BACKUP_API_BASE_URL || '',
