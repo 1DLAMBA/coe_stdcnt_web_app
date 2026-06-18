@@ -509,7 +509,7 @@ const Course_reg = () => {
         case 'Katcha':
           return 'ACCT_q7hpb8aop6872xk';
         case 'Salka':
-          return 'ACCT_zduspv9kbkc5wsp';
+          return 'ACCT_ol4nfqttt60d9my';
         case 'Bida':
           return 'ACCT_xbd6r3fuguhi807';
         case 'Patigi':
