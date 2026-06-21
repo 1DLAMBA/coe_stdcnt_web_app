@@ -50,6 +50,7 @@ const schoolsData = {
     "Geography / Economics",
     "Geography / Social Studies",
     "History / CRS",
+"Social Studies (Double Major)",
     "History / Islamic Studies",
     "Social Studies / Economics",
     "Social Studies / CRS",
