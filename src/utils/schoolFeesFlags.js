@@ -49,16 +49,12 @@ export function isNewIntakeByMatric(matricNumber) {
 }
 
 /**
- * Clearance: backup full suffices when student has a backup row (no current-session primary required).
+ * Clearance (graduands): one session must be fully paid — either last session
+ * (2024/2025, backup DB) or the current session (2025/2026, primary DB).
+ * Mirrors SchoolFeesGateService::hasPaidLastOrCurrentSession on the backend.
  */
 export function canRequestClearance(primary, backup, isNewByMatric) {
-  if (isNewByMatric) {
-    return isFullyPaid(primary);
-  }
-  if (backupHasRecord(backup)) {
-    return isFullyPaid(backup);
-  }
-  return isFullyPaid(primary);
+  return (backupHasRecord(backup) && isFullyPaid(backup)) || isFullyPaid(primary);
 }
 
 /** Exam card: all required sessions paid (same gate as Course Registration unlock). */
@@ -73,13 +69,7 @@ export function getClearanceBlockReason(primary, backup, isNewByMatric) {
   if (canRequestClearance(primary, backup, isNewByMatric)) {
     return null;
   }
-  if (isNewByMatric || !backupHasRecord(backup)) {
-    return `Complete ${CURRENT_FEE_SESSION} school fees on Course Registration before requesting clearance.`;
-  }
-  if (!isFullyPaid(backup)) {
-    return `Complete ${LAST_FEE_SESSION} school fees in the previous system before requesting clearance.`;
-  }
-  return "School fees incomplete. Complete fees on Course Registration before requesting clearance.";
+  return `Fully pay school fees for either ${LAST_FEE_SESSION} (previous system) or ${CURRENT_FEE_SESSION} before requesting clearance.`;
 }
 
 /**

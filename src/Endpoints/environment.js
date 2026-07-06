@@ -51,6 +51,10 @@ const API_ENDPOINTS = {
     ADMIN_MINIMAL_STUDENTS_CHECK: `${API_BASE_URL}/admin/minimal-students/check-matric`,
     IMPORT_SAMPLE_CSV: `${API_BASE_URL}/import/sample-csv`,
     IMPORT_STUDENTS: `${API_BASE_URL}/import`,
+    GRADUATION_LIST: `${API_BASE_URL}/graduation-list`,
+    GRADUATION_LIST_IMPORT: `${API_BASE_URL}/graduation-list/import`,
+    // append '/' + encodeURIComponent(matric) — matric numbers contain slashes
+    GRADUATION_LIST_CHECK: `${API_BASE_URL}/graduation-list/check`,
 };
 
 export default API_ENDPOINTS;

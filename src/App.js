@@ -28,6 +28,7 @@ import { StudentList } from './components/main/dashboard/student/StudentList';
 import Student_Clearance from './components/main/dashboard/Student_Clearance';
 import Admin_Clearance from './components/main/dashboard/admin/Admin_Clearance';
 import AdminAddStudents from './components/main/dashboard/admin/admin-pages/AdminAddStudents';
+import GraduationList from './components/main/dashboard/admin/admin-pages/GraduationList';
 import PaymentRecovery from './components/main/PaymentRecovery';
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Route path='/admin/view-student/:id' element={<View_student />} />
           <Route path='/admin/clearance' element={<Admin_Clearance />} />
           <Route path='/admin/add-students' element={<AdminAddStudents />} />
+          <Route path='/admin/graduation-list' element={<GraduationList />} />
 
         </Route>
         <Route path="/registration" element={<Registration />} />
