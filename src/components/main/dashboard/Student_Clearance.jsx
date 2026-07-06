@@ -33,6 +33,8 @@ const Student_Clearance = () => {
   const [compressing, setCompressing] = useState(false);
   const [bio, setBio] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  // null = not yet checked; { on_list, entry } once the graduation-list check returns
+  const [graduationCheck, setGraduationCheck] = useState(null);
   const slipRef = useRef(null);
 
   const activeRequest = useMemo(() => clearanceRequests?.[0], [clearanceRequests]);
@@ -113,6 +115,27 @@ const Student_Clearance = () => {
     fetchBio();
   }, [id, fetchPersonalDetail, fetchBio]);
 
+  useEffect(() => {
+    const matric = personalDetail?.matric_number;
+    if (!matric) return;
+    let cancelled = false;
+    axios
+      .get(`${API_ENDPOINTS.GRADUATION_LIST_CHECK}/${encodeURIComponent(matric)}`)
+      .then((response) => {
+        if (!cancelled) setGraduationCheck(response.data);
+      })
+      .catch((error) => {
+        console.warn("Graduation list check unavailable:", error?.message || error);
+        // Leave as null so the client does not block; the backend still enforces it.
+        if (!cancelled) setGraduationCheck(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [personalDetail?.matric_number]);
+
+  const notOnGraduationList = graduationCheck != null && !graduationCheck.on_list;
+
   const handleDownloadSlip = useCallback(async () => {
     if (!slipRef.current) return;
     setDownloading(true);
@@ -164,6 +187,10 @@ const Student_Clearance = () => {
   };
 
   const handleSubmit = async () => {
+    if (notOnGraduationList) {
+      message.error("You are not on the graduation list for this session. Contact the admin office.");
+      return;
+    }
     if (!clearanceEligible) {
       message.error(clearanceBlockReason || "You must complete school fees before requesting clearance.");
       return;
@@ -217,7 +244,12 @@ const Student_Clearance = () => {
       fetchClearanceData();
     } catch (error) {
       console.error("Error submitting clearance:", error);
-      message.error(error.response?.data?.message || "Failed to submit clearance request.");
+      const errors = error.response?.data?.errors;
+      const firstFieldError =
+        errors?.graduation?.[0] || errors?.payment?.[0] || errors?.clearance?.[0];
+      message.error(
+        firstFieldError || error.response?.data?.message || "Failed to submit clearance request."
+      );
     } finally {
       setLoading(false);
     }
@@ -325,6 +357,15 @@ const Student_Clearance = () => {
             Submit your clearance request and track approvals from departments.
           </Text>
 
+          {notOnGraduationList && (
+            <Alert
+              type="warning"
+              showIcon
+              message="Not on the graduation list"
+              description="Your matric number is not on the graduation list for this session. Contact the admin office if you believe this is an error."
+              style={{ marginBottom: "1.5rem" }}
+            />
+          )}
           {showFeeWarning && (
             <Alert
               type="warning"
@@ -406,7 +447,7 @@ const Student_Clearance = () => {
                     size="large"
                     style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
                     onClick={handleSubmit}
-                    disabled={!clearanceEligible || compressing}
+                    disabled={!clearanceEligible || notOnGraduationList || compressing}
                     loading={loading}
                   >
                     Submit Clearance Request

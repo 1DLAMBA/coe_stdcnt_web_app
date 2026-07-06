@@ -114,7 +114,9 @@ const Admin_Clearance = () => {
           fetchClearances();
         } catch (error) {
           console.error("Error approving clearance:", error);
-          message.error(error.response?.data?.message || "Unable to approve clearance.");
+          const errors = error.response?.data?.errors;
+          const firstFieldError = errors?.graduation?.[0] || errors?.payment?.[0] || errors?.departments?.[0];
+          message.error(firstFieldError || error.response?.data?.message || "Unable to approve clearance.");
         }
       },
     });
@@ -218,6 +220,14 @@ const Admin_Clearance = () => {
         render: (level) => level || "N/A",
       },
       {
+        title: "Graduation",
+        dataIndex: "on_graduation_list",
+        key: "on_graduation_list",
+        render: (onList) => (
+          <Tag color={onList ? "green" : "red"}>{onList ? "On list" : "Not on list"}</Tag>
+        ),
+      },
+      {
         title: "Fees Status",
         key: "fees_status",
         render: (_, record) => {
@@ -290,9 +300,10 @@ const Admin_Clearance = () => {
         title: "Actions",
         key: "actions",
         render: (_, record) => {
-          const hasPaidPrimary = isPaidFlag(record.student?.has_paid);
-          const coursePaidPrimary = isPaidFlag(record.student?.course_paid);
-          const canApprove = hasPaidPrimary && coursePaidPrimary && record.status === "pending";
+          const backup = backupByPersonalId[record.personal_detail_id];
+          const isNew = isNewIntakeByMatric(record.student?.matric_number);
+          const feesEligible = canRequestClearance(record.student, backup, isNew);
+          const canApprove = record.on_graduation_list && feesEligible && record.status === "pending";
           return (
             <Space wrap>
               <Button

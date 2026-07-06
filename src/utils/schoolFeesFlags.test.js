@@ -132,12 +132,16 @@ describe("clearance and exam card access", () => {
     );
   });
 
-  test("no backup + primary full → allowed", () => {
-    expect(canRequestClearance(fullPrimary(CURRENT_FEE_SESSION), null, false)).toBe(true);
+  test("no backup + primary full → blocked (must exist in backup)", () => {
+    expect(canRequestClearance(fullPrimary(CURRENT_FEE_SESSION), null, false)).toBe(false);
   });
 
   test("no backup + primary partial → blocked", () => {
     expect(canRequestClearance(partialPrimary(), null, false)).toBe(false);
+  });
+
+  test("new intake with full backup → allowed (backup is the only gate)", () => {
+    expect(canRequestClearance(partialPrimary(), fullBackup(), true)).toBe(true);
   });
 });
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 
 import coverPhoto from '../../../../assets/backgrround.jpg';
-import { BarsOutlined, PhoneOutlined, MailOutlined, UserOutlined, BookFilled, DashboardOutlined, TeamOutlined, CheckCircleOutlined, FileTextOutlined, UserAddOutlined } from '@ant-design/icons';
+import { BarsOutlined, PhoneOutlined, MailOutlined, UserOutlined, BookFilled, DashboardOutlined, TeamOutlined, CheckCircleOutlined, FileTextOutlined, UserAddOutlined, FileExcelOutlined } from '@ant-design/icons';
 import logo from '../../../../assets/logo2.png';
 import profilePic from '../../../../assets/pro-pic.png';
 import { PaystackButton } from "react-paystack";
@@ -35,6 +35,9 @@ const Admin_Panel = () => {
   }
     function routeAddStudents() {
       navigate('/admin/add-students');
+    }
+    function routeGraduationList() {
+      navigate('/admin/graduation-list');
     }
     function routeViewSingleApproved() {
       navigate('/admin/view-approved/single/:id');
@@ -122,6 +125,14 @@ const Admin_Panel = () => {
               style={{ textAlign: 'left', height: '40px' }}
             >
               Add Students
+            </Button>
+            <Button
+              icon={<FileExcelOutlined />}
+              block
+              onClick={routeGraduationList}
+              style={{ textAlign: 'left', height: '40px' }}
+            >
+              Graduation List
             </Button>
             {/* <Button 
               icon={<DashboardOutlined />} 
