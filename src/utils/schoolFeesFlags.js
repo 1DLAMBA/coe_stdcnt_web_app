@@ -281,7 +281,7 @@ export function getCenterSubaccountByStudyCenter(studyCenter) {
     case "Gulu":
       return "ACCT_0saux3r5q758ky6";
     case "suleja":
-      return "ACCT_n3bppexq5wd5n85";
+      return "ACCT_zf57d5pitxc9yw6";
     case "Gawu":
       return "ACCT_by8wdwd0a10g68u";
     case "Mokwa":
@@ -305,7 +305,7 @@ export function getCenterSubaccountByStudyCenter(studyCenter) {
     case "Pandogari":
       return "ACCT_5ljhtgc5cihxenj";
     case "Agaie":
-      return "ACCT_cga221mhd2awqol";
+      return "ACCT_7quhzixmwkaz3o7";
     default:
       return "ACCT_aan2ehxiej239du";
   }
