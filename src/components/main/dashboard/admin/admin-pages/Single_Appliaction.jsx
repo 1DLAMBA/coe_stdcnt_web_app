@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Select, Form, Card, Row, Col, Modal, Button, message, Typography, ConfigProvider, Descriptions, Divider, Space } from "antd";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import staffApi from "../../../../../services/staffApi";
 import "../../../../Reg_Success";
 import API_ENDPOINTS from "../../../../../Endpoints/environment";
 import logo from '../../../../../assets/logo2.png';
@@ -87,7 +88,7 @@ const Single_Application = () => {
 
   async function approve(id) {
     try {
-      const personalResponse = await axios.get(`${API_ENDPOINTS.APPROVE}/${id}`);
+      const personalResponse = await staffApi.get(`${API_ENDPOINTS.APPROVE}/${id}`);
       console.log(personalResponse)
       window.location.reload();
     } catch (error) {
@@ -101,7 +102,7 @@ const Single_Application = () => {
       mode_of_entry: 'conditional'
     }
     try {
-      const personalResponse = await axios.post(`${API_ENDPOINTS.APPROVE_PRENCE}`, formData);
+      const personalResponse = await staffApi.post(`${API_ENDPOINTS.APPROVE_PRENCE}`, formData);
       console.log(personalResponse)
       window.location.reload();
     } catch (error) {

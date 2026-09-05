@@ -264,13 +264,13 @@ const Student_Clearance = () => {
       pay_type: "clearance_acceptance",
       clearance_request_id: activeRequest?.id,
     },
-    split: {
-      type: "flat",
-      subaccounts: [
-        { subaccount: "ACCT_1hli5sgrrcfuas9", share: 57700 },
-        { subaccount: "ACCT_aan2ehxiej239du", share: 687700 },
-      ],
-    },
+    // split: {
+    //   type: "flat",
+    //   subaccounts: [
+    //     { subaccount: "ACCT_1hli5sgrrcfuas9", share: 57700 },
+    //     { subaccount: "ACCT_aan2ehxiej239du", share: 687700 },
+    //   ],
+    // },
     text: `Pay ₦${CLEARANCE_AMOUNT} Clearance Fee`,
     onSuccess: async (reference) => {
       message.success("Payment successful. Updating status...");

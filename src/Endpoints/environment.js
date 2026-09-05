@@ -53,8 +53,18 @@ const API_ENDPOINTS = {
     IMPORT_STUDENTS: `${API_BASE_URL}/import`,
     GRADUATION_LIST: `${API_BASE_URL}/graduation-list`,
     GRADUATION_LIST_IMPORT: `${API_BASE_URL}/graduation-list/import`,
+    GRADUATION_LIST_UNMATCHED: `${API_BASE_URL}/graduation-list/unmatched`,
     // append '/' + encodeURIComponent(matric) — matric numbers contain slashes
     GRADUATION_LIST_CHECK: `${API_BASE_URL}/graduation-list/check`,
+    STAFF_LOGIN: `${API_BASE_URL}/staff/login`,
+    STAFF_LOGOUT: `${API_BASE_URL}/staff/logout`,
+    STAFF_ME: `${API_BASE_URL}/staff/me`,
+    STAFF_STUDENTS: `${API_BASE_URL}/staff/students`,
+    STAFF_STUDENTS_SUMMARY: `${API_BASE_URL}/staff/students/summary`,
+    STAFF_CLEARANCES: `${API_BASE_URL}/staff/clearances`,
+    STAFF_CLEARANCES_START: `${API_BASE_URL}/staff/clearances/start`,
+    STAFF_USERS: `${API_BASE_URL}/staff/users`,
+    STAFF_CENTRES: `${API_BASE_URL}/staff/centres`,
 };
 
 export default API_ENDPOINTS;

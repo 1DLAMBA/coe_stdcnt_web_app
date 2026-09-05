@@ -4,7 +4,7 @@ import logo from '../../assets/logo2.png';
 import { useNavigate } from 'react-router-dom';
 import { PaystackButton } from "react-paystack";
 import axios from 'axios';
-import { message, Result, Button, Layout, ConfigProvider, Card, Alert, Modal, Input, Typography, Space, Divider } from "antd";
+import { message, Result, Button, Layout, ConfigProvider, Card, Alert, Input, Typography, Space, Divider } from "antd";
 import { WarningFilled, UserOutlined, CreditCardFilled, ArrowLeftOutlined } from "@ant-design/icons";
 import API_ENDPOINTS from '../../Endpoints/environment';
 import PaystackVerification from './dashboard/Verify_payment';
@@ -20,8 +20,6 @@ const ApplicationCheck = () => {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [passkey, setPasskey] = useState("");
   const [view, setView] = useState('form'); // 'form', 'acceptance', 'dashboard', 'notFound'
   const componentProps = {
     email,
@@ -68,16 +66,6 @@ const ApplicationCheck = () => {
     },
     onClose: () => alert("Wait! Don't leave :("),
   };
-  const correctPasskey = "coe@admin11";
-  const handleOk = () => {
-    if (passkey === correctPasskey) {
-      message.success("Access granted!");
-      navigate("/admin");
-    } else {
-      message.error("Incorrect passkey!");
-    }
-  };
-
   const handleInputChange = (e) => {
     setApplicationNumber(e.target.value);
   };
@@ -159,21 +147,6 @@ const ApplicationCheck = () => {
 
   return (
     <div className="application-check-container">
-      <Modal
-        title="Admin Authentication"
-        open={isModalVisible}
-        onOk={handleOk}
-        onCancel={() => setIsModalVisible(false)}
-        okText="Login"
-        centered
-      >
-        <Input.Password
-          placeholder="Enter Admin Passkey"
-          value={passkey}
-          onChange={(e) => setPasskey(e.target.value)}
-        />
-      </Modal>
-      
       <div className="application-card">
         <div className="card-header">
           <img src={logo} width="80px" alt="Logo" className="logo" />
@@ -317,11 +290,11 @@ const ApplicationCheck = () => {
             </Button>
             <Button
               icon={<UserOutlined />}
-              onClick={() => setIsModalVisible(true)}
+              onClick={() => navigate('/admin/login')}
               block
               className="admin-button"
             >
-              Admin Portal
+              Staff login
             </Button>
           </Space>
         </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Tag, Spin, ConfigProvider, Button, Select, Row, Col } from "antd";
-import axios from "axios";
+import staffApi from "../../../../../services/staffApi";
 import '../admin-pages/styles/application.css';
 import { EyeFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -72,8 +72,10 @@ const ViewApplications = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`); // Replace with your API endpoint
-        const filteredData = response.data.filter((student) => !student.matric_number && !student.has_admission);
+        const response = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS, {
+          params: { page: 1, per_page: 500, type: 'pending' },
+        });
+        const filteredData = response.data.data || [];
         setData(filteredData);
         setFilteredData(filteredData); // Initial data for the table
       } catch (error) {
@@ -98,7 +100,7 @@ const ViewApplications = () => {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '1200px', margin: '2% auto', padding: '0 20px' }}>
+    <div>
       
       <ConfigProvider
         theme={{

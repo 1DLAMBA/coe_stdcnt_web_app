@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ArrowDownOutlined, ArrowUpOutlined, EyeFilled, UserOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Card, Col, ConfigProvider, Statistic, Tag, Button, Table, Input, Select, Spin, Row } from 'antd';
-import axios from "axios";
+import staffApi from "../../../../../services/staffApi";
 import '../admin-pages/styles/application.css';
 import API_ENDPOINTS from "../../../../../Endpoints/environment";
+import { useStaffAuth } from "../../../../../Authentication/StaffAuthContext";
 
 const { Search } = Input;
 const { Option } = Select;
 
 const styles = {
     container: {
-        paddingLeft: '5%',
-        paddingRight: '5%',
+        width: '100%',
     },
     card: {
         boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
@@ -46,17 +46,15 @@ export const Admin_dashboard = () => {
     const [search, setSearch] = useState("");
     const [studyCent, setStudyCent] = useState("");
     const navigate = useNavigate();
+    const { isCoordinator, studyCentre } = useStaffAuth();
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
-            console.log(response)
-            const filteredData = response.data.filter((student) => !student.matric_number);
-            setData(filteredData);
-            setNoAdmissionCount(response.data.filter((student) => !student.has_admission).length);
-            setMatricNumberCount(response.data.filter((student) => student.matric_number).length);
-            setApprovedStudents(response.data.filter((student) => student.has_admission && !student.matric_number).length);
+            const response = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS_SUMMARY);
+            setNoAdmissionCount(response.data.no_admission);
+            setMatricNumberCount(response.data.with_matric);
+            setApprovedStudents(response.data.approved_without_matric);
         } catch (error) {
             console.error("Error fetching records:", error);
         } finally {
@@ -66,7 +64,7 @@ export const Admin_dashboard = () => {
 
     const fetchClearances = async () => {
         try {
-            const response = await axios.get(`${API_ENDPOINTS.CLEARANCES}`);
+            const response = await staffApi.get(API_ENDPOINTS.STAFF_CLEARANCES);
             setClearanceCount(response.data?.data?.length || 0);
         } catch (error) {
             console.error("Error fetching clearance count:", error);
@@ -85,11 +83,11 @@ export const Admin_dashboard = () => {
     const fetchStudents = async (page, searchValue, studyCentValue) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details-paged`, {
+            const response = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS, {
                 params: {
                     page,
                     search: searchValue,
-                    study_cent: studyCentValue,
+                    study_cent: isCoordinator ? studyCentre : studyCentValue,
                     type: null,
                 },
             });
@@ -173,6 +171,8 @@ export const Admin_dashboard = () => {
 
     return (
         <div style={styles.container}>
+            <h2 className="staff-page-title">Reports</h2>
+            <p className="staff-page-lead">College-wide counts from the previous admin dashboard.</p>
             <Row gutter={[12, 12]}>
                 <Col xs={12} sm={12} md={6} lg={6}>
                     <Card bordered={false} size="small" bodyStyle={styles.kpiCard} style={styles.card}>
