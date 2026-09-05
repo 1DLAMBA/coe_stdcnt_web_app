@@ -493,7 +493,7 @@ const Course_reg = () => {
         case 'Gulu':
           return 'ACCT_0saux3r5q758ky6';
         case 'suleja':
-          return 'ACCT_n3bppexq5wd5n85';
+          return 'ACCT_zf57d5pitxc9yw6';
         case 'Gawu':
           return 'ACCT_by8wdwd0a10g68u';
         case 'Mokwa':
