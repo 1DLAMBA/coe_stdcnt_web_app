@@ -14,6 +14,7 @@ import {
     MenuOutlined,
     LogoutOutlined,
     WalletOutlined,
+    HistoryOutlined,
 } from '@ant-design/icons';
 import logo from '../../../../assets/logo2.png';
 import { useStaffAuth } from '../../../../Authentication/StaffAuthContext';
@@ -31,6 +32,7 @@ const ICONS = {
     chart: <BarChartOutlined />,
     safety: <SafetyCertificateOutlined />,
     wallet: <WalletOutlined />,
+    history: <HistoryOutlined />,
 };
 
 const theme = {

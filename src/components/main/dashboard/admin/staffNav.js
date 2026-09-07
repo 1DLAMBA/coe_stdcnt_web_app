@@ -71,6 +71,13 @@ export const STAFF_NAV_ITEMS = [
         permission: 'payments.view',
         icon: 'wallet',
     },
+    {
+        key: 'audit',
+        path: '/admin/audit-log',
+        label: 'Audit log',
+        permission: 'audit.view',
+        icon: 'history',
+    },
 ];
 
 export function navLabel(item, isCoordinator) {

@@ -47,6 +47,8 @@ const API_ENDPOINTS = {
     VERIFY_PAYSTACK: `${API_BASE_URL}/verify-paystack`,
     PAYMENTS_INITIATE: `${API_BASE_URL}/payments/initiate`,
     ADMIN_PAYMENTS: `${API_BASE_URL}/admin/payments`,
+    ADMIN_AUDIT_LOGS: `${API_BASE_URL}/admin/audit-logs`,
+    ADMIN_AUDIT_LOG_ACTIONS: `${API_BASE_URL}/admin/audit-logs/actions`,
     CLEARANCES: `${API_BASE_URL}/clearances`,
     CLEARANCE_DEPARTMENTS: `${API_BASE_URL}/clearance-departments`,
     ADMIN_MINIMAL_STUDENTS: `${API_BASE_URL}/admin/minimal-students`,
