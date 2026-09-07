@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo, useCallback } from "react";
 import {
   Button,
   Card,
-  ConfigProvider,
   Divider,
   Form,
   Input,
@@ -17,6 +16,7 @@ import {
   Typography,
 } from "antd";
 import axios from "axios";
+import staffApi from "../../../../services/staffApi";
 import API_ENDPOINTS from "../../../../Endpoints/environment";
 import {
   backupHasRecord,
@@ -28,18 +28,11 @@ import {
   CURRENT_FEE_SESSION,
   fetchBackupPersonalByIds,
 } from "../../../../utils/schoolFeesFlags";
+import { useStaffAuth } from "../../../../Authentication/StaffAuthContext";
 import "./admin-pages/styles/application.css";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-
-const styles = {
-  container: {
-    padding: "1.5rem 5%",
-    maxWidth: "90%",
-    margin: "0 auto",
-  },
-};
 
 const BACKUP_FETCH_CONCURRENCY = 6;
 
@@ -49,11 +42,13 @@ const Admin_Clearance = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [deptForm] = Form.useForm();
+  const { hasPermission } = useStaffAuth();
+  const canApproveClearance = hasPermission('clearance.approve');
 
   const fetchClearances = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_ENDPOINTS.CLEARANCES);
+      const response = await staffApi.get(API_ENDPOINTS.STAFF_CLEARANCES);
       const rows = response.data?.data || [];
       setClearances(rows);
 
@@ -93,23 +88,32 @@ const Admin_Clearance = () => {
   }, [fetchClearances]);
 
   const handleApprove = (record) => {
+    const backup = backupByPersonalId[record.personal_detail_id];
+    const isNew = isNewIntakeByMatric(record.student?.matric_number);
+    const feesEligible = canRequestClearance(record.student, backup, isNew);
+    const needsOverride = record.on_graduation_list && !feesEligible;
+
     Modal.confirm({
-      title: "Approve Clearance",
-      content:
-        "This will approve all departments and the clearance request. Do you want to continue?",
-      okText: "Yes, Approve All",
+      title: needsOverride ? "Approve with fee override" : "Approve clearance",
+      content: needsOverride
+        ? "This student is on the graduation list but school fees are not marked paid. Approving will record a bursar fee override."
+        : "This will clear remaining departments and approve the request.",
+      okText: "Approve",
       cancelText: "Cancel",
       okButtonProps: { style: { backgroundColor: "#028f64", borderColor: "#028f64" } },
       onOk: async () => {
         try {
           const deptsToApprove = (record.departments || []).filter((d) => d.status !== "approved");
           for (const dept of deptsToApprove) {
-            await axios.post(
+            await staffApi.post(
               `${API_ENDPOINTS.CLEARANCES}/${record.id}/departments/${dept.department_id}`,
               { status: "approved" }
             );
           }
-          await axios.post(`${API_ENDPOINTS.CLEARANCES}/${record.id}/approve`);
+          await staffApi.post(
+            `${API_ENDPOINTS.CLEARANCES}/${record.id}/approve`,
+            needsOverride ? { force_fee_override: true } : {}
+          );
           message.success("Clearance approved.");
           fetchClearances();
         } catch (error) {
@@ -129,7 +133,7 @@ const Admin_Clearance = () => {
     }
 
     try {
-      await axios.post(`${API_ENDPOINTS.CLEARANCES}/${record.id}/reject`, { reason });
+      await staffApi.post(`${API_ENDPOINTS.CLEARANCES}/${record.id}/reject`, { reason });
       message.success("Clearance rejected.");
       fetchClearances();
     } catch (error) {
@@ -148,7 +152,7 @@ const Admin_Clearance = () => {
     }
 
     try {
-      await axios.post(`${API_ENDPOINTS.CLEARANCES}/${clearanceId}/departments/${departmentId}`, {
+      await staffApi.post(`${API_ENDPOINTS.CLEARANCES}/${clearanceId}/departments/${departmentId}`, {
         status,
         reason,
       });
@@ -162,7 +166,7 @@ const Admin_Clearance = () => {
 
   const handleAddDepartment = async (values) => {
     try {
-      await axios.post(API_ENDPOINTS.CLEARANCE_DEPARTMENTS, values);
+      await staffApi.post(API_ENDPOINTS.CLEARANCE_DEPARTMENTS, values);
       message.success("Department added.");
       deptForm.resetFields();
       fetchDepartments();
@@ -174,7 +178,7 @@ const Admin_Clearance = () => {
 
   const handleToggleDepartment = async (department, isActive) => {
     try {
-      await axios.put(`${API_ENDPOINTS.CLEARANCE_DEPARTMENTS}/${department.id}`, {
+      await staffApi.put(`${API_ENDPOINTS.CLEARANCE_DEPARTMENTS}/${department.id}`, {
         is_active: isActive,
       });
       message.success("Department updated.");
@@ -187,7 +191,7 @@ const Admin_Clearance = () => {
 
   const handleDeleteDepartment = async (department) => {
     try {
-      await axios.delete(`${API_ENDPOINTS.CLEARANCE_DEPARTMENTS}/${department.id}`);
+      await staffApi.delete(`${API_ENDPOINTS.CLEARANCE_DEPARTMENTS}/${department.id}`);
       message.success("Department deleted.");
       fetchDepartments();
     } catch (error) {
@@ -303,38 +307,45 @@ const Admin_Clearance = () => {
           const backup = backupByPersonalId[record.personal_detail_id];
           const isNew = isNewIntakeByMatric(record.student?.matric_number);
           const feesEligible = canRequestClearance(record.student, backup, isNew);
-          const canApprove = record.on_graduation_list && feesEligible && record.status === "pending";
+          const canApprove = canApproveClearance
+            && record.on_graduation_list
+            && record.status === "pending"
+            && (feesEligible || true);
           return (
             <Space wrap>
+              {canApproveClearance && (
               <Button
                 type="primary"
                 style={{ backgroundColor: "#028f64", borderColor: "#028f64" }}
                 onClick={() => handleApprove(record)}
-                disabled={!canApprove}
+                disabled={!record.on_graduation_list || record.status !== "pending"}
               >
                 Approve
               </Button>
+              )}
+              {canApproveClearance && (
               <Button danger onClick={() => handleReject(record)} disabled={record.status === "rejected"}>
                 Reject
               </Button>
+              )}
+              {record.fee_override && <Tag color="orange">Fee override</Tag>}
             </Space>
           );
         },
       },
     ],
-    [backupByPersonalId]
+    [backupByPersonalId, canApproveClearance]
   );
 
-  const themeConfig = { token: { colorPrimary: "#028f64" } };
-
   return (
-    <ConfigProvider theme={themeConfig}>
-      <div style={styles.container}>
-        <Title level={3}>Clearance Requests</Title>
-        <Text>Review, approve, and manage student clearance requests.</Text>
-        <Divider />
+    <div>
+      <h2 className="staff-page-title">Clearance</h2>
+      <p className="staff-page-lead">
+        Review requests from your centres. Approve when departments are done. If fees are not marked paid, approval still records a fee override — no extra form.
+      </p>
 
-        <Card style={{ marginBottom: "1.5rem" }} title="Manage Clearance Departments">
+        {canApproveClearance && (
+        <Card className="staff-card" title="Departments" style={{ marginBottom: 16 }}>
           <Form
             layout="inline"
             form={deptForm}
@@ -374,13 +385,16 @@ const Admin_Clearance = () => {
             ))}
           </div>
         </Card>
+        )}
 
-        <Card title="Clearance Requests">
+        <Card title="Requests" className="staff-card">
           <Table
             rowKey="id"
             loading={loading}
             columns={columns}
             dataSource={clearances}
+            scroll={{ x: 980 }}
+            pagination={{ pageSize: 10, responsive: true }}
             expandable={{
               expandedRowRender: (record) => (
                 <div>
@@ -401,6 +415,7 @@ const Admin_Clearance = () => {
                           >
                             {department.status}
                           </Tag>
+                          {canApproveClearance && (
                           <Select
                             value={department.status}
                             onChange={(value) => handleDepartmentStatus(record.id, department.department_id, value)}
@@ -411,6 +426,7 @@ const Admin_Clearance = () => {
                             <Option value="approved">Approved</Option>
                             <Option value="rejected">Rejected</Option>
                           </Select>
+                          )}
                         </Space>
                         {department.reason && (
                           <Text type="secondary" style={{ display: "block", marginTop: "0.5rem" }}>
@@ -425,8 +441,7 @@ const Admin_Clearance = () => {
             }}
           />
         </Card>
-      </div>
-    </ConfigProvider>
+    </div>
   );
 };
 

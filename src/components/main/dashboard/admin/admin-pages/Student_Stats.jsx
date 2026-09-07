@@ -4,8 +4,10 @@ import { UserOutlined, DownloadOutlined, FileExcelOutlined, TeamOutlined, Dollar
 import { Card, Col, ConfigProvider, Statistic, Tag, Table, Input, Select, Spin, Row, Button, Space, message, Modal, Typography, Form } from 'antd';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, Tooltip } from 'recharts';
 import axios from "axios";
+import staffApi from "../../../../../services/staffApi";
 import '../admin-pages/styles/application.css';
 import API_ENDPOINTS from "../../../../../Endpoints/environment";
+import { useStaffAuth } from "../../../../../Authentication/StaffAuthContext";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -85,8 +87,7 @@ const findSchoolForCourse = (course) => {
 
 const styles = {
     container: {
-        paddingLeft: '5%',
-        paddingRight: '5%',
+        width: '100%',
     },
     card: {
         boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
@@ -157,33 +158,29 @@ export const Student_Stats = () => {
     const [isExportModalVisible, setIsExportModalVisible] = useState(false);
     const [selectedExportCenter, setSelectedExportCenter] = useState("");
     const [studentName, setStudentName] = useState("");
+    const { isCoordinator, studyCentre, hasPermission } = useStaffAuth();
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
     const fetchData = async () => {
-        // setLoading(true);
         try {
-            const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
-            // setData(response.data);
-            setAllData(response.data);
-            setStudentsWithPartialPayment(response.data.filter((student) => student.has_paid == "1" && student.course_paid == "0").length);
-            setStudentsWithFullPayment(response.data.filter((student) => student.course_paid == "1").length);
-            setStudentsWithNotPaid(response.data.filter((student) => student.matric_number && student.has_paid == "0").length);
-            setStudentsWithMatric(response.data.filter((student) => student.matric_number).length);
-            setApprovedStudents(response.data.filter((student) => student.has_admission).length);
-            setTotalApplications(response.data.length);
+            const summary = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS_SUMMARY);
+            const payload = summary.data || {};
+            setStudentsWithPartialPayment(payload.partial_payment || 0);
+            setStudentsWithFullPayment(payload.full_payment || 0);
+            setStudentsWithNotPaid(payload.not_paid_with_matric || 0);
+            setStudentsWithMatric(payload.with_matric || 0);
+            setApprovedStudents(payload.with_admission || 0);
+            setTotalApplications(payload.total || 0);
+            setStudyCenterData((payload.centres || []).map((center) => ({
+                name: '(' + center.total + ') ' + center.name,
+                total: center.total,
+                approved: center.approved,
+            })));
 
-            // Process study center data    
-            const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora','Bida','Patigi', 'Pandogari', 'Agaie'];
-            const centerStats = centers.map(center => {
-                const newIntake = response.data.filter(student => !student.matric_number || getStudentLevel(student.matric_number) == 1);
-                const centerStudents = newIntake.filter(student => student.desired_study_cent == center);
-                return {
-                    name: '(' + centerStudents.length + ')' + ' ' + center,
-                    total: centerStudents.length,
-                    approved: centerStudents.filter(student => student.has_admission).length
-                };
+            const dump = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS, {
+                params: { page: 1, per_page: 5000 },
             });
-            setStudyCenterData(centerStats);
+            setAllData(dump.data?.data || []);
         } catch (error) {
             console.error("Error fetching records:", error);
         } finally {
@@ -203,11 +200,11 @@ export const Student_Stats = () => {
     const fetchStudents = async (page, searchValue, studyCentValue) => {
         setLoading(true);
         try {
-            const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details-paged`, {
+            const response = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS, {
                 params: {
                     page,
                     search: searchValue,
-                    study_cent: studyCentValue,
+                    study_cent: isCoordinator ? studyCentre : studyCentValue,
                     type: null,
                 },
             });
@@ -756,6 +753,8 @@ export const Student_Stats = () => {
 
     return (
         <div style={styles.container}>
+            <h2 className="staff-page-title">Students</h2>
+            <p className="staff-page-lead">Search, filter, and export student records for the centres you can access.</p>
             <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} md={6}>
                     <Card bordered={false} style={styles.card}>
@@ -886,6 +885,9 @@ export const Student_Stats = () => {
                                 className="search-input"
                             />
 
+                            {isCoordinator ? (
+                                <Tag color="green">{studyCentre}</Tag>
+                            ) : (
                             <Select
                                 placeholder="Filter by Study Center"
                                 allowClear
@@ -908,6 +910,7 @@ export const Student_Stats = () => {
                                 <Option value="Pandogari">Pandogari</Option>
                                 <Option value="Agaie">Agaie</Option>
                             </Select>
+                            )}
                         </div>
 
                         <div className="table-header-right">

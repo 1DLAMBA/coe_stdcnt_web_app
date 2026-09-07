@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Form,
     Input,
@@ -18,8 +18,9 @@ import {
     UserAddOutlined,
     FileExcelOutlined,
 } from '@ant-design/icons';
-import axios from 'axios';
+import staffApi from '../../../../../services/staffApi';
 import API_ENDPOINTS from '../../../../../Endpoints/environment';
+import { useStaffAuth } from '../../../../../Authentication/StaffAuthContext';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -110,18 +111,21 @@ const studyCentres = [
 ];
 
 const cardStyle = {
-    maxWidth: 520,
+    width: '100%',
+    maxWidth: 720,
     margin: '0 auto',
     padding: 20,
-    background: '#f9f9f9',
-    borderRadius: 8,
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    background: '#fff',
+    borderRadius: 14,
+    border: '1px solid #d9eee6',
+    boxShadow: '0 1px 3px rgba(2, 80, 56, 0.06)',
 };
 
 const primaryButtonStyle = { background: '#028f64', borderColor: '#028f64' };
 
 const AdminAddStudents = () => {
     const [form] = Form.useForm();
+    const { isCoordinator, studyCentre } = useStaffAuth();
     const [school, setSchool] = useState('');
     const [matricCheck, setMatricCheck] = useState({ state: 'idle', message: '' });
     const [submitting, setSubmitting] = useState(false);
@@ -129,6 +133,13 @@ const AdminAddStudents = () => {
     const [bulkCentre, setBulkCentre] = useState('');
     const [bulkFile, setBulkFile] = useState(null);
     const [uploading, setUploading] = useState(false);
+
+    useEffect(() => {
+        if (isCoordinator && studyCentre) {
+            setBulkCentre(studyCentre);
+            form.setFieldsValue({ desired_study_cent: studyCentre });
+        }
+    }, [isCoordinator, studyCentre, form]);
 
     const courseOptions = useMemo(() => (school ? schoolsData[school] : []), [school]);
 
@@ -140,7 +151,7 @@ const AdminAddStudents = () => {
         }
         setMatricCheck({ state: 'loading', message: '' });
         try {
-            const response = await axios.post(API_ENDPOINTS.ADMIN_MINIMAL_STUDENTS_CHECK, {
+            const response = await staffApi.post(API_ENDPOINTS.ADMIN_MINIMAL_STUDENTS_CHECK, {
                 matric_number: matric,
             });
             if (response.data?.exists) {
@@ -171,9 +182,9 @@ const AdminAddStudents = () => {
                 matric_number: values.matric_number.trim(),
                 other_names: values.other_names ? values.other_names.trim() : null,
                 course: values.course,
-                desired_study_cent: values.desired_study_cent,
+                desired_study_cent: isCoordinator ? studyCentre : values.desired_study_cent,
             };
-            const response = await axios.post(API_ENDPOINTS.ADMIN_MINIMAL_STUDENTS, payload);
+            const response = await staffApi.post(API_ENDPOINTS.ADMIN_MINIMAL_STUDENTS, payload);
             message.success(response.data?.message || 'Student added successfully');
             form.resetFields();
             setSchool('');
@@ -185,14 +196,24 @@ const AdminAddStudents = () => {
         }
     };
 
-    const onDownloadSample = () => {
-        // Force a real file download in a new tab; works without auth headers
-        // because the route is public, matching the existing import endpoint.
-        window.open(API_ENDPOINTS.IMPORT_SAMPLE_CSV, '_blank');
+    const onDownloadSample = async () => {
+        try {
+            const response = await staffApi.get(API_ENDPOINTS.IMPORT_SAMPLE_CSV, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'student_import_sample.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            message.error('Could not download sample CSV');
+        }
     };
 
     const onBulkUpload = async () => {
-        if (!bulkCentre) {
+        if (!bulkCentre && !isCoordinator) {
             message.error('Select a study centre');
             return;
         }
@@ -205,8 +226,8 @@ const AdminAddStudents = () => {
 
         setUploading(true);
         try {
-            const response = await axios.post(
-                `${API_ENDPOINTS.IMPORT_STUDENTS}/${encodeURIComponent(bulkCentre)}`,
+            const response = await staffApi.post(
+                `${API_ENDPOINTS.IMPORT_STUDENTS}/${encodeURIComponent(isCoordinator ? studyCentre : bulkCentre)}`,
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
             );
@@ -227,10 +248,10 @@ const AdminAddStudents = () => {
 
     const singleTab = (
         <div style={cardStyle}>
-            <Title level={4} style={{ textAlign: 'center', color: '#028f64', marginTop: 0 }}>
-                Add Single Student
+            <Title level={4} style={{ color: '#028f64', marginTop: 0 }}>
+                Add a single student
             </Title>
-            <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginBottom: 16 }}>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
                 Matric number is required; name is optional. Course and study centre are stored on the row.
             </Text>
             <Form form={form} layout="vertical" onFinish={onSubmitSingle}>
@@ -297,7 +318,7 @@ const AdminAddStudents = () => {
                     name="desired_study_cent"
                     rules={[{ required: true, message: 'Study centre is required' }]}
                 >
-                    <Select placeholder="Select a study centre" allowClear>
+                    <Select placeholder="Select a study centre" allowClear disabled={isCoordinator}>
                         {studyCentres.map((c) => (
                             <Option key={c} value={c}>{c}</Option>
                         ))}
@@ -323,10 +344,10 @@ const AdminAddStudents = () => {
 
     const bulkTab = (
         <div style={cardStyle}>
-            <Title level={4} style={{ textAlign: 'center', color: '#028f64', marginTop: 0 }}>
-                Bulk Upload by Centre
+            <Title level={4} style={{ color: '#028f64', marginTop: 0 }}>
+                Bulk upload by centre
             </Title>
-            <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginBottom: 16 }}>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
                 Upload a CSV or XLSX. Course headers separate sections; each student row needs a name and matric. Re-uploading the same file updates existing rows.
             </Text>
 
@@ -345,7 +366,8 @@ const AdminAddStudents = () => {
                         placeholder="Select a study centre"
                         value={bulkCentre || undefined}
                         onChange={setBulkCentre}
-                        allowClear
+                        allowClear={!isCoordinator}
+                        disabled={isCoordinator}
                         style={{ width: '100%', marginTop: 4 }}
                     >
                         {studyCentres.map((c) => (
@@ -387,13 +409,13 @@ const AdminAddStudents = () => {
     );
 
     return (
-        <div style={{ padding: '24px 16px' }}>
-            <Title level={3} style={{ textAlign: 'center', color: '#028f64' }}>
-                Add Students
-            </Title>
+        <div>
+            <h2 className="staff-page-title">Add a student</h2>
+            <p className="staff-page-lead">
+                Add one student or upload a file for a centre. Coordinators can only add students for their own centre.
+            </p>
             <Tabs
                 defaultActiveKey="single"
-                centered
                 items={[
                     { key: 'single', label: 'Single Student', children: singleTab },
                     { key: 'bulk', label: 'Bulk by Centre', children: bulkTab },

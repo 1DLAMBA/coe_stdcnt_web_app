@@ -68,6 +68,7 @@ const Course_reg = () => {
   const userId = localStorage.getItem('id')
   const { id } = useParams();
   const [centerAccount, setCenterAccount] = useState('');
+  const [paymentReferences, setPaymentReferences] = useState({});
 
   const isNewByMatric = isNewIntakeByMatric(user?.matric_number);
   const feeState = computeCourseRegFeeState(user, backupUser, isNewByMatric);
@@ -96,6 +97,42 @@ const Course_reg = () => {
       setFeePaymentSession(state.firstUnpaidSession);
     }
   }, [user, backupUser]);
+
+  // Generate our own reference for each school-fee option once the fee session is
+  // known, and pass it to Paystack as the transaction reference itself — so the
+  // reference the student sees and the one an admin looks up are identical.
+  useEffect(() => {
+    if (!id) return;
+
+    const requests = [];
+    if (isFeeSessionValid && !paymentReferences[`complete_${feePaymentSession}`]) {
+      requests.push(['complete', 'complete_school_fees', amount, feePaymentSession]);
+      requests.push(['partial60', 'partial_school_fees', amount60, feePaymentSession]);
+    }
+    if (isPaystackFeeSessionValid && !paymentReferences[`completion40_${paystackFeeSession}`]) {
+      requests.push(['completion40', 'school_fees_completion', amount40, paystackFeeSession]);
+    }
+    if (requests.length === 0) return;
+
+    requests.forEach(([key, payType, amt, feeSession]) => {
+      axios
+        .post(API_ENDPOINTS.PAYMENTS_INITIATE, {
+          pay_type: payType,
+          amount: amt,
+          personal_detail_id: id,
+          metadata: { id, fee_session: feeSession },
+        })
+        .then((res) => {
+          setPaymentReferences((prev) => ({
+            ...prev,
+            [key]: res.data.reference,
+            [`${key}_${feeSession}`]: res.data.reference,
+          }));
+        })
+        .catch((error) => console.error(`Error preparing ${payType} reference:`, error));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, feePaymentSession, paystackFeeSession, isFeeSessionValid, isPaystackFeeSessionValid]);
 
   const itemLink = [
     {
@@ -192,6 +229,7 @@ const Course_reg = () => {
   const componentProps = {
     email,
     amount,
+    reference: paymentReferences.complete,
     disabled: !isFeeSessionValid,
     metadata: {
       id: id,
@@ -225,6 +263,7 @@ const Course_reg = () => {
   const component60Props = {
     email,
     amount: 2400000,
+    reference: paymentReferences.partial60,
     disabled: !isFeeSessionValid,
     metadata: {
       id: id,
@@ -257,6 +296,7 @@ const Course_reg = () => {
   const component40Props = {
     email,
     amount: 1600000,
+    reference: paymentReferences.completion40,
     disabled: !isPaystackFeeSessionValid,
     metadata: {
       id: id,
@@ -314,12 +354,20 @@ const Course_reg = () => {
           },
         }}
       >
-        <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
+        {paymentReferences.complete ? (
+          <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
+        ) : (
+          <Button type="primary" loading disabled block style={{ margin: '2%', width: '96%' }}>Preparing payment…</Button>
+        )}
         {allowPartial60 && (
           <>
             <br />
             <br />
-            <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...component60Props} />
+            {paymentReferences.partial60 ? (
+              <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...component60Props} />
+            ) : (
+              <Button type="primary" loading disabled block style={{ margin: '2%', width: '96%' }}>Preparing payment…</Button>
+            )}
           </>
         )}
       </ConfigProvider>
@@ -339,7 +387,11 @@ const Course_reg = () => {
           },
         }}
       >
-        <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
+        {paymentReferences.complete ? (
+          <PaystackButton style={{ width: '100%', margin: '2%' }} className='btn btn-green' {...componentProps} />
+        ) : (
+          <Button type="primary" loading disabled block style={{ margin: '2%', width: '96%' }}>Preparing payment…</Button>
+        )}
       </ConfigProvider>
     </div>
   );
@@ -819,11 +871,15 @@ const Course_reg = () => {
                   )}
                 </div>
 
-                <PaystackButton
-                  style={{ width: '100%', margin: '1%' }}
-                  className='btn btn-green'
-                  {...component40Props}
-                />
+                {paymentReferences.completion40 ? (
+                  <PaystackButton
+                    style={{ width: '100%', margin: '1%' }}
+                    className='btn btn-green'
+                    {...component40Props}
+                  />
+                ) : (
+                  <Button type="primary" loading disabled block style={{ margin: '1%', width: '98%' }}>Preparing payment…</Button>
+                )}
                 <Text type="secondary" style={{ display: 'block', marginTop: 10, fontSize: 12, textAlign: 'center' }}>
                   Secured by Paystack · Payment is recorded on the main system.
                 </Text>

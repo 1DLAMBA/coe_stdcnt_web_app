@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { ArrowDownOutlined, ArrowUpOutlined, EyeFilled, UserOutlined } from '@ant-design/icons';
 import { Card, Col, Tag, ConfigProvider, Statistic, Button, Table, Input, Select, Spin, Row } from 'antd';
-import axios from "axios";
+import staffApi from "../../../../../services/staffApi";
 import '../admin-pages/styles/application.css';
 import API_ENDPOINTS from "../../../../../Endpoints/environment";
 
@@ -25,13 +25,10 @@ export const View_approved = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details`);
-      console.log(response)
-      const filteredData = response.data.filter((student) => !student.matric_number);
-      setData(filteredData);
-      setNoAdmissionCount(response.data.filter((student) => !student.has_admission).length);
-      setMatricNumberCount(response.data.filter((student) => student.matric_number).length);
-      setApprovedStudents(response.data.filter((student) => student.has_admission && !student.matric_number).length);
+      const response = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS_SUMMARY);
+      setNoAdmissionCount(response.data.no_admission);
+      setMatricNumberCount(response.data.with_matric);
+      setApprovedStudents(response.data.approved_without_matric);
     } catch (error) {
       console.error("Error fetching records:", error);
     } finally {
@@ -55,7 +52,7 @@ export const View_approved = () => {
   const fetchStudents = async (page, searchValue, studyCentValue) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_ENDPOINTS.API_BASE_URL}/personal-details-paged`, {
+      const response = await staffApi.get(API_ENDPOINTS.STAFF_STUDENTS, {
         params: {
           page,
           search: searchValue,
@@ -172,7 +169,7 @@ export const View_approved = () => {
 
   return (
     <div>
-      <div style={{ width: '100%', maxWidth: '1200px', margin: '2% auto', padding: '0 20px' }}>
+      <div>
         <div className="table-head">
           <h2>
             Approved Students List

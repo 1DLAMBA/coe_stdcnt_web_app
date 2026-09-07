@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, Select, DatePicker, Typography, Row, message, Steps, theme, Card, Col, ConfigProvider, Divider ,Alert} from 'antd';
-import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, UserOutlined, WarningOutlined, FileFilled, LoadingOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, UploadOutlined, SmileOutlined, SolutionOutlined, ReadOutlined, UserOutlined, WarningOutlined, FileFilled, LoadingOutlined } from '@ant-design/icons';
 import './style.css';
 import logo from '../../assets/logo2.png';
 import axios from 'axios';
@@ -89,6 +89,39 @@ const schoolsData = {
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+const STEP_DEFS = [
+  { key: 'step1', title: 'Personal Particulars', icon: <UserOutlined /> },
+  { key: 'step2', title: 'School Details', icon: <ReadOutlined /> },
+  { key: 'step3', title: 'Educational Qualifications', icon: <SolutionOutlined /> },
+  { key: 'step4', title: 'Done', icon: <SmileOutlined /> },
+];
+
+const RegistrationSteps = ({ activeStep }) => {
+  const activeIndex = STEP_DEFS.findIndex((s) => s.key === activeStep);
+  return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#028f64',
+          borderRadius: 2,
+          colorText: '#028f64',
+          colorBgContainer: '#f6ffed',
+        },
+      }}
+    >
+      <Steps
+        items={STEP_DEFS.map((s, index) => ({
+          title: s.title,
+          icon: s.icon,
+          status: index < activeIndex ? 'finish' : index === activeIndex ? 'process' : 'wait',
+        }))}
+        style={{ marginBottom: '2%' }}
+        responsive={true}
+      />
+    </ConfigProvider>
+  );
+};
+
 const Registration = ({ recoveredReference = null }) => {
   const publicKey = API_ENDPOINTS.PAYSTACK_PUBLIC_KEY;
   const [step, setStep] = useState('step1')
@@ -118,6 +151,8 @@ const Registration = ({ recoveredReference = null }) => {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingLGAs, setLoadingLGAs] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [paymentReference, setPaymentReference] = useState(null);
+  const [preparingPayment, setPreparingPayment] = useState(false);
 
   const next = () => {
     setCurrent(current + 1);
@@ -285,6 +320,7 @@ const Registration = ({ recoveredReference = null }) => {
   const componentProps = {
     email,
     amount,
+    reference: paymentReference,
     metadata: {
       phone: firstStep.phone_number,
       pay_type: "registration_fees",
@@ -471,6 +507,28 @@ const Registration = ({ recoveredReference = null }) => {
     setSelectedExamType(value);
   };
 
+  // Generate our own reference for the ₦4,000 registration fee once the payment
+  // step is reached, and pass it to Paystack as the transaction reference itself —
+  // so the reference the student sees and the one an admin looks up are identical.
+  useEffect(() => {
+    if (step !== 'step4' || recoveredReference || paymentReference || preparingPayment) {
+      return;
+    }
+    setPreparingPayment(true);
+    axios
+      .post(API_ENDPOINTS.PAYMENTS_INITIATE, {
+        pay_type: 'registration_fees',
+        amount,
+        metadata: { phone: firstStep.phone_number },
+      })
+      .then((res) => setPaymentReference(res.data.reference))
+      .catch((error) => {
+        console.error('Error preparing payment reference:', error);
+        message.error('Could not prepare payment. Please go back and try again.');
+      })
+      .finally(() => setPreparingPayment(false));
+  }, [step, recoveredReference, paymentReference, preparingPayment, amount, firstStep.phone_number]);
+
   return (
     <>
 
@@ -518,48 +576,8 @@ const Registration = ({ recoveredReference = null }) => {
             </div>
             {step === 'step1' && (
               <div style={{ padding: '16px' }}>
-                <ConfigProvider
-                  theme={{
-                    token: {
-                      // Seed Token
-                      colorPrimary: '#028f64',
-                      borderRadius: 2,
-
-                      // Alias Token
-                      colorText: '#028f64',
-                      colorBgContainer: '#f6ffed',
-                    },
-                  }}
-                >
-
-
-                  <Steps
-                    items={[
-                      {
-                        title: 'Personal Particulars',
-                        status: 'process',
-                        icon: <UserOutlined />,
-                      },
-                      {
-                        title: 'School Details',
-                        status: 'wait',
-                        icon: <SolutionOutlined />,
-                      },
-                      {
-                        title: 'Educational Qualifications',
-                        status: 'wait',
-                        icon: <SolutionOutlined />,
-                      },
-                      {
-                        title: 'Done',
-                        status: 'wait',
-                        icon: <SmileOutlined />,
-                      },
-                    ]}
-                    style={{ marginBottom: '2%' }}
-                    responsive={true}
-                  />
-                </ConfigProvider>
+                <RegistrationSteps activeStep={step} />
+                <div className="reg-section-title">Personal Information</div>
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={24} md={12} lg={10}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
@@ -674,6 +692,7 @@ const Registration = ({ recoveredReference = null }) => {
 
                 </Row>
 
+                <div className="reg-section-title">Origin &amp; Contact</div>
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={24} md={12} lg={8}>
                     <Form.Item
@@ -761,6 +780,7 @@ const Registration = ({ recoveredReference = null }) => {
                   </Col>
                 </Row>
 
+                <div className="reg-section-title">Family Background</div>
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={24} md={8}>
                     <Form.Item
@@ -813,6 +833,7 @@ const Registration = ({ recoveredReference = null }) => {
                   </Col>
 
                 </Row>
+                <div className="reg-section-title">Programme &amp; Study Centre</div>
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={24} md={8}>
 
@@ -862,48 +883,7 @@ const Registration = ({ recoveredReference = null }) => {
             )}
             {step === 'step2' && (
               <div style={{ padding: '16px' }}>
-                <ConfigProvider
-                  theme={{
-                    token: {
-                      // Seed Token
-                      colorPrimary: '#028f64',
-                      borderRadius: 2,
-
-                      // Alias Token
-                      colorText: '#028f64',
-                      colorBgContainer: '#f6ffed',
-                    },
-                  }}
-                >
-
-                  <Steps
-                    items={[
-                      {
-                        title: 'Personal Particulars',
-                        status: 'finish',
-                        icon: <UserOutlined />,
-                      },
-                      {
-                        title: 'School Details',
-                        status: 'process',
-                        icon: <SolutionOutlined />,
-                      },
-                      {
-                        title: 'Educational Qualifications',
-                        status: 'wait',
-                        icon: <SolutionOutlined />,
-                      },
-
-                      {
-                        title: 'Done',
-                        status: 'wait',
-                        icon: <SmileOutlined />,
-                      },
-                    ]}
-                    style={{ marginBottom: '2%' }}
-                    responsive={true}
-                  />
-                </ConfigProvider>
+                <RegistrationSteps activeStep={step} />
 
                 <div style={{ padding: "16px" }}>
                   <h2 style={{ fontSize: 'clamp(18px, 4vw, 24px)' }}>School and Course Selection</h2>
@@ -1165,48 +1145,7 @@ const Registration = ({ recoveredReference = null }) => {
               <>
 
                 <div style={{ padding: "16px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-                  <ConfigProvider
-                    theme={{
-                      token: {
-                        // Seed Token
-                        colorPrimary: '#028f64',
-                        borderRadius: 2,
-
-                        // Alias Token
-                        colorText: '#028f64',
-                        colorBgContainer: '#f6ffed',
-                      },
-                    }}
-                  >
-
-                    <Steps
-                      items={[
-                        {
-                          title: 'Personal Particulars',
-                          status: 'finish',
-                          icon: <UserOutlined />,
-                        },
-                        {
-                          title: 'School Details',
-                          status: 'finish',
-                          icon: <SolutionOutlined />,
-                        },
-                        {
-                          title: 'Educational Qualifications',
-                          status: 'process',
-                          icon: <SolutionOutlined />,
-                        },
-
-                        {
-                          title: 'Done',
-                          status: 'wait',
-                          icon: <SmileOutlined />,
-                        },
-                      ]}
-                      style={{ marginBottom: '2%' }}
-                      responsive={true}
-                    />
-                  </ConfigProvider>
+                  <RegistrationSteps activeStep={step} />
                   <Card
                     style={{
                       maxWidth: "1200px",
@@ -1354,49 +1293,7 @@ const Registration = ({ recoveredReference = null }) => {
 
             {step === 'step4' && !recoveredReference && (
               <div style={{ padding: '16px' }}>
-
-                <ConfigProvider
-                  theme={{
-                    token: {
-                      // Seed Token
-                      colorPrimary: '#028f64',
-                      borderRadius: 2,
-
-                      // Alias Token
-                      colorText: '#028f64',
-                      colorBgContainer: '#f6ffed',
-                    },
-                  }}
-                >
-
-                  <Steps
-                    items={[
-                      {
-                        title: 'Personal Particulars',
-                        status: 'finish',
-                        icon: <UserOutlined />,
-                      },
-                      {
-                        title: 'School Details',
-                        status: 'finish',
-                        icon: <SolutionOutlined />,
-                      },
-                      {
-                        title: 'Educational Qualifications',
-                        status: 'finish',
-                        icon: <SolutionOutlined />,
-                      },
-
-                      {
-                        title: 'Done',
-                        status: 'process',
-                        icon: <SmileOutlined />,
-                      },
-                    ]}
-                    style={{ marginBottom: '2%' }}
-                    responsive={true}
-                  />
-                </ConfigProvider> 
+                <RegistrationSteps activeStep={step} />
                 <div style={{ display: "flex", justifyContent: "center", padding: "16px" }}>
                   <Card
                     style={{
@@ -1419,8 +1316,14 @@ const Registration = ({ recoveredReference = null }) => {
                       </Text>
                     </div>
                     
-                    <PaystackButton className='btn btn-green' {...componentProps} style={{ width: '100%' }} />
-                     
+                    {paymentReference ? (
+                      <PaystackButton className='btn btn-green' {...componentProps} style={{ width: '100%' }} />
+                    ) : (
+                      <Button type="primary" loading block disabled style={{ background: '#028f64', borderColor: '#028f64' }}>
+                        Preparing payment…
+                      </Button>
+                    )}
+
 
                     <Divider />
                     <Button type="link" style={{ color: "#028f64" }} onClick={() => navigate('/payment-recovery')}>
