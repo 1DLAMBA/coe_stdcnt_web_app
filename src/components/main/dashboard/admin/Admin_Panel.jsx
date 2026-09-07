@@ -13,6 +13,7 @@ import {
     SafetyCertificateOutlined,
     MenuOutlined,
     LogoutOutlined,
+    WalletOutlined,
 } from '@ant-design/icons';
 import logo from '../../../../assets/logo2.png';
 import { useStaffAuth } from '../../../../Authentication/StaffAuthContext';
@@ -29,6 +30,7 @@ const ICONS = {
     check: <CheckCircleOutlined />,
     chart: <BarChartOutlined />,
     safety: <SafetyCertificateOutlined />,
+    wallet: <WalletOutlined />,
 };
 
 const theme = {

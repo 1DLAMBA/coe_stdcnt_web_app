@@ -17,6 +17,7 @@ import {
     UploadOutlined,
     UserAddOutlined,
     FileTextOutlined,
+    DownloadOutlined,
 } from '@ant-design/icons';
 import staffApi from '../../../../../services/staffApi';
 import API_ENDPOINTS from '../../../../../Endpoints/environment';
@@ -57,6 +58,7 @@ const GraduationList = () => {
     const [rowBusy, setRowBusy] = useState({});
     const [centres, setCentres] = useState([]);
     const [adding, setAdding] = useState(false);
+    const [downloadingSample, setDownloadingSample] = useState(false);
     const [form] = Form.useForm();
 
     const fetchList = useCallback(async (page = 1, pageSize = 20, searchTerm = '') => {
@@ -127,6 +129,25 @@ const GraduationList = () => {
             unmatched: data.unmatched || 0,
             total: data.total || 0,
         });
+    };
+
+    const onDownloadSample = async () => {
+        setDownloadingSample(true);
+        try {
+            const response = await staffApi.get(API_ENDPOINTS.GRADUATION_LIST_SAMPLE_CSV, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'graduation_list_sample.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            message.error('Could not download sample CSV');
+        } finally {
+            setDownloadingSample(false);
+        }
     };
 
     const onUpload = async () => {
@@ -374,6 +395,17 @@ const GraduationList = () => {
                 <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
                     Upload an XLSX or CSV with columns MATRIC NO, NAME, COURSE, CENTRE.
                     Rows are matched by matric number, so re-uploads and batch uploads are safe.
+                    {' '}
+                    <Button
+                        type="link"
+                        size="small"
+                        icon={<DownloadOutlined />}
+                        loading={downloadingSample}
+                        onClick={onDownloadSample}
+                        style={{ padding: 0, height: 'auto', color: '#028f64' }}
+                    >
+                        Download a sample CSV
+                    </Button>
                 </Text>
                 <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                     <Upload

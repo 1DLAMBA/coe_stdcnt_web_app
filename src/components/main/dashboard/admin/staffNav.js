@@ -64,6 +64,13 @@ export const STAFF_NAV_ITEMS = [
         permission: 'staff.manage',
         icon: 'safety',
     },
+    {
+        key: 'payments',
+        path: '/admin/payments',
+        label: 'Payments',
+        permission: 'payments.view',
+        icon: 'wallet',
+    },
 ];
 
 export function navLabel(item, isCoordinator) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.css';
 import logo from '../../assets/logo2.png';
 import { useNavigate } from 'react-router-dom';
@@ -21,9 +21,30 @@ const ApplicationCheck = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [view, setView] = useState('form'); // 'form', 'acceptance', 'dashboard', 'notFound'
+  const [paymentReference, setPaymentReference] = useState(null);
+
+  useEffect(() => {
+    if (view !== 'acceptance' || paymentReference || !applicationNumber?.id) {
+      return;
+    }
+    axios
+      .post(API_ENDPOINTS.PAYMENTS_INITIATE, {
+        pay_type: 'acceptance_fees',
+        amount,
+        personal_detail_id: applicationNumber.id,
+        metadata: { phone, id: applicationNumber.id },
+      })
+      .then((res) => setPaymentReference(res.data.reference))
+      .catch((error) => {
+        console.error('Error preparing payment reference:', error);
+        message.error('Could not prepare payment. Please try again.');
+      });
+  }, [view, paymentReference, applicationNumber, amount, phone]);
+
   const componentProps = {
     email,
     amount,
+    reference: paymentReference,
     metadata: {
       phone,
       id: applicationNumber.id,
@@ -212,7 +233,13 @@ const ApplicationCheck = () => {
                     >
                       Back
                     </Button>
-                    <PaystackButton className='btn btn-green' {...componentProps} />
+                    {paymentReference ? (
+                      <PaystackButton className='btn btn-green' {...componentProps} />
+                    ) : (
+                      <Button type="primary" loading disabled className="btn-green">
+                        Preparing payment…
+                      </Button>
+                    )}
                   </div>
                 </Card>
               </Space>

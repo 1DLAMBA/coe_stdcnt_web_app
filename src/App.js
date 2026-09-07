@@ -29,6 +29,7 @@ import StaffLogin from './components/main/dashboard/admin/StaffLogin';
 import RequireStaff from './components/main/dashboard/admin/RequireStaff';
 import StaffAccounts from './components/main/dashboard/admin/admin-pages/StaffAccounts';
 import StaffHome from './components/main/dashboard/admin/admin-pages/StaffHome';
+import Payments from './components/main/dashboard/admin/admin-pages/Payments';
 import { StaffAuthProvider } from './Authentication/StaffAuthContext';
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Route path="/admin/add-students" element={<RequireStaff permission="students.manage"><AdminAddStudents /></RequireStaff>} />
           <Route path="/admin/graduation-list" element={<RequireStaff permission="graduation.view"><GraduationList /></RequireStaff>} />
           <Route path="/admin/staff" element={<RequireStaff permission="staff.manage"><StaffAccounts /></RequireStaff>} />
+          <Route path="/admin/payments" element={<RequireStaff permission="payments.view"><Payments /></RequireStaff>} />
         </Route>
         <Route path="/registration" element={<Registration />} />
         <Route path="/registration/:id/success" element={<Reg_Success />} />

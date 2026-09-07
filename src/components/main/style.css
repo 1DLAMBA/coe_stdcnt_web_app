@@ -54,12 +54,13 @@
 /* Base styles */
 html, body {
   font-family: Arial, sans-serif;
-  background-image: url('../../assets/backgrround.jpg');
-  background-size: cover;
+  /* A tokened surface, not a stock photo — the photo used to bleed through on any
+     page whose content doesn't fully cover the viewport (registration on desktop,
+     every page below the fold on mobile). */
+  background: linear-gradient(160deg, #eef8f3 0%, #eef5f0 45%, #e3f1e8 100%);
   margin: 0;
   padding: 0;
   width: 100%;
-  background-repeat: no-repeat;
   min-height: 100%;
 }
 
@@ -266,6 +267,24 @@ html, body {
     .form-logo {
         width: 80px;
     }
+}
+
+/* Section grouping for long forms (registration step 1) — gives the eye stopping
+   points instead of one flat 20-field list. */
+.reg-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #028f64;
+    margin: 28px 0 12px;
+    padding-top: 20px;
+    border-top: 1px solid #e3f1e8;
+}
+.reg-section-title:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 /* PENDING VIW

@@ -45,6 +45,8 @@ const API_ENDPOINTS = {
     APPROVE_PRENCE: `${API_BASE_URL}/approve_prence`,
     VERIFY_REFERENCE: `${API_BASE_URL}/verify_reference`,
     VERIFY_PAYSTACK: `${API_BASE_URL}/verify-paystack`,
+    PAYMENTS_INITIATE: `${API_BASE_URL}/payments/initiate`,
+    ADMIN_PAYMENTS: `${API_BASE_URL}/admin/payments`,
     CLEARANCES: `${API_BASE_URL}/clearances`,
     CLEARANCE_DEPARTMENTS: `${API_BASE_URL}/clearance-departments`,
     ADMIN_MINIMAL_STUDENTS: `${API_BASE_URL}/admin/minimal-students`,
@@ -52,6 +54,7 @@ const API_ENDPOINTS = {
     IMPORT_SAMPLE_CSV: `${API_BASE_URL}/import/sample-csv`,
     IMPORT_STUDENTS: `${API_BASE_URL}/import`,
     GRADUATION_LIST: `${API_BASE_URL}/graduation-list`,
+    GRADUATION_LIST_SAMPLE_CSV: `${API_BASE_URL}/graduation-list/sample-csv`,
     GRADUATION_LIST_IMPORT: `${API_BASE_URL}/graduation-list/import`,
     GRADUATION_LIST_UNMATCHED: `${API_BASE_URL}/graduation-list/unmatched`,
     // append '/' + encodeURIComponent(matric) — matric numbers contain slashes

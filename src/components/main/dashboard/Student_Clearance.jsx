@@ -38,6 +38,7 @@ const Student_Clearance = () => {
   const slipRef = useRef(null);
 
   const activeRequest = useMemo(() => clearanceRequests?.[0], [clearanceRequests]);
+  const [paymentReference, setPaymentReference] = useState(null);
 
   const isNewByMatric = useMemo(
     () => isNewIntakeByMatric(personalDetail?.matric_number),
@@ -255,9 +256,29 @@ const Student_Clearance = () => {
     }
   };
 
+  // Generate our own reference for the clearance acceptance fee once the request is
+  // approved, and pass it to Paystack as the transaction reference itself — so the
+  // reference the student sees and the one an admin looks up are identical.
+  useEffect(() => {
+    if (activeRequest?.status !== "approved" || activeRequest?.acceptance_paid || paymentReference || !activeRequest?.id) {
+      return;
+    }
+    axios
+      .post(API_ENDPOINTS.PAYMENTS_INITIATE, {
+        pay_type: "clearance_acceptance",
+        amount: CLEARANCE_AMOUNT * 100,
+        personal_detail_id: id,
+        clearance_request_id: activeRequest.id,
+        metadata: { id, clearance_request_id: activeRequest.id },
+      })
+      .then((res) => setPaymentReference(res.data.reference))
+      .catch((error) => console.error("Error preparing payment reference:", error));
+  }, [activeRequest?.status, activeRequest?.acceptance_paid, activeRequest?.id, paymentReference, id]);
+
   const paystackProps = {
     email: personalDetail?.email,
     amount: CLEARANCE_AMOUNT * 100,
+    reference: paymentReference,
     publicKey: API_ENDPOINTS.PAYSTACK_PUBLIC_KEY,
     metadata: {
       id,
@@ -470,8 +491,12 @@ const Student_Clearance = () => {
                   description="You can now download or print your clearance acknowledgement slip."
                   style={{ marginBottom: "1rem" }}
                 />
-              ) : (
+              ) : paymentReference ? (
                 <PaystackButton className="btn btn-green" {...paystackProps} />
+              ) : (
+                <Button type="primary" loading disabled block style={{ background: '#028f64', borderColor: '#028f64' }}>
+                  Preparing payment…
+                </Button>
               )}
 
               {activeRequest.acceptance_paid && (
