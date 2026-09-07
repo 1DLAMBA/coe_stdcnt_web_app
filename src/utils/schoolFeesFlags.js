@@ -329,17 +329,36 @@ export function buildPrimaryFeeSyncBody(primary, merged) {
 const DEFAULT_CONCURRENCY = 6;
 
 /**
- * Fetch backup personal-details for many ids in bounded parallel chunks.
+ * Fetch backup personal-details for many ids.
+ *
+ * Tries the bulk endpoint first — one request for every id instead of one
+ * request per student, which is what was hammering the backup server on the
+ * clearance page (N students = N requests, fired in batches but still N).
+ * Falls back to the old per-id concurrent fetch only if the bulk endpoint
+ * isn't reachable (e.g. an older backup deploy that predates it).
+ *
  * @param {import('axios').AxiosInstance} axiosClient
  * @param {number[]} ids
  * @param {string} personalDetailsBackupBase - e.g. https://host/api/personal-details (no trailing slash)
- * @param {number} [concurrency]
+ * @param {number} [concurrency] - only used by the per-id fallback path
  * @returns {Promise<Record<number, object|null>>}
  */
 export async function fetchBackupPersonalByIds(axiosClient, ids, personalDetailsBackupBase, concurrency = DEFAULT_CONCURRENCY) {
   const map = {};
   const unique = [...new Set((ids || []).filter((x) => x != null && x !== ""))];
   if (!personalDetailsBackupBase || unique.length === 0) return map;
+
+  try {
+    const res = await axiosClient.get(`${personalDetailsBackupBase}/bulk`, {
+      params: { ids: unique.join(",") },
+    });
+    unique.forEach((pid) => {
+      map[pid] = res.data?.[pid] ?? null;
+    });
+    return map;
+  } catch (error) {
+    console.warn("Bulk backup lookup failed, falling back to per-id requests:", error?.message || error);
+  }
 
   const conc = Math.max(1, Math.min(concurrency, unique.length));
   for (let offset = 0; offset < unique.length; offset += conc) {

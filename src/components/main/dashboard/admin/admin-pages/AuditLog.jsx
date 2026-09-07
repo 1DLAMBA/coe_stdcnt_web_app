@@ -26,6 +26,9 @@ const ACTION_COLOR = {
     'payment.reverify': 'processing',
     'staff.create': 'blue',
     'staff.update': 'gold',
+    'staff.login': 'cyan',
+    'staff.login_failed': 'error',
+    'staff.logout': 'default',
 };
 
 const AuditLog = () => {
