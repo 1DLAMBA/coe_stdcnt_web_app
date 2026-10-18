@@ -108,6 +108,7 @@ const studyCentres = [
     'Patigi',
     'Pandogari',
     'Agaie',
+    'Bacita',
 ];
 
 const cardStyle = {

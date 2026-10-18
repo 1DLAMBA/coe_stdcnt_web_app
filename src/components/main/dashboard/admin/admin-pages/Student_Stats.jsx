@@ -909,6 +909,7 @@ export const Student_Stats = () => {
                                 <Option value="Patigi">Patigi</Option>
                                 <Option value="Pandogari">Pandogari</Option>
                                 <Option value="Agaie">Agaie</Option>
+                                <Option value="Bacita">Bacita</Option>
                             </Select>
                             )}
                         </div>

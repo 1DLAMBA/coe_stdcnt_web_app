@@ -33,7 +33,7 @@ const styles = {
     },
 };
 
-const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora', 'Bida', 'Patigi', 'Pandogari', 'Agaie'];
+const centers = ['Salka', 'Mokwa', 'suleja', 'Kagara', 'New Bussa', 'Gulu', 'Gawu', 'Doko', 'Katcha', 'Rijau', 'Kontogora', 'Bida', 'Patigi', 'Pandogari', 'Agaie', 'Bacita'];
 
 export const StudentList = () => {
     const [data, setData] = useState([]);
