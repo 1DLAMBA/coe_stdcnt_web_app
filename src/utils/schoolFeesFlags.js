@@ -303,7 +303,7 @@ export function getCenterSubaccountByStudyCenter(studyCenter) {
     case "Patigi":
       return "ACCT_8bh96hpa23avb1w";
     case "Pandogari":
-      return "ACCT_5ljhtgc5cihxenj";
+      return "ACCT_r848jdikmld0jhh";
     case "Agaie":
       return "ACCT_7quhzixmwkaz3o7";
     default:
